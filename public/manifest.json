@@ -1,25 +1,30 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
+  "manifest_version" : 2,
+  "name" : "emojis on the go",
+  "version" : "0.1",
+  "description" : "Type :emoji_name: in any text field to insert an emoji. Make it easier with autocomplete!",
+  "author": "Choucroute_melba",
+  "developer": {
+    "name": "Vivien F",
+    "url": "https://github.com/Choucroute-melba"
+  },
+  "content_scripts":
+  [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "logo192.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "logo512.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "matches": ["<all_urls>"],
+      "js": ["public/emoji.js"],
+      "run_at": "document_end"
     }
   ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "options_ui": {
+    "page": "public/options.html"
+  },
+  "permissions": [
+    "storage"
+  ],
+  "applications": {
+    "gecko": {
+      "id": "com.github.choucroute-melba.emojis-on-the-go"
+    }
+  }
 }

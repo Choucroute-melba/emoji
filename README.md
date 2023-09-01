@@ -1,46 +1,22 @@
-# Getting Started with Create React App
+# Emoji on the go
+A firefox extension to quickly insert emoji into text fields, using the :emoji_name: syntax.
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) TS template.
+## Wanted behaviour
+1. When the user types `:` in a text field, a list of suggested emoji appears above or below the text field.
+2. the emoji list is filtered according to what the user types after the `:`
+3. the user can select an emoji from the list using the arrow keys and press `enter` or click on it to replace the `:emoji_name:` with the emoji in the text field
+4. the user can press `esc` to close the emoji list
+5. if the user type a char other than a letter or `_` in the emoji name, the emoji list closes
+6. if the user types a second `:`, the emoji list closes and if an emoji matching the name is found, it is inserted in the text field
+7. the use of the navigation keys (`up`, `down`, `enter`, `esc`) must not trigger any default behaviour from the website (for example, the `enter` key should not submit a form or send a message)
+8. the emoji list is closed when the text field loses focus
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Implementation ideas
+1. `state.displaysEmojiList: boolean` and `state.searching: boolean`. `state.displayAbove: boolean` say where to display the emoji list
+2. update `state.searchResults: Array<Emoji>` as the user types
+3. `state.selectedEmoji: Emoji` and `state.selectedEmojiIndex: number`. Use the search offsets to know what to replace
+4. `state.searching = false`
+5. update `state.searching = false`
+6. Keep track of the search offset in the text field and if a second `:` is typed, find a match in the emoji list.
+7. `event.preventDefault()` on `keydown` events (only for those keys and if `state.searching = true`)
+8. `state.searching = false`
