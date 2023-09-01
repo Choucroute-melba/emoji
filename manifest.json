@@ -13,6 +13,7 @@
     {
       "matches": ["<all_urls>"],
       "js": ["emoji.js"],
+      "css": ["/static/css/main.d0fc595a.css"],
       "run_at": "document_end"
     }
   ],
