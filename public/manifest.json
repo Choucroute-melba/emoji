@@ -8,6 +8,11 @@
     "name": "Vivien F",
     "url": "https://github.com/Choucroute-melba"
   },
+  "icons": {
+    "48": "icon@48px.png",
+    "72": "icon@72px.png",
+    "256": "icon@256px.png"
+  },
   "content_scripts":
   [
     {
