@@ -15,7 +15,7 @@ export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    toggleEnabled: (state, action: PayloadAction<string>) => {
+    toggleEnabled: (state) => {
       state.enabled = !state.enabled;
     },
     addSiteToBlockList: (state, action: PayloadAction<string>) => {
@@ -30,5 +30,24 @@ export const settingsSlice = createSlice({
 export const { toggleEnabled } = settingsSlice.actions;
 
 export const selectEnabled = (state: RootState) => state.settings.enabled;
+export const selectSiteBlockList = (state: RootState) => state.settings.siteBlockList;
+export const selectBlockedSite = (state: RootState, site: string) => state.settings.siteBlockList.includes(site);
 
 export default settingsSlice.reducer;
+
+export function onMessage(message: any) {
+  return async (dispatch: Function, getState: Function) => {
+    switch (message.type) {
+      case "TOGGLE_ENABLED":
+        if(!getState().settings.enabled) {
+          dispatch(toggleEnabled())
+        }
+        break;
+      case "TOGGLE_DISABLED":
+        if(getState().settings.enabled) {
+          dispatch(toggleEnabled())
+        }
+        break;
+    }
+  }
+}

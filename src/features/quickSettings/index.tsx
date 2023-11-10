@@ -1,5 +1,7 @@
 import {createRoot} from "react-dom/client";
 import QSPanel from "./QSPanel";
+import {store} from "../../app/store";
+import {onMessage} from "../preferences/settingsSlice";
 
 export default function quickSettings() {
     console.log("loading emoji quick settings...", "qs-root");
@@ -11,4 +13,9 @@ export default function quickSettings() {
     root.render(
         <QSPanel />
     );
+
+    // @ts-ignore
+    browser.runtime.onMessage.addListener((message) => {
+        store.dispatch(onMessage(message))
+    })
 }
