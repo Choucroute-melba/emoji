@@ -1,8 +1,10 @@
 import {createSlice} from "@reduxjs/toolkit";
 import {Emoji, emojis, searchEmoji} from "./utils/emoji";
 import {getAbsoluteCaretPosition, getVerticalPosition} from "./utils/selector";
+import {store} from "../../app/store";
 
 export interface EmojiState {
+    detectionTryCount: number;
     display: boolean;
     position: {
         x: number;
@@ -14,7 +16,7 @@ export interface EmojiState {
     },
     displayAbove: boolean,
     dispositionMethod: "box" | "cursor",
-    textFields: NodeListOf<Element>
+    textFields: Element[],
     focusedTextField: HTMLInputElement | HTMLTextAreaElement | null,
     searching: boolean,
     searchStartOffset: number | undefined,
@@ -26,6 +28,7 @@ export interface EmojiState {
 }
 
 const initialState: EmojiState = {
+    detectionTryCount: 0,
     display: false,
     position: {
         x: 0,
@@ -37,7 +40,7 @@ const initialState: EmojiState = {
     },
     displayAbove: false,
     dispositionMethod: "box",
-    textFields: document.querySelectorAll("input[type=text], textarea"),
+    textFields: [],
     focusedTextField: null,
     searching: false,
     searchStartOffset: undefined,
@@ -56,6 +59,19 @@ export const emojiSlice = createSlice({
         __init__: (state, action) => {
 
         },
+        updateTextFields: (state) => {
+            const newTextFields = document.querySelectorAll("input, textarea") as any
+            newTextFields.forEach((f: Element) => {
+                if(f.classList.contains("emoji-text-field"))
+                    return;
+                if(f.tagName === "INPUT" && ((f as HTMLInputElement).type === "password" || (f as HTMLInputElement).type === "email" || (f as HTMLInputElement).type === "number" || (f as HTMLInputElement).type === "tel" || (f as HTMLInputElement).type === "url" || (f as HTMLInputElement).type === "search" || (f as HTMLInputElement).type === "date" || (f as HTMLInputElement).type === "time" || (f as HTMLInputElement).type === "datetime-local" || (f as HTMLInputElement).type === "month" || (f as HTMLInputElement).type === "week" || (f as HTMLInputElement).type === "color"))
+                    return;
+                else {
+                    state.textFields.push(f as any);
+                }
+            });
+            state.detectionTryCount++;
+        },
         toggleDisplay: (state, action: {payload: boolean | undefined}) => {
             if(action.payload !== undefined)
                 state.display = action.payload;
@@ -64,10 +80,14 @@ export const emojiSlice = createSlice({
         },
         setFocusedTextField: (state, action: {payload: Element | null, type: string}) => {
             const f = action.payload;
+            if(state.focusedTextField != null) {
+                console.warn("Another field is focuser : ", state.focusedTextField);
+            }
             // @ts-ignore
             state.focusedTextField = f;
             if(f === null) {
                 state.display = false;
+                state.searching = false;
                 return
             }
 
@@ -248,6 +268,7 @@ export const emojiSlice = createSlice({
 });
 
 export const {
+    updateTextFields,
     toggleDisplay,
     setFocusedTextField,
     updatePosition,
@@ -271,6 +292,7 @@ export function onKeydown(key: KeyboardEvent) {
             case "ArrowUp":
                 if(state.searching === true) {
                     dispatch(selectUp());
+                    key.stopPropagation();
                     key.preventDefault();
                 }
                 break;
@@ -278,6 +300,7 @@ export function onKeydown(key: KeyboardEvent) {
             case "ArrowDown":
                 if(state.searching === true) {
                     dispatch(selectDown());
+                    key.stopPropagation();
                     key.preventDefault();
                 }
                 break;
@@ -286,12 +309,14 @@ export function onKeydown(key: KeyboardEvent) {
                 if(state.searching === true) {
                     dispatch(insertEmoji());
                     dispatch(toggleSearching(false));
+                    key.stopPropagation();
                     key.preventDefault();
                 }
                 break;
 
             case "Escape":
                 dispatch(toggleSearching(false));
+                key.stopPropagation();
                 key.preventDefault();
                 break;
         }
@@ -341,5 +366,47 @@ export function onKeyup(key: KeyboardEvent) {
                     dispatch(updateEmojiSearch());
                 }
         }
+    }
+}
+export function  onTextFieldFocused(f: Element | null) {
+    return async (dispatch: Function, getState: Function) => {
+        if(f === null) {
+            store.dispatch(setFocusedTextField(null));
+            return;
+        }
+        if(f === getState().emoji.focusedTextField) {
+            console.warn("The same field has been focused again. To avoid bugs, this action has been ignored.")
+            return;
+        }
+
+        console.log("focusin : ", f);
+        store.dispatch(setFocusedTextField(f));
+
+        const keydownListener = (e: Event) => {
+            if(e instanceof KeyboardEvent) {
+                //console.log("keydown: ", e.key)
+                store.dispatch(onKeydown(e))
+            }
+        }
+
+        const keyupListener = (e: Event) => {
+            if(e instanceof KeyboardEvent) {
+                //console.log("keyup: ", e.key)
+                store.dispatch(onKeyup(e))
+            }
+        }
+
+        const focusOutListener = () => {
+            console.log("focusout: ", f)
+            store.dispatch(setFocusedTextField(null));
+            f.removeEventListener("focusout", focusOutListener);
+            f.removeEventListener("keydown", keydownListener);
+            f.removeEventListener("keyup", keyupListener);
+        };
+
+        f.addEventListener("focusout", focusOutListener);
+        f.addEventListener("keydown", keydownListener);
+        f.addEventListener("keyup", keyupListener);
+
     }
 }
