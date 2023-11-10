@@ -12,6 +12,8 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     transition-property: box-shadow;
     transition-duration: 0.8s;
+    color: black;
+    font-family: inherit;
 }
 
 .popup:hover {

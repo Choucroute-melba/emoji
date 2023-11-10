@@ -24,5 +24,12 @@
     </label>
     <input type="submit" value="Submit" />
 </form>
+<script>
+    setTimeout(() => {
+        const input = document.createElement("input")
+        input.type = "text"
+        document.getElementsByTagName("form")[0].appendChild(input)
+    }, 5000)
+</script>
 </body>
 </html>

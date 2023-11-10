@@ -5,6 +5,7 @@ export const iColor = "#535c6c"
 export const lColor = "rgb(255,255,255)"
 export const rColor = "#faa81a"
 export const rColor2 = "#e1e1e1"
+export const todoColor = "#bbfa1a"
 
 export const wStyle = `color: ${wColor};`
 export const eStyle = `color: ${eColor};`
