@@ -4,7 +4,7 @@ const REACT_APP_ROOT_ID="emoji-root-peekaboo"
 console.info("Emoji.js loaded")
 
 function loadEmojiApp() {
-    console.info("Loading emoji app")
+    console.info("Loading emoji app - public/emoji.js")
     try {
 
         const rootNode = document.getElementsByTagName("html")[0];
