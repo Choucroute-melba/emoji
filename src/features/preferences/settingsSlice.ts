@@ -2,25 +2,33 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
 interface SettingsState {
-  theme: string;
+  enabled: boolean;
+  siteBlockList: string[];
 }
 
 const initialState: SettingsState = {
-  theme: 'light',
+  enabled: true,
+  siteBlockList: [],
 };
 
 export const settingsSlice = createSlice({
   name: 'settings',
   initialState,
   reducers: {
-    setTheme: (state, action: PayloadAction<string>) => {
-      state.theme = action.payload;
+    toggleEnabled: (state, action: PayloadAction<string>) => {
+      state.enabled = !state.enabled;
     },
+    addSiteToBlockList: (state, action: PayloadAction<string>) => {
+      state.siteBlockList.push(action.payload);
+    },
+    removeSiteFromBlockList: (state, action: PayloadAction<string>) => {
+      state.siteBlockList = state.siteBlockList.filter(site => site !== action.payload);
+    }
   },
 });
 
-export const { setTheme } = settingsSlice.actions;
+export const { toggleEnabled } = settingsSlice.actions;
 
-export const selectTheme = (state: RootState) => state.settings.theme;
+export const selectEnabled = (state: RootState) => state.settings.enabled;
 
 export default settingsSlice.reducer;
