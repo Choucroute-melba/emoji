@@ -8,7 +8,7 @@ import './index.css';
 import {
     onTextFieldFocused
 } from "./features/emoji/emojiSlice";
-import quickSettings from "./quickSettings";
+import quickSettings from "./features/quickSettings";
 
 let currentView: "emoji" | "quickSettings" | "none" = getCurrentView();
 

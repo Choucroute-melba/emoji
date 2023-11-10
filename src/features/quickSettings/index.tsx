@@ -1,4 +1,5 @@
 import {createRoot} from "react-dom/client";
+import QSPanel from "./QSPanel";
 
 export default function quickSettings() {
     console.log("loading emoji quick settings...", "qs-root");
@@ -7,5 +8,7 @@ export default function quickSettings() {
     const container = document.getElementById("qs-root")!;
     const root = createRoot(container);
 
-    root.render(<div>Quick Settings</div>)
+    root.render(
+        <QSPanel />
+    );
 }

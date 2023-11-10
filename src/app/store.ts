@@ -1,11 +1,13 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
 import emojiReducer from '../features/emoji/emojiSlice';
+import settingsReducer from '../features/preferences/settingsSlice';
 
 export const store = configureStore({
   reducer: {
     counter: counterReducer,
     emoji: emojiReducer,
+    settings: settingsReducer
   },
   middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware({
