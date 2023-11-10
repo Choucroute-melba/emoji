@@ -4,6 +4,7 @@
   "version" : "0.1",
   "description" : "Type :emoji_name: in any text field to insert an emoji. Make it easier with autocomplete!",
   "author": "Choucroute_melba",
+  "content_security_policy": "script-src 'self' http://localhost:3000; object-src 'self'",
   "developer": {
     "name": "Vivien F",
     "url": "https://github.com/Choucroute-melba"
@@ -23,6 +24,17 @@
   ],
   "options_ui": {
     "page": "options.html"
+  },
+  "browser_action": {
+    "default_popup": "qs.html",
+    "default_icon": {
+      "48": "icon@48.png",
+      "72": "icon@72.png",
+      "256": "icon@256.jpg"
+    }
+  },
+  "background": {
+    "scripts": ["background.js"]
   },
   "permissions": [
     "storage"
