@@ -6,9 +6,11 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import './index.css';
 import {
-    onTextFieldFocused
+    onTextFieldFocused, toggleDisplay
 } from "./features/emoji/emojiSlice";
 import quickSettings from "./features/quickSettings";
+import {ApplicationMessage} from "./app/types";
+import {toggleEnabled} from "./features/preferences/settingsSlice";
 
 let currentView: "emoji" | "quickSettings" | "none" = getCurrentView();
 
@@ -109,7 +111,29 @@ if(currentView === "emoji") {
         const mu = new MutationObserver(muCallback);*/
         // mu.observe(document.body, muConfig);
 
+        window.addEventListener("message", (event) => {
+            if(event.data.recipient !== "EMOJI_APP" || event.data.type !== "APP_COMMUNICATION" || event.data.action !== "RECEIVE_MESSAGE")
+                return;
 
+            const message = event.data.payload as ApplicationMessage;
+            console.log("message received", message.type, message.action);
+            if(message.type === "SETTINGS_CHANGED") {
+                if(message.action === "TOGGLE_DISABLED") {
+                    if(store.getState().settings.enabled)
+                        store.dispatch(toggleEnabled())
+                    store.dispatch(toggleDisplay(false))
+                    container.style.display = "none";
+                }
+                else if(message.action === "TOGGLE_ENABLED") {
+                    if(!store.getState().settings.enabled)
+                        store.dispatch(toggleEnabled())
+                    container.style.display = "block";
+                }
+            }
+        });
+
+        console.groupEnd()
+        console.info("Emoji selector was loaded successfully on the following text fields:\n", store.getState().emoji.textFields)
         console.info("Rendering...")
         root.render(
             <React.StrictMode>
@@ -118,9 +142,6 @@ if(currentView === "emoji") {
                 </Provider>
             </React.StrictMode>
         );
-
-        console.groupEnd()
-        console.info("Emoji selector was loaded successfully on the following text fields:\n", store.getState().emoji.textFields)
     } catch (e) {
         console.error("error loading emoji app", e);
         console.groupEnd();
