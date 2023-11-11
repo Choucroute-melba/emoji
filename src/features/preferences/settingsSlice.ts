@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import {ApplicationMessage} from "../../app/types";
 
 interface SettingsState {
   enabled: boolean;
@@ -35,19 +36,26 @@ export const selectBlockedSite = (state: RootState, site: string) => state.setti
 
 export default settingsSlice.reducer;
 
-export function onMessage(message: any) {
+export function onMessage(message: ApplicationMessage) {
+  console.log("Received message: ", message);
   return async (dispatch: Function, getState: Function) => {
-    switch (message.type) {
-      case "TOGGLE_ENABLED":
-        if(!getState().settings.enabled) {
-          dispatch(toggleEnabled())
-        }
-        break;
-      case "TOGGLE_DISABLED":
-        if(getState().settings.enabled) {
-          dispatch(toggleEnabled())
-        }
-        break;
+    if(message.type === "SETTINGS_CHANGED") {
+      switch (message.action) {
+        case "TOGGLE_ENABLED":
+          if (!getState().settings.enabled) {
+            dispatch(toggleEnabled())
+          }
+          break;
+        case "TOGGLE_DISABLED":
+            if (getState().settings.enabled) {
+                dispatch(toggleEnabled())
+            }
+            break;
+
+        default:
+          console.warn("Received unknown message type: ", message.type);
+          break;
+      }
     }
   }
 }
