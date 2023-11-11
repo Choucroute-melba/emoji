@@ -37,7 +37,9 @@
     "scripts": ["background.js"]
   },
   "permissions": [
-    "storage"
+    "storage",
+    "tabs",
+    "notifications"
   ],
   "applications": {
     "gecko": {
