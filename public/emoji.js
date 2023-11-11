@@ -6,7 +6,10 @@ console.info("Emoji.js loaded")
 function loadEmojiApp() {
     console.info("Loading emoji app - public/emoji.js")
     try {
-
+        if(document.getElementById(REACT_APP_ROOT_ID)) {
+            console.warn("Emoji app already loaded")
+            return
+        }
         const rootNode = document.getElementsByTagName("html")[0];
         const emojiRoot = document.createElement("div")
         emojiRoot.id = REACT_APP_ROOT_ID
