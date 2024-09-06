@@ -27,7 +27,7 @@ jobs:
     - name: Build project
       run: |
         COMMIT_HASH=$(git rev-parse --short HEAD)
-        ./build.sh "2.1.0_$COMMIT_HASH"
+        ./build.sh -v "2.1.0_$COMMIT_HASH"
 
     - name: Extract changelog from commits
       id: changelog
