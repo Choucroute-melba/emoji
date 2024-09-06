@@ -6,6 +6,8 @@ node ./build.js "$@"
 # Run webpack with the production configuration
 npx webpack --config webpack.production.config.js && {
 
+    mkdir -p build
+
     # Define the files to be zipped
     files="./dist/manifest.json ./dist/build.js ./dist/assets"
 
