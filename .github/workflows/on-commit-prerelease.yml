@@ -1,0 +1,51 @@
+name: Pre-Release on Commit
+
+on:
+  push:
+    branches:
+      - '**'
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build project
+      run: |
+        COMMIT_HASH=$(git rev-parse --short HEAD)
+        ./build.bat "2.1.0_$COMMIT_HASH"
+
+    - name: Extract changelog from commits
+      id: changelog
+      run: |
+        CHANGELOG=$(git log -1 --pretty=format:%s)
+        echo "::set-output name=changelog::$CHANGELOG"
+
+    - name: Install web-ext
+      run: npm install --save-dev web-ext
+
+    - name: Sign Extension
+      env:
+        WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+        WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+      run: npx web-ext sign --source-dir=build --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
+
+    - name: Create GitHub Pre-Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG_NAME="pre-release-$(date +%Y%m%d%H%M%S)"
+        RELEASE_NAME="Pre-Release $TAG_NAME"
+        CHANGELOG="${{ steps.changelog.outputs.changelog }}"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" --prerelease build/emoji.zip build/emoji-src.zip build/unsigned-amo.xpi

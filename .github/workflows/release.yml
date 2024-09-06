@@ -18,6 +18,16 @@ jobs:
       with:
         node-version: '18'
 
+    - name: Install web-ext
+      run: npm install --save-dev web-ext
+
+    - name: Sign Extension
+      env:
+        WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+        WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+      run: npx web-ext sign --source-dir=build --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
+
+
     - name: Extract changelog for current version
       id: changelog
       run: |
@@ -33,4 +43,4 @@ jobs:
         TAG_NAME="${GITHUB_REF#refs/tags/}"
         RELEASE_NAME="Release $TAG_NAME"
         CHANGELOG="${{ steps.changelog.outputs.changelog }}"
-        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" build/emoji.zip build/emoji-src.zip
