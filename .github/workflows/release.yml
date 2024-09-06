@@ -1,0 +1,36 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Extract changelog for current version
+      id: changelog
+      run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        VERSION="${TAG_NAME#v}"
+        CHANGELOG=$(awk "/^# Version $VERSION/,/^# Version /{if (!/^# Version $VERSION/) print}" changelog.md | sed '$d')
+        echo "::set-output name=changelog::$CHANGELOG"
+
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        RELEASE_NAME="Release $TAG_NAME"
+        CHANGELOG="${{ steps.changelog.outputs.changelog }}"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG"
