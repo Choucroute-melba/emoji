@@ -1,0 +1,47 @@
+#emoji-selector {
+    height: 0;
+    width: 0;
+    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.popup {
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    border-radius: 5px;
+    padding: 6px 15px 0px;
+    margin-top: 3px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    transition-property: box-shadow;
+    transition-duration: 0.8s;
+    color: black;
+    font-family: inherit;
+}
+
+.popup:hover {
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+}
+
+.emoji-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.searchText {
+    font-size: x-small;
+    font-family: Arial, sans-serif;
+}
+
+.shortcode {
+    font-size: small;
+    font-family: "JetBrains Mono", monospace;
+    color: #818181;
+}
