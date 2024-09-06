@@ -35,6 +35,9 @@ jobs:
         CHANGELOG=$(git log -1 --pretty=format:%s)
         echo "::set-output name=changelog::$CHANGELOG"
 
+    - name: Create build directory
+      run: mkdir -p build
+
     - name: Install web-ext
       run: npm install --save-dev web-ext
 
