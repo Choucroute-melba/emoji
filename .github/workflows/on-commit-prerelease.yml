@@ -22,12 +22,12 @@ jobs:
       run: npm install
 
     - name: Make build.bat executable
-      run: chmod +x build.bat
+      run: chmod +x build.sh
 
     - name: Build project
       run: |
         COMMIT_HASH=$(git rev-parse --short HEAD)
-        ./build.bat "2.1.0_$COMMIT_HASH"
+        ./build.sh "2.1.0_$COMMIT_HASH"
 
     - name: Extract changelog from commits
       id: changelog
