@@ -15,6 +15,7 @@ function getArgumentValue(flag) {
 
 const version = getArgumentValue('-v');
 console.log(`Version: ${version}`);
+const simplifiedVersion = version.slice(0, version.indexOf('_'))
 
 try {
     // Read the original manifest file
@@ -26,6 +27,7 @@ try {
     console.log("Version updated in manifest")
 
     // Modify the manifest content
+    manifest.version = simplifiedVersion
     manifest.name = "Emoji";
     manifest.content_scripts[0].js = ["build.js"];
     manifest.icons = {
