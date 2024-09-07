@@ -1,6 +1,6 @@
 {
   "manifest_version": 2,
-  "name": "Emoji Dev - 2.1.0_6b1e78f",
+  "name": "Emoji",
   "version": "2.1.1",
   "description": "A simple extension to type emojis using the :emoji: syntax.",
   "browser_specific_settings": {
@@ -9,9 +9,9 @@
     }
   },
   "icons": {
-    "48": "assets/ninja.png",
-    "72": "assets/ninja-2.png",
-    "256": "assets/ninja-3.png"
+    "48": "assets/icon@48px.png",
+    "72": "assets/icon@72px.png",
+    "256": "assets/icon@256px.png"
   },
   "content_scripts": [
     {

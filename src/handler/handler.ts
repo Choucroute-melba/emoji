@@ -31,7 +31,7 @@ const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
  * you should use this class as a base only if you're on a very specific case if you want to handle a non-editable element.
  * (e.g. an element that does not fire keydown, value change or selection events)
  */
-export default abstract class Handler<EltType> {
+export default abstract class Handler<EltType extends HTMLElement> {
     abstract readonly sites: string[]
     abstract readonly targets: string[]
     abstract readonly HandlerName: string
@@ -45,7 +45,8 @@ export default abstract class Handler<EltType> {
     private _search = ""
     protected searchResults: Emoji[] = []
     private _active = false
-    private boundHandleKeyddown: (e: KeyboardEvent) => void;
+    private readonly boundHandleKeyddown: (e: KeyboardEvent) => void;
+    private readonly boundFocusLost: (e: FocusEvent) => void;
 
     onExit: (() => void) = () => {}
 
@@ -75,7 +76,9 @@ export default abstract class Handler<EltType> {
         this.target = target
         this.es.onEmojiSelected = this.onEmojiSelected
         this.boundHandleKeyddown = this.handleKeyDown.bind(this)
+        this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleKeyddown)
+        this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.active = true
         this.log("new handler", this.instanceId.toString())
@@ -126,6 +129,9 @@ export default abstract class Handler<EltType> {
             let sc = this.search.slice(0, -1)
             this.onShortcodeDetected(sc)
         }
+        else if(!this.search.match(/^[a-zA-Z0-9_]*$/)) {
+            this.dismissSearch("INVALID_SEARCH")
+        }// if the search contains characters others tha letters, numbers and underscores
         else
             this.es.searchResults = this.searchResults
     }
@@ -171,11 +177,16 @@ export default abstract class Handler<EltType> {
             }
     }
 
+    protected onFocusLost() {
+        this.dismissSearch("FOCUS_LOST")
+    }
+
     destroy() {
         this.log(null, "destroying...")
         this.active = false
         this.onDestroy()
         document.removeEventListener('keydown', this.boundHandleKeyddown)
+        this.target.removeEventListener('focusout', this.boundFocusLost)
         this.es.display = false
         this.es.onEmojiSelected = () => {}
         this.es = null as any
