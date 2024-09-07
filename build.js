@@ -46,8 +46,8 @@ try {
         manifest.name = 'Emoji Dev - ' + version;
         manifest.icons = {
             "48": "assets/ninja.png",
-            "72": "assets/ninja-1.png",
-            "256": "assets/ninja-2.png"
+            "72": "assets/ninja-2.png",
+            "256": "assets/ninja-3.png"
         };
     }
     manifest.content_scripts[0].js = ["build.js"];
