@@ -3,6 +3,11 @@
   "name": "Emoji - Dev",
   "version": "2.1.0",
   "description": "A simple extension to type emojis using the :emoji: syntax.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "emoji@Choucroute-melba.github.io"
+    }
+  },
   "icons": {
     "48": "./dist/assets/ninja.48.png",
     "72": "./dist/assets/ninja.72.png",
