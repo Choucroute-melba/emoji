@@ -20,7 +20,7 @@ let devVersion = false;
 let simplifiedVersion = version;
 if(version.includes("_")) {
     devVersion = true;
-    const simplifiedVersion = version.slice(0, version.indexOf('_'))
+    simplifiedVersion = version.slice(0, version.indexOf('_'))
 }
 
 try {
