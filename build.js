@@ -15,7 +15,13 @@ function getArgumentValue(flag) {
 
 const version = getArgumentValue('-v');
 console.log(`Version: ${version}`);
-const simplifiedVersion = version.slice(0, version.indexOf('_'))
+
+let devVersion = false;
+let simplifiedVersion = version;
+if(version.includes("_")) {
+    devVersion = true;
+    const simplifiedVersion = version.slice(0, version.indexOf('_'))
+}
 
 try {
     // Read the original manifest file
@@ -28,13 +34,15 @@ try {
 
     // Modify the manifest content
     manifest.version = simplifiedVersion
-    manifest.name = "Emoji";
+    if(!devVersion) {
+        manifest.name = "Emoji";
+        manifest.icons = {
+            "48": "assets/icon@48px.png",
+            "72": "assets/icon@72px.png",
+            "256": "assets/icon@256px.png"
+        };
+    }
     manifest.content_scripts[0].js = ["build.js"];
-    manifest.icons = {
-        "48": "assets/icon@48px.png",
-        "72": "assets/icon@72px.png",
-        "256": "assets/icon@256px.png"
-    };
 
     // Ensure the dist directory exists
     const distDir = path.join(__dirname, 'dist');

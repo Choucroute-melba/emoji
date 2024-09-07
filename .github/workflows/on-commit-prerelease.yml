@@ -42,7 +42,10 @@ jobs:
       env:
         WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
         WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
-      run: npx web-ext sign --source-dir=dist --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=unlisted
+      run: |
+        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=unlisted)
+        SIGNED_FILE=$(echo $SIGN_OUTPUT | grep -oP 'build/.*\.xpi')
+        echo "::set-output name=signed_file::$SIGNED_FILE"
 
     - name: Create GitHub Pre-Release
       env:
@@ -51,4 +54,5 @@ jobs:
         TAG_NAME="pre-release-$(date +%Y%m%d%H%M%S)"
         RELEASE_NAME="Pre-Release $TAG_NAME"
         CHANGELOG="${{ steps.changelog.outputs.changelog }}"
-        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" --prerelease build/emoji.zip build/emoji-src.zip build/unsigned-amo.xpi
+        SIGNED_FILE="${{ steps.sign_extension.outputs.signed_file }}"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" --prerelease build/emoji.zip build/emoji-src.zip "$SIGNED_FILE"
