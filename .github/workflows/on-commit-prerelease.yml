@@ -48,6 +48,14 @@ jobs:
         COMMIT_HASH=$(git rev-parse --short HEAD)
         ./build.sh -v "2.1.0_$COMMIT_HASH"
 
+    - name: Commit and push updated manifest files
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+        git add manifest.json dist/manifest.json
+        git commit -m "Update manifest files for commit $COMMIT_HASH"
+        git push
+
     - name: Extract changelog from commits
       id: changelog
       run: |

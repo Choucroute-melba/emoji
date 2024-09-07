@@ -21,6 +21,10 @@ let simplifiedVersion = version;
 if(version.includes("_")) {
     devVersion = true;
     simplifiedVersion = version.slice(0, version.indexOf('_'))
+    // change the version number to avoid conflicts :
+    let v = simplifiedVersion.split('.');
+    v[2] = parseInt(v[2]) + 1;
+    simplifiedVersion = v.join('.');
 }
 
 try {
@@ -28,12 +32,10 @@ try {
     const manifestPath = path.join(__dirname, 'manifest.json');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-    manifest.version = version;
+    manifest.version = simplifiedVersion;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     console.log("Version updated in manifest")
 
-    // Modify the manifest content
-    manifest.version = simplifiedVersion
     if(!devVersion) {
         manifest.name = "Emoji";
         manifest.icons = {
@@ -43,10 +45,6 @@ try {
         };
     }
     else {
-        // in case of dev version, change the version number to avoid conflicts :
-        let v = simplifiedVersion.split('.');
-        v[2] = parseInt(v[2]) + 1;
-        manifest.version = v.join('.');
         console.log("Dev version: ", manifest.version);
         manifest.name = 'Emoji Dev - ' + version;
         manifest.icons = {
