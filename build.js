@@ -43,6 +43,11 @@ try {
         };
     }
     else {
+        // in case of dev version, change the version number to avoid conflicts :
+        let v = simplifiedVersion.split('.');
+        v[2] = parseInt(v[2]) + 1;
+        manifest.version = v.join('.');
+        console.log("Dev version: ", manifest.version);
         manifest.name = 'Emoji Dev - ' + version;
         manifest.icons = {
             "48": "assets/ninja.png",
