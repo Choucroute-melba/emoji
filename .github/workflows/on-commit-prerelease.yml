@@ -54,7 +54,12 @@ jobs:
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
         git add -f manifest.json dist/manifest.json
         git commit -m "Update manifest files for commit $COMMIT_HASH"
-        git push
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: ${{ github.ref }}
 
     - name: Extract changelog from commits
       id: changelog
