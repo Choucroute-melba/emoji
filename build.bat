@@ -14,8 +14,8 @@ npx webpack --config webpack.production.config.js && (
 
     REM git
     git add *
-    git commit -m "build v-%1"
-    git tag v-%1
+    git commit -m "build v-%2"
+    git tag v-%2
     git push
     git push --tags
 )
