@@ -26,7 +26,7 @@ jobs:
         WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
         WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
       run: |
-        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed)
+        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
         SIGNED_FILE=$(echo $SIGN_OUTPUT | grep -oP 'build/.*\.xpi')
         echo "::set-output name=signed_file::$SIGNED_FILE"
 
