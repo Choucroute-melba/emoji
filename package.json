@@ -1,6 +1,6 @@
 {
   "name": "Emoji2",
-  "version": null,
+  "version": "2.1.4",
   "description": "",
   "main": "dist/index.js",
   "scripts": {
