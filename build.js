@@ -18,7 +18,7 @@ console.log(`Version: ${version}`);
 
 let devVersion = false;
 let simplifiedVersion = version;
-if(version.includes("_")) {
+if(version && version.includes("_")) {
     devVersion = true;
     simplifiedVersion = version.slice(0, version.indexOf('_'))
     // change the version number to avoid conflicts :
@@ -32,7 +32,8 @@ try {
     const manifestPath = path.join(__dirname, 'manifest.json');
     const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 
-    manifest.version = simplifiedVersion;
+    if(version)
+        manifest.version = simplifiedVersion;
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
     console.log("Version updated in manifest")
 
