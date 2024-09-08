@@ -11,4 +11,11 @@ npx webpack --config webpack.production.config.js && (
 
     REM Create a zip file named witch-src.zip with every source files except the node_modules folder
     tar -a -c -f build\emoji-src.zip --exclude=node_modules --exclude=build --exclude=.idea --exclude=dist *
+
+    REM git
+    git add *
+    git commit -m "build v-%1"
+    git tag v-%1
+    git push
+    git push --tags
 )
