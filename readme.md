@@ -35,7 +35,44 @@ graph TD
     E --> J[End]
 ```
 # Developer's corner
-## ``Handler`` classes
+## building extension
+the ./build.bat script allows you to build the extension in a zip file, and zip the sources. If you provide
+a version number as the -v argument, it will create commit and a tag and then push to remote.
+
+## API description
+### `EmojiSelector` class
+This class is an interface to the selector's UI. It is used to interact with the user and display the emoji list.
+#### Properties
+- `onEmojiSelected: (emoji: Emoji) => void` : a callback that will be called when an emoji is selected
+- `searchResults: Emoji[]` : the list of emojis that are currently displayed
+- `disply: boolean` : whether the selector should be shown or not
+- `position: {position: { x: number; y: number; }, positioning: "up" | "down"}` : the position of the selector, and 
+whether it should be displayed above or below the target element
+- `debugText: string` : a text that will be displayed in the selector for debugging purposes
+#### Methods
+- `focusUp()` : move the focus up in the emoji list
+- `focusDown()` : move the focus down in the emoji list
+- `getFocusedEmoji(): Emoji` : return the emoji that is currently focused
+- `setFocusedEmoji(index: number)` : change the focused emoji in the list
+
+### Utilities
+package : `./src/selector/selctor-utils.ts`
+
+this package contains utility functions that you can use in your handlers.
+- `function getRelativeVerticalPositioning(y: number) :"up" | "down";` : return whether the selector should be displayed
+above or below the target element, based on the vertical position of the target element
+- `function getRelativeVerticalPositioning(element: Element) :"up" | "down";` : same but calculate it directly from the
+element
+- `function calculateXYFromElt(elt: Element, positioning: "up" | "down" | "auto" = "auto"): {x: number, y: number}` :
+ return the absolute position of the selector based on the target element and the positioning parameter
+- `function getAbsoluteCaretPosition(element: HTMLTextAreaElement) : {x: number, y: number, lineH: number}` : 
+return the absolute position of the caret in the given textarea
+- `function getPositionFromElement(elt: HTMLInputElement | HTMLTextAreaElement)` -> you should use this
+- `function getPositionFromTextareaCaret(elt: HTMLTextAreaElement)` -> same but for textareas.
+return type : `{position: { x: number; y: number; }, positioning: "up" | "down"}`
+
+
+### `Handler` classes
 Handlers are classes handling all the logic between the selector's UI, the website to act on and the user's actions.
 
 Two base handlers are already available and provide base logic that is valid for every use cases. If you want to add 
@@ -146,17 +183,13 @@ class MyHandler extends HTMLEditableHandler<TypeOfTarget> {
     onSearchUpdated() {}
     onSearchDissmissed(reason: string) {}
     
-    /** mandatory. Here you need to clean up every references and listeners to enable garbage collection */
+    /** mandatory to implement : **/
+    /** Here you need to clean up every references and listeners to enable garbage collection */
     onDestroy() {}
+    /** Return the position of the selector that you want */
+    getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"}  {}
     
 }
-
-
-
-
-
-
-
 
 ```
 

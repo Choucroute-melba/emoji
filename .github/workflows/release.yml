@@ -46,4 +46,4 @@ jobs:
         RELEASE_NAME="Release $TAG_NAME"
         CHANGELOG="${{ steps.changelog.outputs.changelog }}"
         SIGNED_FILE="${{ steps.sign_extension.outputs.signed_file }}"
-        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" build/emoji.zip build/emoji-src.zip "$SIGNED_FILE"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" "$SIGNED_FILE"

@@ -1,5 +1,6 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
 import EmojiSelector from "../../selector/emojiselector";
+import {getPositionFromTextareaCaret} from "../../selector/selector-utils";
 
 
 export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
@@ -19,5 +20,10 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
 
     constructor(es: EmojiSelector, target: HTMLTextAreaElement) {
         super(es, target);
+    }
+
+    getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"} {
+        const pos = getPositionFromTextareaCaret(this.target);
+        return pos;
     }
 }

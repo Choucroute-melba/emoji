@@ -78,20 +78,26 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown)
-        this.target.addEventListener('focusout', this.boundFocusLost)
+        //this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.active = true
         this.log("new handler", this.instanceId.toString())
     }
 
+    abstract getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"};
+
     selectEmoji(): void;
     selectEmoji(emoji: Emoji): void;
 
     selectEmoji(emoji?: Emoji) {
-        if(emoji)
-            this.onEmojiSelected(emoji)
-        else
-            this.onEmojiSelected(this.es.getFocusedEmoji())
+        if(!this.active) return
+        if(!emoji)
+            emoji = this.es.getFocusedEmoji()
+        if(!emoji) {
+            this.dismissSearch("NO_EMOJI_SELECTION")
+            return
+        }
+        this.onEmojiSelected(emoji)
     }
 
     dismissSearch(trigger: string) {
@@ -132,8 +138,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
         else if(!this.search.match(/^[a-zA-Z0-9_]*$/)) {
             this.dismissSearch("INVALID_SEARCH")
         }// if the search contains characters others tha letters, numbers and underscores
-        else
+        else {
             this.es.searchResults = this.searchResults
+            this.es.setFocusedEmoji(0)
+        }
     }
 
     /** Override if you want to change the behavior when the search is dismissed */

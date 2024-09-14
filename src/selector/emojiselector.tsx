@@ -2,8 +2,7 @@ import React from 'react';
 import './Components/Selector.css';
 import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
-import {Emoji, searchEmoji} from "../emoji/emoji";
-import {calculateXYFromElt, getRelativeVerticalPositioning} from "./selector";
+import {Emoji} from "../emoji/emoji";
 
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
@@ -54,13 +53,9 @@ export default class EmojiSelector {
     getFocusedEmoji() {
         return this._searchResults[this._focusedEmojiIndex];
     }
-
-    /**
-     * Calculate and update the selector's position using given text input
-     */
-    setPositionFromElement(elt: HTMLInputElement | HTMLTextAreaElement) {
-        this._positioning = getRelativeVerticalPositioning(elt);
-        this._position = calculateXYFromElt(elt, this._positioning);
+    setFocusedEmoji(index: number) {
+        if(index < 0 || index >= this._searchResults.length) return;
+        this._focusedEmojiIndex = index;
         this.reactRoot.render(this.component());
     }
 
@@ -84,10 +79,15 @@ export default class EmojiSelector {
     get display() {return this._display;}
 
     /** set the absolute position of the selector on the page */
-    set position(value: {x: number, y: number}) {
-        this._position = value;
+    set position(value: {position: { x: number; y: number; }, positioning: "up" | "down"}) {
+        this._position = value.position;
+        this._positioning = value.positioning;
         this.reactRoot.render(this.component());
     }
+    get position() {return {
+        position: this._position,
+        positioning: this._positioning
+    };}
 
     /** set a text that will be shown in the selector for debugging purposes */
     set debugText(value: string) {

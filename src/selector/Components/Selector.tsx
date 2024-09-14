@@ -71,7 +71,7 @@ export default function Selector({position,
 
     return (
         <div ref={selectorRef} className={"popup"} style={getStyle()} >
-            {/*<p className={"searchText"}>{debugText}</p>*/}
+            {<p className={"searchText"}>{debugText}</p>}
             <div className={"emoji-list"}>
                 {emojiList}
             </div>

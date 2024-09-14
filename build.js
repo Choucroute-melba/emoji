@@ -38,7 +38,7 @@ try {
     console.log("Version updated in manifest")
 
     if(!devVersion) {
-        manifest.name = "Emoji";
+        manifest.name = "Emojeezer";
         manifest.icons = {
             "48": "assets/icon@48px.png",
             "72": "assets/icon@72px.png",

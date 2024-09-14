@@ -33,8 +33,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.target.addEventListener('selectionchange', this.handleSelectionChange.bind(this))
         this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener)
 
-        this.es.setPositionFromElement(this.target)
-        this.es.debugText = `${this.search} - s: ${this.searchPosition.begin} e: ${this.searchPosition.end} c: ${this.searchPosition.caret}`
+        this.es.position = this.getSelectorPosition()
+        this.es.debugText = `${this.es.position.positioning}`
         this.es.display = true
         this.active = true
     }
@@ -46,9 +46,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.destroy()
     }
 
-    handleSelectionChange(e: Event) {
+    protected handleSelectionChange(e: Event) {
         if(!this.active) return
-        this.log(null, "HTLMInputHandler.handleSelectionChange  " + this.target.value)
         if(this.target.selectionStart == this.target.selectionEnd) {
             this.searchPosition.caret = this.target.selectionStart!
             this.searchPosition.end = this.target.selectionEnd!
@@ -57,16 +56,21 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             this.searchPosition.end = this.target.selectionEnd!
             this.target.selectionDirection == "forward" ? this.searchPosition.caret = this.target.selectionEnd! : this.searchPosition.caret = this.target.selectionStart!
         }
-        this.es.debugText = `${this.search} - s: ${this.searchPosition.begin} e: ${this.searchPosition.end} c: ${this.searchPosition.caret}`
+        if(this.target.selectionStart == this.searchPosition.begin) {
+            this.dismissSearch("SEARCH_EMPTIED")
+            return;
+        }
         this.search = this.target.value.slice(this.searchPosition.begin+1 , this.searchPosition.end)
+        if(!this.active) return
+        this.log(null, "HTLMInputHandler.handleSelectionChange  " + this.search)
+        this.es.debugText = `${this.es.position.positioning}`
     }
-
     private handleKeydown(e: KeyboardEvent): void {
         if(!this.active) return
         if(e.key == "Enter") {
             e.stopPropagation()
             e.preventDefault()
-            this.onEmojiSelected(this.es.getFocusedEmoji())
+            this.selectEmoji(this.es.getFocusedEmoji())
         }
     }
 
