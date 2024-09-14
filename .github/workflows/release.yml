@@ -46,4 +46,7 @@ jobs:
         RELEASE_NAME="Release $TAG_NAME"
         CHANGELOG="${{ steps.changelog.outputs.changelog }}"
         SIGNED_FILE="${{ steps.sign_extension.outputs.signed_file }}"
+        echo "Creating release $RELEASE_NAME for tag $TAG_NAME"
+        echo "Changelog: $CHANGELOG"
+        echo "Signed file: $SIGNED_FILE"
         gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" "$SIGNED_FILE"
