@@ -45,7 +45,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private _search = ""
     protected searchResults: Emoji[] = []
     private _active = false
-    private readonly boundHandleKeyddown: (e: KeyboardEvent) => void;
+    private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
     private readonly boundFocusLost: (e: FocusEvent) => void;
 
     onExit: (() => void) = () => {}
@@ -75,9 +75,9 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.es = es
         this.target = target
         this.es.onEmojiSelected = this.onEmojiSelected
-        this.boundHandleKeyddown = this.handleKeyDown.bind(this)
+        this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
-        document.addEventListener('keydown', this.boundHandleKeyddown)
+        document.addEventListener('keydown', this.boundHandleDocumentKeydown)
         this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.active = true
@@ -150,13 +150,13 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     /** this listener listens only to events that happen at the document level */
-    private handleKeyDown(e: KeyboardEvent) {
+    protected handleDocumentKeyDown(e: KeyboardEvent) {
         this.log(null, "Handler.handleKeyDown : " + e.code)
         if(this.active)
             switch (e.code) {
                 case "Enter":
-                    e.preventDefault()
                     e.stopPropagation()
+                    e.preventDefault()
                     this.selectEmoji(this.es.getFocusedEmoji())
                     break;
                 case "Escape":
@@ -185,7 +185,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.log(null, "destroying...")
         this.active = false
         this.onDestroy()
-        document.removeEventListener('keydown', this.boundHandleKeyddown)
+        document.removeEventListener('keydown', this.boundHandleDocumentKeydown)
         this.target.removeEventListener('focusout', this.boundFocusLost)
         this.es.display = false
         this.es.onEmojiSelected = () => {}

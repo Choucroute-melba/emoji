@@ -8,12 +8,12 @@
 <form>
     <label>
         Name:
-        <input type="text" name="name" />
+        <input id="eventInputTest" type="text" name="name" />
     </label>
     <label>Email:
         <input type="email" name="email"/></label>
     <label>Message :
-        <textarea name="message" rows="5" cols="30">Write your message here</textarea>
+        <textarea id="eventTATest" name="message" rows="5" cols="30">Write your message here</textarea>
     </label>
     <div style="height: 900px"></div>
     <label>Second Message :
@@ -32,6 +32,24 @@
         input.type = "text"
         document.getElementsByTagName("form")[0].appendChild(input)
     }, 5000)
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            console.log("%cDocument <- Enter", "color: green")
+        }
+    })
+    const testInput = document.getElementById("eventInputTest")
+    testInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            console.log("%cInput <- Enter", "color: green")
+        }
+    })
+    const testTA = document.getElementById("eventTATest")
+    testTA.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            console.log("%cTA <- Enter", "color: green")
+        }
+    })
 </script>
 </body>
 </html>

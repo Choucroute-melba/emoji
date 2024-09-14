@@ -18,6 +18,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         caret: number
     }
 
+    private readonly boundHandleKeydown: (e: KeyboardEvent) => void
+
     protected constructor(es: EmojiSelector, target: EditableType) {
         super(es, target);
         this.searchPosition = {
@@ -26,7 +28,10 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             caret: this.target.selectionEnd!
         }
 
+        this.boundHandleKeydown = this.handleKeydown.bind(this)
+
         this.target.addEventListener('selectionchange', this.handleSelectionChange.bind(this))
+        this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener)
 
         this.es.setPositionFromElement(this.target)
         this.es.debugText = `${this.search} - s: ${this.searchPosition.begin} e: ${this.searchPosition.end} c: ${this.searchPosition.caret}`
@@ -56,8 +61,18 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.search = this.target.value.slice(this.searchPosition.begin+1 , this.searchPosition.end)
     }
 
+    private handleKeydown(e: KeyboardEvent): void {
+        if(!this.active) return
+        if(e.key == "Enter") {
+            e.stopPropagation()
+            e.preventDefault()
+            this.onEmojiSelected(this.es.getFocusedEmoji())
+        }
+    }
+
     onDestroy() {
         this.target.removeEventListener('selectionchange', this.handleSelectionChange.bind(this))
+        this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener)
         this.log(null, "onDestroy")
     }
 }
