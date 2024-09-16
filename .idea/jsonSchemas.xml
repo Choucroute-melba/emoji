@@ -8,11 +8,27 @@
             <SchemaInfo>
               <option name="generatedName" value="New Schema" />
               <option name="name" value="handlers.schema" />
-              <option name="relativePathToSchema" value="handlers.schema.json" />
+              <option name="relativePathToSchema" value="dist/handlers.schema.json" />
               <option name="patterns">
                 <list>
                   <Item>
                     <option name="path" value="handlers.json" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
+        <entry key="handlers.schema 2">
+          <value>
+            <SchemaInfo>
+              <option name="generatedName" value="New Schema" />
+              <option name="name" value="handlers.schema 2" />
+              <option name="relativePathToSchema" value="dist/handlers.schema.json" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="dist/handlers.json" />
                   </Item>
                 </list>
               </option>

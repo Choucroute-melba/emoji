@@ -5,5 +5,19 @@
     "targets": ["div"],
     "uri": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/src/features/aria/handler.ts",
     "file": "src/features/aria/handler.ts"
+  },
+  {
+    "name": "TextArea",
+    "sites": ["*"],
+    "targets": ["textarea"],
+    "uri": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/src/features/textarea/handler.ts",
+    "file": "src/features/textarea/handler.ts"
+  },
+  {
+    "name": "HTMLInput",
+    "sites": ["*"],
+    "targets": ["input"],
+    "uri": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/src/features/input/handler.ts",
+    "file": "src/features/input/handler.ts"
   }
 ]
