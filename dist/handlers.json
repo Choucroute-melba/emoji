@@ -1,0 +1,9 @@
+[
+  {
+    "name": "AriaDiv",
+    "sites": ["*"],
+    "targets": ["div"],
+    "uri": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/src/features/aria/handler.ts",
+    "file": "src/features/aria/handler.ts"
+  }
+]

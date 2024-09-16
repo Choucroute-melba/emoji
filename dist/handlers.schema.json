@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/manifest.json",
+  "title": "Emoji",
+  "description": "The emojeezer extensions registry",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["name", "sites", "targets"],
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The name of the handler (as it is defined in the class)"
+      },
+      "sites": {
+        "type": "array",
+        "description": "The list of sites that require this handler",
+        "items": {
+          "type": "string",
+          "description": "The site where the handler is available"
+        }
+      },
+      "targets": {
+        "type": "array",
+        "description": "The list of the html elements that can be handled",
+        "items": {
+          "type": "string",
+          "description": "The name of the html element to be handled"
+        }
+      },
+      "uri": {
+        "type": "string",
+        "description": "The URI of the handler. Used as a fallback if the file is not found"
+      },
+      "file" : {
+        "type": "string",
+        "description": "The file where the handler is defined. Will be used before the URI"
+      }
+    }
+  }
+}
