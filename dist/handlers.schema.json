@@ -30,11 +30,11 @@
       },
       "uri": {
         "type": "string",
-        "description": "The URI of the handler. Used as a fallback if the file is not found"
+        "description": "The URI of the compiled js bundle of your handler. Used as a fallback if the file is not found"
       },
       "file" : {
         "type": "string",
-        "description": "The file where the handler is defined. Will be used before the URI"
+        "description": "The bundle js file. Will be used before the URI"
       }
     }
   }

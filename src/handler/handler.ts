@@ -50,27 +50,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
     onExit: (() => void) = () => {}
 
-    /** changing search value will automatically update search results.
-     * shortcodes are automatically detected by default, override onSearchUpdated to change this */
-    protected set search(value: string) {
-        this._search = value;
-        this.searchResults = searchEmoji(this._search);
-        this.onSearchUpdated()
-    }
-    protected get search() { return this._search }
-
-    /** the selector is active (receive events and manage user input) or idle (instance kept only for reactivation on the same target) */
-    protected set active(value: boolean) {
-        let valueChanged = this._active != value
-        this._active = value
-        if(valueChanged && this._active)
-            this.onEnabled()
-        else if(valueChanged && !this._active)
-            this.onDisabled()
-    }
-    protected get active() { return this._active }
-
-
     protected constructor(es: EmojiSelector, target: EltType) {
         this.es = es
         this.target = target
@@ -78,10 +57,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown)
-        //this.target.addEventListener('focusout', this.boundFocusLost)
+        this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.active = true
-        this.log("new handler", this.instanceId.toString())
+        this.log("new handler", "\t\t\t---")
     }
 
     abstract getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"};
@@ -131,13 +110,15 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     protected onSearchUpdated() {
+        this.log(null, `'${this.search}'`)
+        this.es.debugText = this.search
         if(this.search.endsWith(":")) {
             let sc = this.search.slice(0, -1)
             this.onShortcodeDetected(sc)
         }
         else if(!this.search.match(/^[a-zA-Z0-9_]*$/)) {
             this.dismissSearch("INVALID_SEARCH")
-        }// if the search contains characters others tha letters, numbers and underscores
+        }
         else {
             this.es.searchResults = this.searchResults
             this.es.setFocusedEmoji(0)
@@ -146,20 +127,54 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
     /** Override if you want to change the behavior when the search is dismissed */
     protected onSearchDismissed(trigger: string) {
-        this.log(`search dismissed  ${trigger}`)
+        this.trace(null, `search dismissed  ${trigger}`)
         this.destroy()
     }
 
-    protected log(message: any, title: string = "") {
-        console.group(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
-        if(message)
-            console.log(message)
+    protected log(message: any, title: string = "", collapsed = false) {
+        if(!collapsed) {
+            console.group(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
+            if (message)
+                console.log(message)
+        }
+        else {
+            console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
+            if (message)
+                console.log(message)
+        }
         console.groupEnd()
     }
 
+    protected trace(message: any, title: string = "", collapsed = true) {
+        if(!collapsed) {
+            console.group(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
+        }
+        else {
+            console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
+        }
+        if (message)
+            console.log(message)
+        console.trace()
+        console.groupEnd()
+    }
+
+    protected warn(message: any, title: string = "", collapsed = false) {
+        if(!collapsed) {
+            console.group(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #FFC300;')
+        }
+        else {
+            console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #FFC300;')
+        }
+        if (message)
+            console.warn(message)
+        console.trace()
+        console.groupEnd()
+    }
+
+
     /** this listener listens only to events that happen at the document level */
     protected handleDocumentKeyDown(e: KeyboardEvent) {
-        this.log(null, "Handler.handleKeyDown : " + e.code)
+        // this.log(null, "Handler.handleKeyDown : " + e.code)
         if(this.active)
             switch (e.code) {
                 case "Enter":
@@ -202,4 +217,26 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.onExit()
         this.onExit = () => {}
     }
+
+    /** Getters and setters */
+
+    /** changing search value will automatically update search results.
+     * shortcodes are automatically detected by default, override onSearchUpdated to change this */
+    protected set search(value: string) {
+        this._search = value;
+        this.searchResults = searchEmoji(this._search);
+        this.onSearchUpdated()
+    }
+    protected get search() { return this._search }
+
+    /** the selector is active (receive events and manage user input) or idle (instance kept only for reactivation on the same target) */
+    protected set active(value: boolean) {
+        let valueChanged = this._active != value
+        this._active = value
+        if(valueChanged && this._active)
+            this.onEnabled()
+        else if(valueChanged && !this._active)
+            this.onDisabled()
+    }
+    protected get active() { return this._active }
 }

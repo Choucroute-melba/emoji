@@ -22,50 +22,86 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     protected constructor(es: EmojiSelector, target: EditableType) {
         super(es, target);
-        this.searchPosition = {
-            begin: this.target.selectionStart!,
-            end: this.target.selectionEnd!,
-            caret: this.target.selectionEnd!
-        }
 
         this.boundHandleKeydown = this.handleKeydown.bind(this)
 
         this.target.addEventListener('selectionchange', this.handleSelectionChange.bind(this))
-        this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener)
+        this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
 
         this.es.position = this.getSelectorPosition()
-        this.es.debugText = `${this.es.position.positioning}`
         this.es.display = true
+        this.searchPosition = this.getSearchPosition()
+        this.log(this.searchPosition, this.search)
         this.active = true
     }
 
-    onEmojiSelected(emoji: Emoji): void {
+    protected onEmojiSelected(emoji: Emoji): void {
         this.log(emoji)
         this.active = false
-        this.target.value = this.target.value.slice(0, this.searchPosition.begin) + emoji.unicode + this.target.value.slice(this.searchPosition.end)
+        this.insertEmoji(emoji)
         this.destroy()
+    }
+
+    protected insertEmoji(emoji: Emoji) {
+        this.target.value = this.target.value.slice(0, this.searchPosition.begin) + emoji.unicode + this.target.value.slice(this.searchPosition.end)
+        this.target.setSelectionRange(this.searchPosition.begin + emoji.unicode.length, this.searchPosition.begin + emoji.unicode.length)
     }
 
     protected handleSelectionChange(e: Event) {
         if(!this.active) return
-        if(this.target.selectionStart == this.target.selectionEnd) {
-            this.searchPosition.caret = this.target.selectionStart!
-            this.searchPosition.end = this.target.selectionEnd!
-        }
-        else {
-            this.searchPosition.end = this.target.selectionEnd!
-            this.target.selectionDirection == "forward" ? this.searchPosition.caret = this.target.selectionEnd! : this.searchPosition.caret = this.target.selectionStart!
-        }
-        if(this.target.selectionStart == this.searchPosition.begin) {
+        const newSearchPosition = this.getSearchPosition()
+        if(this.searchPosition.begin >= newSearchPosition.caret) {
             this.dismissSearch("SEARCH_EMPTIED")
             return;
         }
-        this.search = this.target.value.slice(this.searchPosition.begin+1 , this.searchPosition.end)
+        this.searchPosition = newSearchPosition
+        const newSearchValue = this.getSearchValue()
         if(!this.active) return
-        this.log(null, "HTLMInputHandler.handleSelectionChange  " + this.search)
-        this.es.debugText = `${this.es.position.positioning}`
+        this.search = newSearchValue
     }
-    private handleKeydown(e: KeyboardEvent): void {
+
+    protected getSelectionPosition(): {start: number, end: number, direction: string} {
+        const newPos =  {
+            start: this.target.selectionStart!,
+            end: this.target.selectionEnd!,
+            direction: this.target.selectionDirection!
+        }
+        this.log(null, `Selection : ${newPos.start} -> ${newPos.end} : ${newPos.direction}`)
+        return newPos
+    }
+
+    protected getSearchPosition(): {begin: number, end: number, caret: number} {
+        const newSelection = this.getSelectionPosition()
+        let newSearchPosition = this.searchPosition
+        if(!newSearchPosition) {
+            newSearchPosition = {
+                begin: newSelection.start,
+                end: newSelection.end,
+                caret: newSelection.start
+            }
+        }
+        else if(newSelection.start == newSelection.end) {
+            newSearchPosition.caret = newSelection.start
+            newSearchPosition.end = newSelection.end
+        }
+        else {
+            newSearchPosition.end = newSelection.end
+            newSelection.direction == "forward" ? newSearchPosition.caret = newSelection.end! : newSearchPosition.caret = newSelection.start!
+        }
+
+        this.log(null, `searchPosition : ${newSearchPosition.begin} -> ${newSearchPosition.end} : ${newSearchPosition.caret}`)
+        return newSearchPosition
+    }
+
+    protected getFieldValue(): string {
+        return this.target.value
+    }
+
+    protected getSearchValue(): string {
+        return this.getFieldValue().slice(this.searchPosition.begin+1 , this.searchPosition.end)
+    }
+
+    protected handleKeydown(e: KeyboardEvent): void {
         if(!this.active) return
         if(e.key == "Enter") {
             e.stopPropagation()

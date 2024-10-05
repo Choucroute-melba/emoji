@@ -1,17 +1,19 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
 import EmojiSelector from "../../selector/emojiselector";
 import {getPositionFromTextareaCaret} from "../../selector/selector-utils";
+import {Emoji} from "../../emoji/emoji";
 
 
 export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
     static sites = []
-    static targets = ["textarea"]
+    static targets = ["textarea", "div"]
     static HandlerName = "TextArea"
 
     readonly HandlerName: string = TextAreaHandler.HandlerName;
 
     static canHandleTarget(target: HTMLTextAreaElement): boolean {
-        return target.tagName.toLowerCase() == "textarea"
+        if(target.tagName.toLowerCase() == "textarea") return true
+        return false
     }
     canHandleTarget = TextAreaHandler.canHandleTarget
 

@@ -41,12 +41,12 @@ export function getAbsoluteCaretPosition(element: HTMLTextAreaElement) : {x: num
     const result =  getCursorXY(element);
 
     const marker = document.createElement('span');
-    marker.style.backgroundColor = "green";
+/*    marker.style.backgroundColor = "green";
     marker.style.position = "absolute";
     marker.style.width = "1px";
     marker.style.height = result.lineH + "px";
     marker.style.left = (result.x + rect.left + window.scrollX - element.scrollLeft) + "px";
-    marker.style.top = (result.y + rect.top + window.scrollY - element.scrollTop) + "px";
+    marker.style.top = (result.y + rect.top + window.scrollY - element.scrollTop) + "px";*/
     document.body.appendChild(marker);
 
     return {
@@ -70,14 +70,14 @@ export function getPositionFromElement(elt: HTMLInputElement | HTMLTextAreaEleme
 
 export function getPositionFromTextareaCaret(elt: HTMLTextAreaElement) {
     const position = getAbsoluteCaretPosition(elt);
-    const marker = document.createElement('span');
+/*    const marker = document.createElement('span');
     marker.style.backgroundColor = "red";
     marker.style.position = "absolute";
     marker.style.width = "1px";
     marker.style.height = position.lineH.toString() + "px";
     marker.style.left = position.x + "px";
     marker.style.top = position.y + "px";
-    document.body.appendChild(marker);
+    document.body.appendChild(marker);*/
     const positioning = getRelativeVerticalPositioning(position.y - window.scrollY);
     if(positioning == "up") {
         return {
@@ -96,16 +96,19 @@ export function getPositionFromTextareaCaret(elt: HTMLTextAreaElement) {
 /**
  * returns x, y coordinates for relative positioning of a span within a given textarea
  * at a given selection point
- * @param {object} input - the input element to obtain coordinates for
+ * @param {object} element - the input element to obtain coordinates for
  * // @ {number} selectionPoint - the selection point for the input
  */
-const getCursorXY = (input: HTMLTextAreaElement) => {
-    const selectionPoint = input.selectionStart
+const getCursorXY = (element: HTMLTextAreaElement) => {
+    const selectionPoint = element.selectionStart
     // create a dummy element that will be a clone of our input
+    if(document.body.querySelector("#mirrorForCaret"))
+        document.body.removeChild(document.body.querySelector("#mirrorForCaret") as HTMLElement)
+
     const div = document.createElement('div')
     div.id = "mirrorForCaret"
     // get the computed style of the input and clone it onto the dummy element
-    const copyStyle = getComputedStyle(input)
+    const copyStyle = getComputedStyle(element)
 
     // @ts-ignore
     for (const prop of copyStyle) {
@@ -113,25 +116,32 @@ const getCursorXY = (input: HTMLTextAreaElement) => {
     }
     // we need a character that will replace whitespace when filling our dummy element if it's a single line <input/>
     const swap = '.'
-    const inputValue = input.tagName === 'INPUT' ? input.value.replace(/ /g, swap) : input.value
+    const inputValue = element.tagName === 'INPUT' ? element.value.replace(/ /g, swap) : element.value
     // set the div content to that of the textarea up until selection
     // set the text content of the dummy element div
-    div.textContent = inputValue.substr(0, selectionPoint)
-    if (input.tagName === 'TEXTAREA') div.style.height = 'auto'
+    const beforeSpan = inputValue.slice(0, selectionPoint)
+    const afterSpan = inputValue.slice(selectionPoint + 1)
+    if (element.tagName === 'TEXTAREA') div.style.height = 'auto'
     // if a single line input then the div needs to be single line and not break out like a text area
-    if (input.tagName === 'INPUT') div.style.width = 'auto'
+    if (element.tagName === 'INPUT') div.style.width = 'auto'
     // create a marker element to obtain caret position
     const span = document.createElement('span')
+    span.id = 'caret'
     // give the span the textContent of remaining content so that the recreated dummy element is as close as possible
-    span.textContent = inputValue.substr(selectionPoint) || '.'
+    span.textContent = inputValue.slice(selectionPoint, selectionPoint + 1) || '.'
+    span.style.border = "1px solid blue"
     // append the span marker to the div
-    div.appendChild(span)
+    div.innerHTML = beforeSpan + span.outerHTML + afterSpan
     div.style.position = 'absolute'
-    div.style.top = (window.innerHeight + window.scrollY) + "px"
+    const rect = element.getBoundingClientRect()
+    div.style.top = (rect.top + window.scrollY) + "px"
+    div.style.left = (rect.left + window.scrollX) + "px"
     // append the dummy element to the body
     document.body.appendChild(div)
     // get the marker position, this is the caret position top and left relative to the input
-    const { offsetLeft: spanX, offsetTop: spanY, scrollHeight: lineH } = span
+    const span2 = div.querySelector('#caret')
+    if(!span2) return {x: 0, y: 0, lineH: 0}
+    const { offsetLeft: spanX, offsetTop: spanY, scrollHeight: lineH } = span2 as HTMLElement
     // lastly, remove that dummy element
     // NOTE:: can comment this out for debugging purposes if you want to see where that span is rendered
     document.body.removeChild(div)

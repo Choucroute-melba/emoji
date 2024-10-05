@@ -78,120 +78,66 @@ Handlers are classes handling all the logic between the selector's UI, the websi
 Two base handlers are already available and provide base logic that is valid for every use cases. If you want to add 
 support for a specific website or an input method that is not handled by default, you will need to write a handler 
 based on one of those two base Handlers. Depending on your use case, you will extend either `Handler` or `EditableHandler`
-
-- `Handler` is the minimal base class that have a few predefined logic, only to ensure the behaviour of the extension 
+#### `Handler` base class
+`Handler` is the minimal base class that have a few predefined logic, only to ensure the behaviour of the extension 
 is respected. Here is what you can use to fulfill your needs :
+##### `Handler` properties
+- `es: EmojiSelector` : the selector's UI
+- `target: EltType` : The targeted element. EltType changes with the different types of handlers
+- `instanceId: number = Date.now()` used for logging purposes
+- `search: string` Changing the value of this attribute will update de search results displayed to user
+- `active: bool` Whether the selector is active or not. Exact behaviour may depend on the type of handler, but a disabled
+  handler must hide the selector and not interfere with the user's input, only stay with memory of what was there before.
+  the handler is always disabled before destroyed
+- `searchResults: Emoji[]`
 
-```typescript
+##### `Handler` methods
+- `selectEmoji(emoji?: Emoji)` Call this to insert the given or currently focused emoji. will trigger `onEmojiSelected`
+- `dismissSearch(trigger: string)` Dismiss the searching (by default, destroy the selector and handler). Will trigger `onSearchDismissed`
+- `destroy()` Destroy the handler and the selector. Will trigger `onDestroy`
 
-/** 
- * Here are the public or protected fields and methods from base class that you can use for your specific case : 
- */
-class Handler<TypeOfTarget> {
+##### `Handler` callbacks, events and methods to overload (do not call them directly)
+- `getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"};` *(mandatory)* :
+return the absolute positioning of the selector
+- `onEmojiSelected(emoji: Emoji): void` *(mandatory)* : actions to do when an emoji is selected by the user
+- `onDestroy(): void` *(mandatory)* : actions to do (clean up every listener, refs and close selector to allow garbage collection of the handler)
+- `onDisabled(): void`
+- `onEnabled(): void`
+- `onShortcodeDetected(sc: string)` : Default : call `selectEmoji(em)` with the emoji corresponding to the shortcode
+- `onSearchUpdated()` : Default : look for shortcodes or invalid search patterns and display the results
+- `onSearchDismissed(trigger: string)` : `trigger` is the reason why the search has been dismissed. Default: destroy the handler
+- `onFocusLost()` : Default : `this.dismissSearch("FOCUS_LOST")`
 
-    /** These are useful properties and objects accessible from MyHandler that you can use */
-    // The EmojiSelector object can be used to act on the selector's interface
-    protected es: EmojiSelector
-    // This is the targeted element, the one in wich the emoji should be injected
-    // and the one from where most of the events come from
-    protected target: TypeOfTarget
-    protected searchResults: Emoji[]
-    // changing this vcalue will automatically update search results
-    protected search: string
-    // active = listeners on, react to inputs and with interface displayed (in most of the cases)
-    // inactive = waiting to be reactivated or destroyed. keep the instance alive.
-    protected active: boolean
-    
-    
-    /**
-     *  methods 
-     */
-    
-    /** select the currently focused emoji */
-    protected selectEmoji() {}
-    /** select the given emoji */
-    protected selectEmoji(emoji: Emoji) {}
-    protected dismissSearch(reason: string) {}
+#### `EditableHandler` base class (extends `Handler`)
+In addition to the base `Handler` class API, you will find here additional logic to make the selector work on editable fields
+(what you will do 99% of the time)
 
-    /**
-     * do pretty logs, useful for debugging.
-     * @param message - displayed with formatting and all
-     * @param title - dispalyed as the title of the console group
-     * @protected
-     */
-    protected log(message: any, title: string = "") {}
-    
-    /**
-     * will destroy the instance. Every listeners and references should be freed
-     * so that garbage collector can do his job.
-     * fire the onDestroy callback
-     */
-    destroy() {}
-    
-}
+The `EditableHandler` includes a search positioning which indicates the position of the user's search, a default behavior for 
+`onEmojiSelected` and many additional methods that provides the basics of handling emoji inputs in text fields.
 
-/**
- * This base handler provide logic for handling editable fields.
- * it contains these additional properties and methods :
- */
-abstract class HTMLEditableHandler<TypeOfTarget> extends Handler<TypeOfTarget> {
+You can find three implementations of this handler : `HTMLInputHandler`, `TextAreaHandler` and, more complex, `AriaDivHandler`.
+##### `EditableHandler` properties
+-  `searchPosition: {
+   begin: number,
+   end: number,
+   caret: number
+   }` The search position inside the text field (correspond to the indexes in the string returned by `getFieldValue`)
 
-    /**
-     * Here are the public or protected fields and methods from base class that you can use for your specific case :
-     */
-    protected searchPosition: {
-        begin: number,
-        end: number,
-        caret: number
-    }
-
-    /**
-     *  methods
-     */
-
-    /**
-     *  callbacks
-     */
-}
+##### `EditableHandler` methods
+- `insertEmoji(emoji: Emoji)` : insert the given emoji in the target.
+- `getSelectionPosition(): {start: number, end: number, direction: string}` return the caret (or selection range) position in the field.
+useful to override when you're not working on standard text fields
+- `getSearchPosition(): {begin: number, end: number, caret: number}` return the search position taking in account everything that may change the search position
+  (it uses by default the selection position, see implementation for more details)
+- `getFieldValue(): string` 
+- `getSearchValue(): string`
 
 
+- `handleSelectionChange(e: Event)` Called when something move in the field to do the necessary to update the search. *The implementation is just good the way it is, **if you want to change something override the more precise functions mentioned above***.
+However, it can be useful th change the way it is called in the constructor (for example change the event to listen to).
 
-class MyHandler extends HTMLEditableHandler<TypeOfTarget> {
-
-    /** these three fields are used to select the handler that will be best to use in a particular
-    context (website and type of target).
-    you need to declare them before anything else */
-    static sites: string[] = ["array of specific websites your extension support. Leave empty for all wabsites"]
-    static targets: string[] = ["array of tag names that your extension support. Leave empty for every elements"]
-    static HandlerName: string = "A pretty name for your handler"
-    
-    /** this function will be called for you to confirm that this handler can work with the target,
-     before giving you the lead. */
-    static canHandleTarget(target: TypeOfTarget): boolean {}
-
-    /**
-     * Here are the callbacks that you can implement.
-     * Most of them have a default behaviour that you can modify.
-     * Others are mandatory to implement
-     */
-    
-    onEnabled() {}
-    onDisabled() {}
-    
-    onEmojiSelected(emoji: Emoji) {} // mandatory
-    onShortcodeDetected(shortcode: string): Emoji | null {}
-    onSearchUpdated() {}
-    onSearchDissmissed(reason: string) {}
-    
-    /** mandatory to implement : **/
-    /** Here you need to clean up every references and listeners to enable garbage collection */
-    onDestroy() {}
-    /** Return the position of the selector that you want */
-    getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"}  {}
-    
-}
-
-```
+##### `EditableHanler` others callbacks, events and methods to overload (in addition to the ones from `Handler`)
+- `onDestroy` **is still mandatory to implement when extending `EditableHandler`**
 
 
-.
+*`v-2.2.0`*
