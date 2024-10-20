@@ -23,13 +23,13 @@ A firefox extension to quickly insert emoji into text fields, using the :emoji_n
 # Behaviour on any editable field
 ```mermaid
 graph TD
-    A[Start] -->|user types `:`| B[Show emoji list]
+    A[Start] -->|user types ':'| B[Show emoji list]
     B -->|continues typing| C[Update emoji list]
     B -->|press up or down| F[Update selected emoji]
     B -->|press enter| G[Insert selected emoji]
     B -->|type a non-letter| E[Close selector]
-    B -->|press `esc`| E[Close selector]
-    B -->|type a second `:`| D[Insert emoji from shortcode\n- if found -]
+    B -->|press 'esc'| E[Close selector]
+    B -->|type a second ':'| D[Insert emoji from shortcode]
     D --> E
     G --> E
     E --> J[End]
