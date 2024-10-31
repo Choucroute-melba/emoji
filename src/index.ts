@@ -65,7 +65,7 @@ function mainListener(this: any, e: KeyboardEvent) {
 }
 
 
-window.addEventListener('keydown', mainListener)
+window.addEventListener('keydown', mainListener, true)
 
 window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {
