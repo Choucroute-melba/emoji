@@ -1,3 +1,9 @@
+# Version 2.2.1
+*31/10/2024*
+
+- Fixed the bug when an emoji turn back to it's :code: version after being inserted
+- Better event detection
+
 # Version 2.2.0
 *05/10/2024*
 
