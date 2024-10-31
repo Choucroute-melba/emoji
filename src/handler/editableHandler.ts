@@ -45,6 +45,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     protected insertEmoji(emoji: Emoji) {
         this.target.value = this.target.value.slice(0, this.searchPosition.begin) + emoji.unicode + this.target.value.slice(this.searchPosition.end)
         this.target.setSelectionRange(this.searchPosition.begin + emoji.unicode.length, this.searchPosition.begin + emoji.unicode.length)
+        this.target.dispatchEvent(new Event('input', {bubbles: true}))
     }
 
     protected handleSelectionChange(e: Event) {
