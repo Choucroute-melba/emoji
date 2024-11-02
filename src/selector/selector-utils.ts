@@ -112,7 +112,7 @@ const getCursorXY = (element: HTMLTextAreaElement) => {
 
     // @ts-ignore
     for (const prop of copyStyle) {
-        div.style[prop] = copyStyle[prop]
+        div.style[prop as any] = copyStyle[prop as any]
     }
     // we need a character that will replace whitespace when filling our dummy element if it's a single line <input/>
     const swap = '.'

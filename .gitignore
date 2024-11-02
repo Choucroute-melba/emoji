@@ -12,6 +12,7 @@ yarn-error.log*
 
 /build
 /dist/*
+/dev
 !/dist/assets
 !/dist/test-site.html
 !/dist/build.js
