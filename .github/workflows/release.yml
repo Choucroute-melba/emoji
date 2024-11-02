@@ -34,7 +34,9 @@ jobs:
         WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
         WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
       run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
         SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --amo-metadata=dist/amo_metadata.json --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
+        npx web-ext sign --upload-source-code=dist/emoji-src-$TAG_NAME.zip --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
         echo "$SIGN_OUTPUT"
         SIGNED_FILE=$(echo $SIGN_OUTPUT | grep -oP 'build/.*\.xpi')
         echo "SIGNED_FILE=$SIGNED_FILE" >> $GITHUB_ENV
@@ -49,4 +51,4 @@ jobs:
         echo "Creating release $RELEASE_NAME for tag $TAG_NAME"
         echo "Changelog: $CHANGELOG"
         echo "Signed file: $SIGNED_FILE"
-        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes-file dist/changelog.txt "$SIGNED_FILE"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes-file dist/changelog.txt "$SIGNED_FILE" dist/web-ext-artifacts/emojeezer-$TAG_NAME.zip dist/emoji-src-$TAG_NAME.zip

@@ -83,7 +83,9 @@ export default class EmojeezerWebpackPlugin {
 
                 // creating amo metadata
                 const amoMetadata = {
-                    release_notes: changelog,
+                    version: {
+                        release_notes: changelog,
+                    }
                 }
                 fs.writeFileSync(path.join(distDir, 'amo_metadata.json'), JSON.stringify(amoMetadata, null, 2));
                 console.log("AMO metadata created");

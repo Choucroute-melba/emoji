@@ -41,7 +41,7 @@ export default {
             firefox: "C:\\Program Files\\Firefox Developer Edition\\firefox.exe",
             firefoxProfile: "C:\\Users\\Vivien\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kv2tckr8.dev-edition-default",
             buildPackage: true,
-            outputFilename: `emojeezer-${version}.zip`,
+            outputFilename: `emojeezer-v-${version}.zip`,
             overwriteDest: true
         }),
         new CopyPlugin({
