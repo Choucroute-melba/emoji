@@ -8,17 +8,12 @@ A firefox extension to quickly insert emoji into text fields, using the :emoji_n
 - nodejs and npm
 - windows
 
-## steps
+## testing the extension
 1. Clone the repository or unzip emoji-src.zip
 2. run `npm install`
-3. run `npm start` to start the development server
-4. Load as a temporary addon in firefox
-5. open `http://localhost:3000/test-site.html` to test the extension
-
-## build instructions
-1. run `npm run build`
-
-``./build/emoji.zip`` is the built extension and ``./build/emoji-src.zip`` is the source code
+3. in webpack.config.js, change the `firefox` and `firefoxProfile` properties of the WebExtPlugin to match your local installations
+4. run `npm start` to start the development server and the development instance of firefox
+5. You can open [http://localhost:8080](http://localhost:8080) to test the extension
 
 # Behaviour on any editable field
 ```mermaid

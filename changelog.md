@@ -1,3 +1,9 @@
+# Version 2.2.6
+*02/11/2024*
+
+- [dev] Changed the dev and build process to use web-ext
+- [dev] fixed the release workflow
+
 # Version 2.2.1
 *31/10/2024*
 
