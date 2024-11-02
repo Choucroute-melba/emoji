@@ -21,22 +21,21 @@ jobs:
     - name: Install web-ext
       run: npm install --save-dev web-ext
 
+    - name: Zip sources
+      run: tar -czf dist/emoji-src.zip --exclude=node_modules --exclude=build --exclude=.idea --exclude=dist --exclude=dev *
+
+    - name: Build extension
+      run: webpack --config webpack-release.config.js
+
     - name: Sign Extension
       env:
         WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
         WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
       run: |
-        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
+        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --amo-metadata=dist/amo_metadata.json --upload-source-code=dist/emoji-src.zip --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
+        echo "$SIGN_OUTPUT"
         SIGNED_FILE=$(echo $SIGN_OUTPUT | grep -oP 'build/.*\.xpi')
-        echo "::set-output name=signed_file::$SIGNED_FILE"
-
-    - name: Extract changelog for current version
-      id: changelog
-      run: |
-        TAG_NAME="${GITHUB_REF#refs/tags/}"
-        VERSION="${TAG_NAME#v}"
-        CHANGELOG=$(awk "/^# Version $VERSION/,/^# Version /{if (!/^# Version $VERSION/) print}" changelog.md | sed '$d')
-        echo "::set-output name=changelog::$CHANGELOG"
+        echo "SIGNED_FILE=$SIGNED_FILE" >> $GITHUB_ENV
 
     - name: Create GitHub Release
       env:
@@ -44,9 +43,7 @@ jobs:
       run: |
         TAG_NAME="${GITHUB_REF#refs/tags/}"
         RELEASE_NAME="Release $TAG_NAME"
-        CHANGELOG="${{ steps.changelog.outputs.changelog }}"
-        SIGNED_FILE="${{ steps.sign_extension.outputs.signed_file }}"
         echo "Creating release $RELEASE_NAME for tag $TAG_NAME"
         echo "Changelog: $CHANGELOG"
         echo "Signed file: $SIGNED_FILE"
-        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes "$CHANGELOG" "$SIGNED_FILE"
+        gh release create "$TAG_NAME" --title "$RELEASE_NAME" --notes-file dist/changelog.txt "$SIGNED_FILE"
