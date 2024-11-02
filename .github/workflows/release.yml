@@ -22,7 +22,9 @@ jobs:
       run: npm install --save-dev web-ext
 
     - name: Zip sources
-      run: tar -czf dist/emoji-src.zip --exclude=node_modules --exclude=build --exclude=.idea --exclude=dist --exclude=dev *
+      run: |
+        TAG_NAME="${GITHUB_REF#refs/tags/}"
+        tar -czf dist/emoji-src-$TAG_NAME.zip --exclude=node_modules --exclude=build --exclude=.idea --exclude=dist --exclude=dev *
 
     - name: Build extension
       run: webpack --config webpack-release.config.js
