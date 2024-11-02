@@ -35,8 +35,7 @@ jobs:
         WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
       run: |
         TAG_NAME="${GITHUB_REF#refs/tags/}"
-        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --amo-metadata=dist/amo_metadata.json --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
-        npx web-ext sign --upload-source-code=dist/emoji-src-$TAG_NAME.zip --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET
+        SIGN_OUTPUT=$(npx web-ext sign --source-dir=dist --artifacts-dir=build --amo-metadata=dist/amo_metadata.json --upload-source-code=dist/emoji-src-$TAG_NAME.zip --api-key=$WEB_EXT_API_KEY --api-secret=$WEB_EXT_API_SECRET --channel=listed --timeout=172800000)
         echo "$SIGN_OUTPUT"
         SIGNED_FILE=$(echo $SIGN_OUTPUT | grep -oP 'build/.*\.xpi')
         echo "SIGNED_FILE=$SIGNED_FILE" >> $GITHUB_ENV
