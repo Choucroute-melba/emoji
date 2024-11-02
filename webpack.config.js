@@ -43,6 +43,7 @@ export default {
         new CopyPlugin({
             patterns: [
                 {from: 'assets', to: 'assets'},
+                {from: 'devEnv', to: './'},
                 {from: 'manifest.json', to: 'manifest.json'}
             ]
         })

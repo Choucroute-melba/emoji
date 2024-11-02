@@ -11,9 +11,6 @@ yarn-error.log*
 .vscode/*
 
 /build
-/dist/*
+/dist
 /dev
-!/dist/test-site.html
-!/dist/handlers.json
-!/dist/handlers.schema.json
 /.idea/discord.xml
