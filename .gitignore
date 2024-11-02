@@ -13,9 +13,7 @@ yarn-error.log*
 /build
 /dist/*
 /dev
-!/dist/assets
 !/dist/test-site.html
-!/dist/build.js
 !/dist/handlers.json
 !/dist/handlers.schema.json
 /.idea/discord.xml
