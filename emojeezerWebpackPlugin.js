@@ -79,7 +79,6 @@ export default class EmojeezerWebpackPlugin {
                 fs.writeFileSync(path.join(distDir, 'changelog.txt'), changelog);
 
                 console.log("Changelog extracted");
-                console.log(changelog);
 
                 // creating amo metadata
                 const amoMetadata = {
@@ -91,6 +90,7 @@ export default class EmojeezerWebpackPlugin {
                 }
                 fs.writeFileSync(path.join(distDir, 'amo_metadata.json'), JSON.stringify(amoMetadata, null, 2));
                 console.log("AMO metadata created");
+                console.log(JSON.stringify(amoMetadata, null, 2))
 
 
             } catch (e) {
