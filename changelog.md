@@ -1,3 +1,9 @@
+# Version 2.2.7
+*13/12/2024*
+
+- Fixed behavior on Twitter's AriaDivElement
+- Fixed the bug when extension was not reacting to the backspace key
+
 # Version 2.2.6
 *02/11/2024*
 
