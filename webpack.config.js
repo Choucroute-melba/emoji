@@ -39,6 +39,7 @@ export default {
             sourceDir: path.resolve(__dirname, 'dev'),
             firefox: "C:\\Program Files\\Firefox Developer Edition\\firefox.exe",
             firefoxProfile: "C:\\Users\\Vivien\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kv2tckr8.dev-edition-default",
+            startUrl: ["https://x.com/messages", "about:debugging#/runtime/this-firefox"],
         }),
         new CopyPlugin({
             patterns: [

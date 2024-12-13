@@ -59,7 +59,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
         document.addEventListener('keydown', this.boundHandleDocumentKeydown)
         this.target.addEventListener('focusout', this.boundFocusLost)
 
-        this.active = true
         this.log("new handler", "\t\t\t---")
     }
 

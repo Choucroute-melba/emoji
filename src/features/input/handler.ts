@@ -19,6 +19,7 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
 
     constructor(es: EmojiSelector, target: HTMLInputElement) {
         super(es, target);
+        this.active = true;
     }
 
     getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"} {

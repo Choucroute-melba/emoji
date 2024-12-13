@@ -64,7 +64,6 @@ function mainListener(this: any, e: KeyboardEvent) {
     }
 }
 
-
 window.addEventListener('keydown', mainListener, true)
 
 window.addEventListener('keydown', (e) => {
@@ -80,3 +79,19 @@ window.addEventListener('keydown', (e) => {
         }
     }
 });
+
+
+/*window.addEventListener('load', () => {
+    console.log("loaded")
+
+    if(window.location.href.includes("https://x.com/messages")) {
+        console.log("on twitter")
+        const editor = document.getElementsByClassName("public-DraftEditor-content")[0] as HTMLElement
+        const evs = ['input', 'keydown', 'keyup', 'keypress', 'change', 'compositionstart', 'compositionend', 'focus', 'blur', 'paste', 'cut', 'copy']
+        evs.forEach(ev => {
+            editor.addEventListener(ev, (e) => {
+                console.log(ev, e)
+            })
+        })
+    }
+});*/

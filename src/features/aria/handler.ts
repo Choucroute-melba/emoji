@@ -18,16 +18,21 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     readonly sites: string[] = AriaDivHandler.sites;
     readonly targets: string[] = AriaDivHandler.targets;
-    private boundHandleSelectionChange: (e: Event) => void;
+    private boundAriaHandleSelectionChange: (e: Event) => void;
 
     private readonly focusedChild: Node | null = null;
+    private backSpaceHandled: boolean = false;
+    private tempInputListener = (e: Event) => {
+        this.backSpaceHandled = true;
+        this.target.removeEventListener('input', this.tempInputListener, {capture: true});
+    }
 
     constructor(es: EmojiSelector, target: HTMLTextAreaElement) {
         super(es, target);
-        this.search = ""
         this.log(this.focusedChild, "focusedChild")
-        this.boundHandleSelectionChange = this.handleSelectionChange.bind(this);
-        target.addEventListener('input', this.boundHandleSelectionChange, {capture: true});
+        this.boundAriaHandleSelectionChange = this.handleSelectionChange.bind(this);
+        target.addEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
+        this.active = true;
     }
 
     getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"} {
@@ -36,11 +41,10 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     protected getSelectionPosition(): { start: number; end: number; direction: string } {
         if(this.focusedChild == null) {
-
+            this.warn(this.focusedChild, "No focused child", true);
         }
         const selection = window.getSelection();
         if(!selection) return {start: 0, end: 0, direction: "forward"}
-        this.log(selection)
         const newSelect = {
             start: selection.anchorOffset,
             end: selection.focusOffset!,
@@ -56,8 +60,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     protected getSearchPosition(): { begin: number; end: number; caret: number } {
-        const newSelection = this.getSelectionPosition()
-        let newSearchPosition = this.searchPosition
+        const newSelection = this.getSelectionPosition();
+        let newSearchPosition = this.searchPosition;
 
         if(!window.getSelection()!.focusNode!.isEqualNode(this.focusedChild)) {
             this.warn([window.getSelection()!.focusNode, this.focusedChild], "Focus node changed", true)
@@ -105,20 +109,41 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     protected insertEmoji(emoji: Emoji) {
         const selection = window.getSelection();
         if(!selection) return;
-        this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`)
+        this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
+        this.log(null, selection.focusNode!.nodeValue?.toString())
 
         selection.focusNode!.nodeValue = selection.focusNode!.nodeValue!.slice(0, this.searchPosition.begin) + emoji.unicode + selection.focusNode!.nodeValue!.slice(this.searchPosition.end)
-        this.log(null, "unicode length " + emoji.unicode.length + " ; total : " + selection.focusNode!.nodeValue.length)
+        this.log(null, selection.focusNode!.nodeValue?.toString())
         try {
+            this.log(selection.focusNode, "setting position : " + (this.searchPosition.begin + emoji.unicode.length).toString())
             selection.setPosition(selection.focusNode, this.searchPosition.begin + emoji.unicode.length)
         }
         catch (e) {
             this.log(e, "Error setting position")
         }
+        this.target.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+
+    protected handleKeydown(e: KeyboardEvent) {
+        if(e.key == "Backspace") {
+            this.target.addEventListener('input', this.tempInputListener, {capture: true});
+            window.setTimeout(() => {
+                if (!this.backSpaceHandled) {
+                    this.log(null, "Backspace not handled")
+                    this.target.dispatchEvent(new InputEvent('input', {bubbles: true}));
+                    this.backSpaceHandled = false;
+                } else {
+                    this.log(null, "Backspace handled")
+                    this.backSpaceHandled = false;
+                }
+            }, 10);
+        }
+        super.handleKeydown(e);
     }
 
     onDestroy() {
-        this.target.removeEventListener('input', this.boundHandleSelectionChange);
+        this.target.removeEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
+        this.target.removeEventListener('input', this.tempInputListener, {capture: true});
         super.onDestroy();
     }
 }

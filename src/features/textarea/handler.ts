@@ -22,6 +22,7 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
 
     constructor(es: EmojiSelector, target: HTMLTextAreaElement) {
         super(es, target);
+        this.active = true;
     }
 
     getSelectorPosition(): {position: { x: number; y: number; }, positioning: "up" | "down"} {

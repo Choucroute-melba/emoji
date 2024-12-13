@@ -19,24 +19,23 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     }
 
     private readonly boundHandleKeydown: (e: KeyboardEvent) => void
+    private readonly boundHandleSelectionChange: (e: Event) => void
 
     protected constructor(es: EmojiSelector, target: EditableType) {
         super(es, target);
 
         this.boundHandleKeydown = this.handleKeydown.bind(this)
+        this.boundHandleSelectionChange = this.handleSelectionChange.bind(this)
 
-        this.target.addEventListener('selectionchange', this.handleSelectionChange.bind(this))
+        this.target.addEventListener('selectionchange', this.boundHandleSelectionChange)
         this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
 
+        this.searchPosition = this.getSearchPosition()
         this.es.position = this.getSelectorPosition()
         this.es.display = true
-        this.searchPosition = this.getSearchPosition()
-        this.log(this.searchPosition, this.search)
-        this.active = true
     }
 
     protected onEmojiSelected(emoji: Emoji): void {
-        this.log(emoji)
         this.active = false
         this.insertEmoji(emoji)
         this.destroy()
@@ -50,6 +49,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     protected handleSelectionChange(e: Event) {
         if(!this.active) return
+        this.log(null, "Selection changed")
         const newSearchPosition = this.getSearchPosition()
         if(this.searchPosition.begin >= newSearchPosition.caret) {
             this.dismissSearch("SEARCH_EMPTIED")
@@ -112,8 +112,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     }
 
     onDestroy() {
-        this.target.removeEventListener('selectionchange', this.handleSelectionChange.bind(this))
-        this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener)
+        this.target.removeEventListener('selectionchange', this.boundHandleSelectionChange)
+        this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
         this.log(null, "onDestroy")
     }
 }
