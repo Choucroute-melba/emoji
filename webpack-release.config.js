@@ -30,7 +30,7 @@ export default {
         extensions: ['.tsx', '.ts', '.js']
     },
     output: {
-        filename: 'build.js',
+        filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
     mode: 'production',

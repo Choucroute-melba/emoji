@@ -54,7 +54,7 @@ try {
             "256": "assets/ninja-3.png"
         };
     }
-    manifest.content_scripts[0].js = ["build.js"];
+    // manifest.content_scripts[0].js = ["build.js"];
 
     // Ensure the dist directory exists
     const distDir = path.join(__dirname, 'dist');
