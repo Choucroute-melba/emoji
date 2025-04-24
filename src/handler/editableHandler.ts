@@ -32,7 +32,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
         this.searchPosition = this.getSearchPosition()
         this.es.position = this.getSelectorPosition()
-        this.es.display = true
+        this.es.display = false
     }
 
     protected onEmojiSelected(emoji: Emoji): void {
@@ -100,6 +100,12 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     protected getSearchValue(): string {
         return this.getFieldValue().slice(this.searchPosition.begin+1 , this.searchPosition.end)
+    }
+
+    protected onSearchUpdated() {
+        super.onSearchUpdated();
+        if(this.search.length > 0 && !this.es.display)
+            this.es.display = true
     }
 
     protected handleKeydown(e: KeyboardEvent): void {
