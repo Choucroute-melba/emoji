@@ -1,3 +1,9 @@
+# Version 2.2.8
+*24/04/2025*
+
+- Emoji picker now only appears when you type at least one character after the colon
+- Fixed some bugs and cleaned up the logs
+
 # Version 2.2.7
 *13/12/2024*
 
