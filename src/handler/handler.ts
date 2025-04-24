@@ -129,8 +129,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.trace(null, `search dismissed  ${trigger}`)
         this.destroy()
     }
-
-    protected log(message: any, title: string = "", collapsed = false) {
+    // TODO : implement logging levels for production
+    protected log(message: any, title: string = "", collapsed = false, f = false) {
         if(!collapsed) {
             console.group(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
             if (message)
@@ -144,7 +144,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         console.groupEnd()
     }
 
-    protected trace(message: any, title: string = "", collapsed = true) {
+    protected trace(message: any, title: string = "", collapsed = true, f = false) {
         if(!collapsed) {
             console.group(`[${this.HandlerName} %c${this.instanceId}%c] ${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal')
         }
@@ -157,12 +157,25 @@ export default abstract class Handler<EltType extends HTMLElement> {
         console.groupEnd()
     }
 
-    protected warn(message: any, title: string = "", collapsed = false) {
+    protected warn(message: any, title: string = "", collapsed = false, f = false) {
         if(!collapsed) {
             console.group(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #FFC300;')
         }
         else {
             console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #FFC300;')
+        }
+        if (message)
+            console.warn(message)
+        console.trace()
+        console.groupEnd()
+    }
+
+    protected error(message: any, title: string = "", collapsed = false, f = false) {
+        if(!collapsed) {
+            console.group(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #dc240d;')
+        }
+        else {
+            console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #dc240d;')
         }
         if (message)
             console.warn(message)
@@ -228,7 +241,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
     protected get search() { return this._search }
 
-    /** the selector is active (receive events and manage user input) or idle (instance kept only for reactivation on the same target) */
+    /** the selector is active (selector visible and modify user input) or idle (instance kept only for reactivation on the same target) */
     protected set active(value: boolean) {
         let valueChanged = this._active != value
         this._active = value

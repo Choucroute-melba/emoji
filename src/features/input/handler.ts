@@ -10,7 +10,7 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
     readonly HandlerName: string = HTMLInputHandler.HandlerName;
 
     static canHandleTarget(target: HTMLInputElement): boolean {
-        return target.tagName.toLowerCase() == "input" && target.type == "text"
+        return target.tagName.toLowerCase() == "input" && (target.type == "text" || target.type == "search");
     }
     canHandleTarget = HTMLInputHandler.canHandleTarget
 

@@ -49,7 +49,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     protected handleSelectionChange(e: Event) {
         if(!this.active) return
-        this.log(null, "Selection changed")
+        // this.log(null, "Selection changed")
         const newSearchPosition = this.getSearchPosition()
         if(this.searchPosition.begin >= newSearchPosition.caret) {
             this.dismissSearch("SEARCH_EMPTIED")
@@ -67,7 +67,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             end: this.target.selectionEnd!,
             direction: this.target.selectionDirection!
         }
-        this.log(null, `Selection : ${newPos.start} -> ${newPos.end} : ${newPos.direction}`)
+        // this.log(null, `Selection : ${newPos.start} -> ${newPos.end} : ${newPos.direction}`)
         return newPos
     }
 
@@ -90,7 +90,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             newSelection.direction == "forward" ? newSearchPosition.caret = newSelection.end! : newSearchPosition.caret = newSelection.start!
         }
 
-        this.log(null, `searchPosition : ${newSearchPosition.begin} -> ${newSearchPosition.end} : ${newSearchPosition.caret}`)
+        // this.log(null, `searchPosition : ${newSearchPosition.begin} -> ${newSearchPosition.end} : ${newSearchPosition.caret}`)
         return newSearchPosition
     }
 
