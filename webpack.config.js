@@ -30,6 +30,17 @@ export default {
     },
     devServer: {
         static: './dev',
+        allowedHosts: "all",
+        host: 'localhost',
+        devMiddleware: {
+            writeToDisk: true,
+        },
+        client: {
+            webSocketURL: {
+                hostname: 'localhost',
+                port: 8080,
+            }
+        }
     },
     devtool: 'source-map',
     mode: 'development',
@@ -39,7 +50,7 @@ export default {
             sourceDir: path.resolve(__dirname, 'dev'),
             firefox: "C:\\Program Files\\Firefox Developer Edition\\firefox.exe",
             firefoxProfile: "C:\\Users\\Vivien\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kv2tckr8.dev-edition-default",
-            startUrl: ["https://x.com/messages", "about:debugging#/runtime/this-firefox"],
+            startUrl: ["about:debugging#/runtime/this-firefox", "http://localhost:8080/test-site.html"],
         }),
         new CopyPlugin({
             patterns: [

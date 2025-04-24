@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "start": "webpack serve --client-web-socket-url-hostname localhost --client-web-socket-url-port 8080",
+    "start": "webpack serve",
     "watch": "webpack --watch",
     "build": "webpack"
   },
