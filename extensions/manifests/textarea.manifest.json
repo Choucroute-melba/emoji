@@ -1,0 +1,17 @@
+{
+  "name": "TextArea",
+  "maintainer": "Choucroute-melba",
+  "sites": ["*"],
+  "targets": ["textarea", "div"],
+  "file": "bundled",
+  "uri": "bundled",
+  "sources": {
+    "file": "src/features/textarea/handler.ts",
+    "repo": "https://github.com/Choucroute-melba/emoji"
+  },
+  "trigger": [
+    {
+      "type": "default"
+    }
+  ]
+}
