@@ -1,6 +1,6 @@
 import { Emoji } from "../src/emoji/emoji";
 import EmojiSelector, {EmojiSelectorPosition} from "../src/selector/emojiselector";
-import {EditableHandler} from "../src/package-entry";
+import EditableHandler from "../src/handler/editableHandler";
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
     static sites: string[] = ["*"];
