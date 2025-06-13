@@ -6,6 +6,7 @@ import React from 'react';
 
 export default function Selector({position,
                                      displayAbove,
+                                     positionMode,
                                      shape,
                                      searchResults,
                                      selectedEmojiIndex,
@@ -14,6 +15,7 @@ export default function Selector({position,
                                  }:
                                      {position: {x: number, y: number},
                                         displayAbove: boolean,
+                                         positionMode: string,
                                          shape: { w: number, h: number },
                                          searchResults: Emoji[],
                                          selectedEmojiIndex: number,
@@ -65,7 +67,8 @@ export default function Selector({position,
     const getStyle = () => {
         let style = {left: position.x}
         let vPos = displayAbove ? {bottom: position.y} : {top: position.y};
-        style = {...style, ...vPos};
+        let mode = {position: positionMode}
+        style = {...style, ...vPos, ...mode};
         return style;
     }
 

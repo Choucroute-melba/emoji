@@ -82,7 +82,6 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             end: this.target.selectionEnd!,
             direction: this.target.selectionDirection!
         }
-        // this.log(null, `Selection : ${newPos.start} -> ${newPos.end} : ${newPos.direction}`)
         return newPos
     }
 

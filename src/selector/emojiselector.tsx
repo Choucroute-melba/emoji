@@ -4,6 +4,14 @@ import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
 import {Emoji} from "../emoji/emoji";
 
+export type EmojiSelectorPosition = {
+    position: {
+        x: number;
+        y: number;
+    };
+    placement: "up" | "down";
+    mode?: "absolute" | "relative" | "fixed" | "sticky";
+}
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
  * it offers a simple API to control the selector's interface and properties
@@ -16,7 +24,8 @@ export default class EmojiSelector {
     private _display = false;
     private _focusedEmojiIndex = 0; // The index of the currently focused emoji in selector
     private _position = {x: 0, y: 0}; // the absolute position of the selector on the page
-    private _positioning: "up" | "down" = "down";
+    private _placement: "up" | "down" = "down";
+    private _mode: "absolute" | "relative" | "fixed" | "sticky" = "absolute";
     private _debugText: string = ""
 
     public onEmojiSelected: (emoji: Emoji) => void = () => {};
@@ -61,7 +70,7 @@ export default class EmojiSelector {
 
     private component() {
         return (
-            <Selector position={this._position} displayAbove={this._positioning == "up"} shape={{w: 250, h: 400}} searchResults={this._searchResults} selectedEmojiIndex={this._focusedEmojiIndex} debugText={this._debugText} onEmojiSelected={() => {}}/>
+            <Selector position={this._position} displayAbove={this._placement == "up"} positionMode={this._mode} shape={{w: 250, h: 400}} searchResults={this._searchResults} selectedEmojiIndex={this._focusedEmojiIndex} debugText={this._debugText} onEmojiSelected={() => {}}/>
         );
     }
 
@@ -79,14 +88,16 @@ export default class EmojiSelector {
     get display() {return this._display;}
 
     /** set the absolute position of the selector on the page */
-    set position(value: {position: { x: number; y: number; }, positioning: "up" | "down"}) {
+    set position(value: EmojiSelectorPosition) {
         this._position = value.position;
-        this._positioning = value.positioning;
+        this._placement = value.placement;
+        this._mode = value.mode || "absolute";
         this.reactRoot.render(this.component());
     }
     get position() {return {
         position: this._position,
-        positioning: this._positioning
+        placement: this._placement,
+        mode: this._mode
     };}
 
     get geometry() {

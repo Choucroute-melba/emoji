@@ -1,9 +1,9 @@
 
 
-export function getRelativeVerticalPositioning(y: number) :"up" | "down";
-export function getRelativeVerticalPositioning(element: Element) :"up" | "down";
+export function getRelativeVerticalPlacement(y: number) :"up" | "down";
+export function getRelativeVerticalPlacement(element: Element) :"up" | "down";
 
-export function getRelativeVerticalPositioning(y: number | Element) :"up" | "down" {
+export function getRelativeVerticalPlacement(y: number | Element) :"up" | "down" {
     const windowHeight = window.innerHeight || document.documentElement.clientHeight;
     if (y instanceof Element) {
         const rect = y.getBoundingClientRect();
@@ -19,16 +19,16 @@ export function getRelativeVerticalPositioning(y: number | Element) :"up" | "dow
 /**
  * Calculate the position of the selector to place it next to the given element
  * @param elt
- * @param positioning - return the bottom left corner position if "up" and top left corner if "down"
+ * @param placement - return the bottom left corner position if "up" and top left corner if "down"
  */
-export function calculateXYFromElt(elt: Element, positioning: "up" | "down" | "auto" = "auto"): {x: number, y: number} {
+export function calculateXYFromElt(elt: Element, placement: "up" | "down" | "auto" = "auto"): {x: number, y: number} {
     const rect = elt.getBoundingClientRect();
-    if (positioning == "auto") {
-        positioning = getRelativeVerticalPositioning(elt);
+    if (placement == "auto") {
+        placement = getRelativeVerticalPlacement(elt);
     }
     const scrollX = window.scrollX || document.documentElement.scrollLeft;
     const scrollY = window.scrollY || document.documentElement.scrollTop;
-    if (positioning == "up")
+    if (placement == "up")
         return {x: rect.left + scrollX, y: -(rect.top + (scrollY - window.innerHeight))};
     else
         return {x: rect.left + scrollX, y: rect.bottom + scrollY};
@@ -60,10 +60,10 @@ export function getAbsoluteCaretPosition(element: HTMLTextAreaElement) : {x: num
  * Calculate and update the selector's position using given text input
  */
 export function getPositionFromElement(elt: HTMLInputElement | HTMLTextAreaElement) {
-    const positioning = getRelativeVerticalPositioning(elt);
-    const position = calculateXYFromElt(elt, positioning)
+    const placement = getRelativeVerticalPlacement(elt);
+    const position = calculateXYFromElt(elt, placement)
     return {
-        positioning,
+        placement,
         position
     }
 }
@@ -78,23 +78,23 @@ export function getPositionFromTextareaCaret(elt: HTMLTextAreaElement) {
     marker.style.left = position.x + "px";
     marker.style.top = position.y + "px";
     document.body.appendChild(marker);*/
-    const positioning = getRelativeVerticalPositioning(position.y - window.scrollY);
-    if(positioning == "up") {
+    const placement = getRelativeVerticalPlacement(position.y - window.scrollY);
+    if(placement == "up") {
         return {
-            positioning,
+            placement,
             position: {x: position.x, y: -(position.y - window.innerHeight)}
         }
     }
     else {
         return {
-            positioning,
+            placement,
             position: {x: position.x, y: position.y + position.lineH}
         }
     }
 }
 
 /**
- * returns x, y coordinates for relative positioning of a span within a given textarea
+ * returns x, y coordinates for relative placement of a span within a given textarea
  * at a given selection point
  * @param {object} element - the input element to obtain coordinates for
  * // @ {number} selectionPoint - the selection point for the input
@@ -145,7 +145,7 @@ const getCursorXY = (element: HTMLTextAreaElement) => {
     // lastly, remove that dummy element
     // NOTE:: can comment this out for debugging purposes if you want to see where that span is rendered
     document.body.removeChild(div)
-    // return an object with the x and y of the caret. account for input positioning so that you don't need to wrap the input
+    // return an object with the x and y of the caret. account for input placement so that you don't need to wrap the input
     return {
         x: spanX,
         y: spanY,
