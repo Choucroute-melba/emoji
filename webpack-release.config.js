@@ -46,7 +46,7 @@ export default {
         }),
         new CopyPlugin({
             patterns: [
-                {from: 'assets', to: 'assets'},
+                {from: 'assets', to: 'assets'}
             ]
         }),
         new EmojeezerWebpackPlugin()

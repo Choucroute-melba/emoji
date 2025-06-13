@@ -2,7 +2,6 @@ import * as path from "node:path";
 import WebExtPlugin from "web-ext-plugin";
 import CopyPlugin from "copy-webpack-plugin";
 import {fileURLToPath} from "node:url";
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename);
 
@@ -27,6 +26,7 @@ export default {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dev'),
+        clean: false,
     },
     devServer: {
         static: './dev',
@@ -40,7 +40,13 @@ export default {
                 hostname: 'localhost',
                 port: 8080,
             }
-        }
+        },
+        watchFiles: {
+            paths: ['src/**/*', 'assets/**/*', 'devEnv/**/*', 'manifest.json'],
+            options: {
+                ignored: ['dev/**/*', "extensions/**/*", "node_modules/**/*"],
+            },
+        },
     },
     devtool: 'source-map',
     mode: 'development',
@@ -55,8 +61,9 @@ export default {
         new CopyPlugin({
             patterns: [
                 {from: 'assets', to: 'assets'},
-                {from: 'devEnv', to: './'},
-                {from: 'manifest.json', to: 'manifest.json'}
+                {from: 'devEnv', to: ''},
+                {from: 'manifest.json', to: 'manifest.json'},
+                {from: 'extensions/manifests', to: 'extensions/manifests'},
             ]
         })
     ]
