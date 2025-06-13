@@ -1,3 +1,16 @@
+# Version 3.0.0
+*13/06/2025*
+
+Version 3 is here, with a core update on how features are loaded. This will allow easily 
+creating handlers for specific use cases.
+
+- Added a new on-demand selector that you can trigger by pressing `Ctrl + ,`
+- Fix #4, the slash no longer triggers the emoji selector
+- Now the emoji selection by click actually works
+- [dev] You can now start developing your own extension for specific cases
+- [dev] Added extensions to the release process and build system
+- [dev] Improved the control of selector's positioning
+
 # Version 2.2.8
 *24/04/2025*
 

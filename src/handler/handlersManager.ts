@@ -189,7 +189,8 @@ export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: Keybo
                 handlerClass = mod.default;
             } catch (e) {
                 console.error('Erreur lors de l\'import dynamique du handler', e);
-                throw new Error('HANDLER_IMPORT_ERROR');
+                continue
+                // throw new Error('HANDLER_IMPORT_ERROR');
             }
         }
         console.log("handlerClass: ", handlerClass);
@@ -205,7 +206,8 @@ export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: Keybo
             }
             else {
                 console.info(`Handler ${handler.name} cannot handle target: ${targetTag}`);
-                throw new Error("TARGET_REFUSED");
+                continue
+                // throw new Error("TARGET_REFUSED");
             }
         } else {
             console.warn(`Handler ${handler.name} does not have a canHandleTarget method.`);
