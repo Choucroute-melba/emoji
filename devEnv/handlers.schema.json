@@ -3,38 +3,72 @@
   "$id": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/manifest.json",
   "title": "Emoji",
   "description": "The emojeezer extensions registry",
-  "type": "array",
-  "items": {
-    "type": "object",
-    "required": ["name", "sites", "targets"],
-    "properties": {
-      "name": {
+  "type": "object",
+  "required": ["name", "sites", "targets", "file", "sources"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The name of the handler (as it is defined in the class)"
+    },
+    "maintainer": {
+      "type": "string",
+      "description": "The name of the maintainer of the handler"
+    },
+    "sites": {
+      "type": "array",
+      "description": "The list of sites that require this handler",
+      "items": {
         "type": "string",
-        "description": "The name of the handler (as it is defined in the class)"
-      },
-      "sites": {
-        "type": "array",
-        "description": "The list of sites that require this handler",
-        "items": {
+        "description": "The hostname where the handler is available"
+      }
+    },
+    "targets": {
+      "type": "array",
+      "description": "The list of the html elements that can be handled",
+      "items": {
+        "type": "string",
+        "description": "The name of the html element to be handled"
+      }
+    },
+    "uri": {
+      "type": "string",
+      "description": "The URI of the compiled js bundle of your handler. Used as a fallback if the file is not found"
+    },
+    "file" : {
+      "type": "string",
+      "description": "The bundle js file. Will be used before the URI"
+    },
+    "sources": {
+      "type": "object",
+      "description": "The sources of the handler",
+      "required": ["file", "repo"],
+      "properties": {
+        "file" : {
           "type": "string",
-          "description": "The site where the handler is available"
-        }
-      },
-      "targets": {
-        "type": "array",
-        "description": "The list of the html elements that can be handled",
-        "items": {
+          "description": "The source file of the handler"
+        },
+        "repo" : {
           "type": "string",
-          "description": "The name of the html element to be handled"
+          "description": "The repository of the handler"
         }
-      },
-      "uri": {
-        "type": "string",
-        "description": "The URI of the compiled js bundle of your handler. Used as a fallback if the file is not found"
-      },
-      "file" : {
-        "type": "string",
-        "description": "The bundle js file. Will be used before the URI"
+      }
+    },
+    "trigger": {
+      "type": "array",
+      "description": "The list of actions that trigger the handler",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": ["default", "key", "combo"],
+            "description": "The type of trigger"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value of the trigger"
+          }
+        },
+        "required": ["type"]
       }
     }
   }

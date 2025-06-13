@@ -3,32 +3,18 @@
   <component name="JsonSchemaMappingsProjectConfiguration">
     <state>
       <map>
-        <entry key="handlers.schema">
+        <entry key="Handlers Manifest Shema">
           <value>
             <SchemaInfo>
               <option name="generatedName" value="New Schema" />
-              <option name="name" value="handlers.schema" />
-              <option name="relativePathToSchema" value="dist/handlers.schema.json" />
+              <option name="name" value="Handlers Manifest Shema" />
+              <option name="relativePathToSchema" value="devEnv/handlers.schema.json" />
               <option name="patterns">
                 <list>
                   <Item>
-                    <option name="path" value="handlers.json" />
-                  </Item>
-                </list>
-              </option>
-            </SchemaInfo>
-          </value>
-        </entry>
-        <entry key="handlers.schema 2">
-          <value>
-            <SchemaInfo>
-              <option name="generatedName" value="New Schema" />
-              <option name="name" value="handlers.schema 2" />
-              <option name="relativePathToSchema" value="dist/handlers.schema.json" />
-              <option name="patterns">
-                <list>
-                  <Item>
-                    <option name="path" value="dist/handlers.json" />
+                    <option name="pattern" value="true" />
+                    <option name="path" value="*.manifest.json" />
+                    <option name="mappingKind" value="Pattern" />
                   </Item>
                 </list>
               </option>

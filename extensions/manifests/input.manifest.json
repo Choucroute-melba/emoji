@@ -1,0 +1,17 @@
+{
+  "name": "HTMLInput",
+  "maintainer": "Choucroute-melba",
+  "sites": ["*"],
+  "targets": ["input"],
+  "file": "bundled",
+  "uri": "bundled",
+  "sources": {
+    "file": "src/features/input/handler.ts",
+    "repo": "https://github.com/Choucroute-melba/emoji"
+  },
+  "trigger": [
+    {
+      "type": "default"
+    }
+  ]
+}

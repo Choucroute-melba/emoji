@@ -3,56 +3,60 @@ import TextAreaHandler from "./features/textarea/handler";
 import Handler from "./handler/handler";
 import HTMLInputHandler from "./features/input/handler";
 import AriaDivHandler from "./features/aria/handler";
+import browser from "webextension-polyfill";
+import {
+    buildShortcutString,
+    chooseAndLoadHandler,
+    getAvailableHandlers
+} from "./handler/handlersManager";
 
 console.log('Emoji on the go ✨')
 
+
 const handlers = [HTMLInputHandler, TextAreaHandler, AriaDivHandler]
+const availableHandlers = await getAvailableHandlers();
 
 let es = new EmojiSelector()
 let currentHandler: Handler<any> | null = null
 
-function mainListener(this: any, e: KeyboardEvent) {
+
+async function mainListener(this: any, e: KeyboardEvent) {
     try {
-        console.groupCollapsed(`%c${e.code}%c ${e.key} \tTarget : %c${e.target}`,
+        const sc = buildShortcutString(e);
+        const isCombo = (sc !== e.key);
+        console.groupCollapsed(`%c${e.code}%c ${isCombo ? sc : e.key} \tTarget : %c${e.target}`,
             'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
             'color: default; background-color: default',
             'color: #999; ');
         console.log(e.target)
-
-        console.groupEnd()
+        console.log(buildShortcutString(e))
 
         const domain = window.location.hostname
 
-        switch (e.code) {
-            case "Period":
-                /* for (let h of handlers) {
-                     if (h.sites && h.sites.includes(domain)) {
-                         if(h.canHandleTarget(e.target as any)) {
-                             currentHandler = new h(es, e.target as any)
-                             break;
-                         }
-                     }
-                 }*/
-                if (!currentHandler) {
-                    for (let h of handlers) {
-                        if (h.targets && h.targets.includes((e.target as HTMLElement).tagName.toLowerCase())) {
-                            if (h.canHandleTarget(e.target as any)) {
-                                currentHandler = new h(es, e.target as any)
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (currentHandler) {
-                    currentHandler.onExit = () => {
-                        currentHandler = null
-                        console.log("EmojiSelector closed")
-                        window.addEventListener('keydown', mainListener)
-                    }
-                    window.removeEventListener('keydown', mainListener)
-                }
+        const h = await chooseAndLoadHandler(availableHandlers, e).catch((err: Error) => {
+            if(err.message === "NO_HANDLER_TRIGGERED") {
+                console.info("%cNo handler triggered for this event", 'color: #FF0000; font-weight: bold');
+                console.groupEnd()
+            }
+            else {
+                console.groupEnd()
+                console.info("%cError while choosing handler: " + err.message, 'color: #FF0000; font-weight: bold');
+            }
+            return null;
+        });
+
+        console.groupEnd()
+        if(h) {
+            if(!currentHandler) {
+                currentHandler = new h(es, e.target as any);
                 console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
-                break;
+                currentHandler.onExit = () => {
+                    currentHandler = null
+                    console.log("EmojiSelector closed")
+                    window.addEventListener('keydown', mainListener)
+                }
+                window.removeEventListener('keydown', mainListener)
+            }
         }
     }
     catch (e) {
@@ -79,19 +83,3 @@ window.addEventListener('keydown', (e) => {
         }
     }
 });
-
-
-/*window.addEventListener('load', () => {
-    console.log("loaded")
-
-    if(window.location.href.includes("https://x.com/messages")) {
-        console.log("on twitter")
-        const editor = document.getElementsByClassName("public-DraftEditor-content")[0] as HTMLElement
-        const evs = ['input', 'keydown', 'keyup', 'keypress', 'change', 'compositionstart', 'compositionend', 'focus', 'blur', 'paste', 'cut', 'copy']
-        evs.forEach(ev => {
-            editor.addEventListener(ev, (e) => {
-                console.log(ev, e)
-            })
-        })
-    }
-});*/
