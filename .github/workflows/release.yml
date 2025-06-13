@@ -18,6 +18,9 @@ jobs:
       with:
         node-version: '20'
 
+    - name: Create dist directory
+      run: mkdir -p dist
+
     - name: Install web-ext
       run: npm install --save-dev web-ext
 
