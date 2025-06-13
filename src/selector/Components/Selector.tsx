@@ -37,6 +37,7 @@ export default function Selector({position,
     }, [selectorRef.current?.getBoundingClientRect().height, searchResults]);
 
     const dispatchEmojiClick = (emoji: Emoji) => {
+        console.log("dispatchEmojiClick");
         onEmojiSelected(emoji);
     }
 

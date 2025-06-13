@@ -61,7 +61,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected constructor(es: EmojiSelector, target: EltType) {
         this.es = es
         this.target = target
-        this.es.onEmojiSelected = this.onEmojiSelected
+        this.es.onEmojiSelected = this.onEmojiSelected.bind(this)
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown)

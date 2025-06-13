@@ -19,9 +19,16 @@ export default function EmojiCard(props: {emoji: Emoji, selected: boolean, onCli
 
     return (
         <div ref={cardRef} className={props.selected ? ("emoji-card_focus") : ("emoji-card")}
-             onClick={() => {props.onClick(props.emoji)}}
+             onClick={(e) => {
+                 console.log("On mouse up");
+                 props.onClick(props.emoji)
+             }}
              onMouseEnter={() => {setDisplayTooltip(true)}}
-                onMouseLeave={() => {setDisplayTooltip(false)}}
+             onMouseLeave={() => {setDisplayTooltip(false)}}
+             onMouseDown={(e) => {
+                 console.log("On mouse down");
+                 e.preventDefault()
+             }}
         >
             <div className={"lineTop"}>
                 <p className={"emoji-card__p"}>{props.emoji.unicode}</p>

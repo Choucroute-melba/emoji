@@ -90,14 +90,22 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container.style.height = g.height + "px";
     }
 
-    protected onEmojiSelected(emoji: Emoji): void {
+/*    protected onEmojiSelected(emoji: Emoji): void {
         // copy emoji to clipboard
         navigator.clipboard.writeText(emoji.unicode).then(() => {
             this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
         }, (err) => {
             this.error(null, "Could not copy emoji: ", err);
         });
-        super.onEmojiSelected(emoji);
+        this.destroy()
+    }*/
+
+    protected insertEmoji(emoji: Emoji) {
+        navigator.clipboard.writeText(emoji.unicode).then(() => {
+            this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
+        }, (err) => {
+            this.error(null, "Could not copy emoji: ", err);
+        });
     }
 
     dismissSearch(trigger: string) {

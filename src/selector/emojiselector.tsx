@@ -70,7 +70,14 @@ export default class EmojiSelector {
 
     private component() {
         return (
-            <Selector position={this._position} displayAbove={this._placement == "up"} positionMode={this._mode} shape={{w: 250, h: 400}} searchResults={this._searchResults} selectedEmojiIndex={this._focusedEmojiIndex} debugText={this._debugText} onEmojiSelected={() => {}}/>
+            <Selector
+                position={this._position}
+                displayAbove={this._placement == "up"}
+                positionMode={this._mode} shape={{w: 250, h: 400}}
+                searchResults={this._searchResults}
+                selectedEmojiIndex={this._focusedEmojiIndex}
+                debugText={this._debugText}
+                onEmojiSelected={this.onEmojiSelected}/>
         );
     }
 
