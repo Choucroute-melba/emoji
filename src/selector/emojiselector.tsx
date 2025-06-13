@@ -89,6 +89,15 @@ export default class EmojiSelector {
         positioning: this._positioning
     };}
 
+    get geometry() {
+        return {
+            x: this._position.x,
+            y: this._position.y,
+            width: 250,
+            height: 400
+        };
+    }
+
     /** set a text that will be shown in the selector for debugging purposes */
     set debugText(value: string) {
         this._debugText = value;

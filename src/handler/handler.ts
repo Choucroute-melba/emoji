@@ -29,7 +29,7 @@ const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
  *
  * Another abstract handler is available, specific to editable elements : HTMLEditableHandler.
  * you should use this class as a base only if you're on a very specific case if you want to handle a non-editable element.
- * (e.g. an element that does not fire keydown, value change or selection events)
+ * (e.g., an element that does not fire keydown, value change or selection events)
  */
 export default abstract class Handler<EltType extends HTMLElement> {
     abstract readonly sites: string[]
@@ -37,6 +37,14 @@ export default abstract class Handler<EltType extends HTMLElement> {
     abstract readonly HandlerName: string
 
     abstract canHandleTarget(target: EltType): boolean
+
+    static readonly sites: string[]
+    static readonly targets: string[]
+    static readonly HandlerName: string
+
+    static canHandleTarget(target: HTMLElement): boolean {
+        throw new Error("Method 'canHandleTarget' must be implemented in subclasses.");
+    }
 
     protected es: EmojiSelector;
     protected target: EltType;
@@ -98,7 +106,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected onEnabled(): void {}
 
     /** Override if you want to change the way shortcodes are handled
-     * default behavior : will trigger onEmojiSelected if a corresponding emoji is found
+     * default behavior: will trigger onEmojiSelected if a corresponding emoji is found
      *  */
     protected onShortcodeDetected(sc: string) {
         const em = getEmojiFromShortCode(sc)
@@ -109,7 +117,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     protected onSearchUpdated() {
-        this.log(null, `'${this.search}'`)
+        this.log(null, `search updated : '${this.search}'`)
         this.es.debugText = this.search
         if(this.search.endsWith(":")) {
             let sc = this.search.slice(0, -1)

@@ -1,0 +1,22 @@
+{
+  "name": "FreeSelector",
+  "maintainer": "Choucroute-melba",
+  "sites": ["*"],
+  "targets": ["*"],
+  "file": "freeselector.bundle.mjs",
+  "uri": "https://raw.githubusercontent.com/Choucroute-melba/emoji/master/extensions/freeselector.bundle.mjs",
+  "sources": {
+    "file": "extensions/freeselector.ts",
+    "repo": "https://github.com/Choucroute-melba/emoji"
+  },
+  "trigger": [
+    {
+      "type": "combo",
+      "combo": "Ctrl+,"
+    },
+    {
+      "type": "combo",
+      "combo": "AltGraph+,"
+    }
+  ]
+}

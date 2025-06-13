@@ -12,6 +12,14 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     abstract canHandleTarget(target: EditableType): boolean
 
+    static readonly sites: string[]
+    static readonly targets: string[]
+    static readonly HandlerName: string
+
+    static canHandleTarget(target: HTMLElement): boolean {
+        throw new Error("Method 'canHandleTarget' must be implemented in subclasses.");
+    }
+
     protected searchPosition: {
         begin: number,
         end: number,
@@ -20,6 +28,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     private readonly boundHandleKeydown: (e: KeyboardEvent) => void
     private readonly boundHandleSelectionChange: (e: Event) => void
+
+    private _mode: "selection" | "default" = "selection"
 
     protected constructor(es: EmojiSelector, target: EditableType) {
         super(es, target);
@@ -47,6 +57,11 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.target.dispatchEvent(new Event('input', {bubbles: true}))
     }
 
+    /**
+     *
+     * @param e
+     * @protected
+     */
     protected handleSelectionChange(e: Event) {
         if(!this.active) return
         // this.log(null, "Selection changed")
@@ -71,6 +86,11 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         return newPos
     }
 
+    /**
+     * Return information about the current search position: begin and end of searched text and the caret position.
+     * Used by EditableHandler.handleSelectionChange to update the searched text.
+     * @protected
+     */
     protected getSearchPosition(): {begin: number, end: number, caret: number} {
         const newSelection = this.getSelectionPosition()
         let newSearchPosition = this.searchPosition
@@ -92,6 +112,26 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
         // this.log(null, `searchPosition : ${newSearchPosition.begin} -> ${newSearchPosition.end} : ${newSearchPosition.caret}`)
         return newSearchPosition
+    }
+
+    /**
+     * Working mode of the handler:
+     * - "selection" means that the search value will be updated using a selection range in the target, update triggered by the `selectionchange` event.
+     * - "default" means that the search value will be updated using the input value, update triggered when the search value is changed.
+     * @protected
+     */
+    protected set mode(mode: "selection" | "default") {
+        if(this._mode === mode) return
+        this._mode = mode
+        if(mode == "selection") {
+            this.target.addEventListener('selectionchange', this.boundHandleSelectionChange)
+        }
+        else {
+            this.target.removeEventListener('selectionchange', this.boundHandleSelectionChange)
+        }
+    }
+    protected get mode(): "selection" | "default" {
+        return this._mode
     }
 
     protected getFieldValue(): string {
@@ -117,7 +157,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         }
     }
 
-    onDestroy() {
+    protected onDestroy() {
         this.target.removeEventListener('selectionchange', this.boundHandleSelectionChange)
         this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
         this.log(null, "onDestroy")
