@@ -41,7 +41,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
 
         this.searchPosition = this.getSearchPosition()
-        this.es.position = this.getSelectorPosition()
+        this.es.geometry = this.getSelectorGeometry()
         this.es.display = false
     }
 

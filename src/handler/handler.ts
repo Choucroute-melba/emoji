@@ -1,4 +1,4 @@
-import EmojiSelector, {EmojiSelectorPosition} from "../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../selector/emojiselector";
 import {Emoji, getEmojiFromShortCode, searchEmoji} from "../emoji/emoji";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
@@ -70,7 +70,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.log("new handler", "\t\t\t---")
     }
 
-    abstract getSelectorPosition(): EmojiSelectorPosition;
+    abstract getSelectorGeometry(): Partial<EmojiSelectorGeometry>
 
     selectEmoji(): void;
     selectEmoji(emoji: Emoji): void;

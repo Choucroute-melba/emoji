@@ -1,5 +1,5 @@
 import { Emoji } from "../src/emoji/emoji";
-import EmojiSelector, {EmojiSelectorPosition} from "../src/selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
@@ -61,19 +61,23 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.search = this.searchBar.value;
     }
 
-    getSelectorPosition(): EmojiSelectorPosition {
+    getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
+        const g = this.getSearchBarGeometry();
         return {
-            position:
-                {
-                    x: window.innerWidth / 2 - 200,
-                    y: 215
-                },
+            position: {
+                x: g.x,
+                y: g.y + g.height + 5,
+            },
+            shape: {
+                w: g.width - 10,
+                h: 0
+            },
             placement: "down",
-            mode: "fixed"
+            positionMode: "fixed"
         };
     }
 
-    getSearchBarGeometry() {
+    getSearchBarGeometry(sg?: EmojiSelectorGeometry) {
         return {
             x: window.innerWidth / 2 - 200,
             y: 150,
@@ -82,8 +86,9 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         };
     }
 
-    updateSearchBarGeometry() {
-        const g = this.getSearchBarGeometry();
+    updateSearchBarGeometry(selectorGeometry?: EmojiSelectorGeometry) {
+        this.log(selectorGeometry, "Updating search bar geometry");
+        const g = this.getSearchBarGeometry(selectorGeometry);
         this.container.style.left = g.x + "px";
         this.container.style.top = g.y + "px";
         this.container.style.width = g.width + "px";

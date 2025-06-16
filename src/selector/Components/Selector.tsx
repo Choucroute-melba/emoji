@@ -3,15 +3,18 @@ import {useRef, useEffect, useState} from "react";
 import EmojiCard from "./EmojiCard";
 import {Emoji} from "../../emoji/emoji";
 import React from 'react';
+import {EmojiSelectorGeometry} from "../emojiselector";
 
-export default function Selector({position,
+export default function Selector({
+                                     position,
                                      displayAbove,
                                      positionMode,
                                      shape,
                                      searchResults,
                                      selectedEmojiIndex,
                                      debugText,
-                                     onEmojiSelected
+                                     onEmojiSelected,
+                                     onResize
                                  }:
                                      {position: {x: number, y: number},
                                         displayAbove: boolean,
@@ -20,7 +23,8 @@ export default function Selector({position,
                                          searchResults: Emoji[],
                                          selectedEmojiIndex: number,
                                          debugText: string,
-                                         onEmojiSelected: (emoji: Emoji) => void
+                                         onEmojiSelected: (emoji: Emoji) => void,
+                                         onResize: (geometry: EmojiSelectorGeometry) => void
                                      }) {
 
     const selectorRef = useRef<HTMLDivElement>(null);
@@ -35,6 +39,25 @@ export default function Selector({position,
         else if(selectorRef.current)
             setComputedPosition(position);
     }, [selectorRef.current?.getBoundingClientRect().height, searchResults]);
+
+    useEffect(() => {
+        const observer = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                onResize({
+                    position: computedPosition,
+                    placement: displayAbove ? "up" : "down",
+                    positionMode: positionMode as any,
+                    shape: {w: entry.contentRect.width, h: entry.contentRect.height}
+                })
+            }
+        });
+        if (selectorRef.current) {
+            observer.observe(selectorRef.current);
+        }
+        return () => {
+            observer.disconnect();
+        };
+    }, []);
 
     const dispatchEmojiClick = (emoji: Emoji) => {
         console.log("dispatchEmojiClick");
@@ -66,7 +89,7 @@ export default function Selector({position,
     }
 
     const getStyle = () => {
-        let style = {left: position.x}
+        let style = {left: position.x, width: shape.w || undefined, height: shape.h || undefined};
         let vPos = displayAbove ? {bottom: position.y} : {top: position.y};
         let mode = {position: positionMode}
         style = {...style, ...vPos, ...mode};

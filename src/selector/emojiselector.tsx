@@ -12,6 +12,14 @@ export type EmojiSelectorPosition = {
     placement: "up" | "down";
     mode?: "absolute" | "relative" | "fixed" | "sticky";
 }
+
+export type EmojiSelectorGeometry = {
+    position: { x: number, y: number };
+    placement: "up" | "down";
+    positionMode: "absolute" | "relative" | "fixed" | "sticky";
+    shape: { w: number, h: number };
+}
+
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
  * it offers a simple API to control the selector's interface and properties
@@ -27,8 +35,10 @@ export default class EmojiSelector {
     private _placement: "up" | "down" = "down";
     private _mode: "absolute" | "relative" | "fixed" | "sticky" = "absolute";
     private _debugText: string = ""
+    private _shape = {w: 0, h: 0}; // the shape of the selector, used for resizing
 
     public onEmojiSelected: (emoji: Emoji) => void = () => {};
+    public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
 
     constructor() {
         this.root = document.createElement('div');
@@ -73,11 +83,14 @@ export default class EmojiSelector {
             <Selector
                 position={this._position}
                 displayAbove={this._placement == "up"}
-                positionMode={this._mode} shape={{w: 250, h: 400}}
+                positionMode={this._mode}
+                shape={this._shape}
                 searchResults={this._searchResults}
                 selectedEmojiIndex={this._focusedEmojiIndex}
                 debugText={this._debugText}
-                onEmojiSelected={this.onEmojiSelected}/>
+                onEmojiSelected={this.onEmojiSelected}
+                onResize={this.onResize}
+            />
         );
     }
 
@@ -107,13 +120,24 @@ export default class EmojiSelector {
         mode: this._mode
     };}
 
-    get geometry() {
+    get geometry(): EmojiSelectorGeometry {
         return {
-            x: this._position.x,
-            y: this._position.y,
-            width: 250,
-            height: 400
+            position: this._position,
+            placement: this._placement,
+            positionMode: this._mode,
+            shape: this._shape,
         };
+    }
+    set geometry(value: Partial<EmojiSelectorGeometry>) {
+        if(value.position)
+            this._position = value.position;
+        if(value.placement)
+            this._placement = value.placement;
+        if(value.positionMode)
+            this._mode = value.positionMode;
+        if(value.shape)
+            this._shape = value.shape;
+        this.reactRoot.render(this.component());
     }
 
     /** set a text that will be shown in the selector for debugging purposes */

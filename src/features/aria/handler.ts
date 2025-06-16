@@ -1,5 +1,5 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorPosition} from "../../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
 import {getPositionFromElement} from "../../selector/selector-utils";
 import {Emoji} from "../../emoji/emoji";
 
@@ -35,7 +35,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         this.active = true;
     }
 
-    getSelectorPosition(): EmojiSelectorPosition {
+    getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         return getPositionFromElement(this.target);
     }
 

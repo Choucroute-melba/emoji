@@ -1,5 +1,5 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorPosition} from "../../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
 import {getPositionFromElement} from "../../selector/selector-utils";
 
 export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputElement> {
@@ -22,7 +22,7 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
         this.active = true;
     }
 
-    getSelectorPosition(): EmojiSelectorPosition {
+    getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         const {position, placement} = getPositionFromElement(this.target);
         return {
             position,
