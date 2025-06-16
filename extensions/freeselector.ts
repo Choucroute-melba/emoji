@@ -1,6 +1,8 @@
 import { Emoji } from "../src/emoji/emoji";
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
+import * as s from "./freeselector.module.css";
+
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
     static sites: string[] = ["*"];
@@ -21,41 +23,43 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     container: HTMLDivElement
     info: HTMLParagraphElement
 
+    previousActiveElement: HTMLElement | null = null;
+
     constructor(es: EmojiSelector, target: any) {
         const searchBar = document.createElement("input");
         const container = document.createElement("div");
         const info = document.createElement("p");
         searchBar.placeholder = "Search for emojis...";
-        searchBar.style.width = "100%";
+        searchBar.type = "text";
         container.appendChild(searchBar)
         info.textContent = "Press Enter to copy the selected emoji to clipboard";
-        info.style.fontFamily = "TwitterChirp, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Helvetica, Arial, sans-serif"
-        info.style.fontSize = "12px";
         container.appendChild(info)
-        container.style.backgroundColor = "white";
         document.body.appendChild(container);
         super(es, searchBar);
         this.mode = "default";
+
         this.searchBar = searchBar;
         this.container = container;
         this.info = info;
-        this.searchBar.type = "text";
-        this.container.style.position = "fixed";
-        this.container.style.zIndex = "9999";
-        this.container.style.width = "200px";
-        this.container.style.height = "30px";
-        this.container.style.boxShadow = "0 0 10px 0 rgba(0, 0, 0, 0.5)";
-        this.container.style.display = "flex";
-        this.container.style.justifyContent = "center";
-        this.container.style.alignItems = "center";
-        this.container.style.flexDirection = "column";
-        this.container.style.padding = "5px";
+
+        this.searchBar.classList.add(s.searchBar);
+        this.container.classList.add(s.container);
+        this.info.classList.add(s.info);
+
         this.searchBar.addEventListener("input", this.onSearchBarInput.bind(this));
         this.active = true;
         this.updateSearchBarGeometry()
+        this.previousActiveElement = document.activeElement as HTMLElement | null;
+        this.log(this.previousActiveElement)
+        // get caret position
+        const caretPosition = window.getSelection()?.getRangeAt(0).startOffset || 0;
+        this.log(null, "Caret position detected at: " + caretPosition);
         this.searchBar.focus();
-        window.addEventListener("resize", this.updateSearchBarGeometry.bind(this));
     }
+
+/*    protected onFocusLost() {
+        this.log(null, "Focus lost")
+    }*/
 
     onSearchBarInput(e: Event): void {
         this.search = this.searchBar.value;
@@ -95,16 +99,6 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container.style.height = g.height + "px";
     }
 
-/*    protected onEmojiSelected(emoji: Emoji): void {
-        // copy emoji to clipboard
-        navigator.clipboard.writeText(emoji.unicode).then(() => {
-            this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
-        }, (err) => {
-            this.error(null, "Could not copy emoji: ", err);
-        });
-        this.destroy()
-    }*/
-
     protected insertEmoji(emoji: Emoji) {
         navigator.clipboard.writeText(emoji.unicode).then(() => {
             this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
@@ -122,8 +116,10 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
 
     protected onDestroy(): void {
         document.body.removeChild(this.container);
-        window.removeEventListener("resize", this.updateSearchBarGeometry.bind(this));
         this.searchBar.removeEventListener("input", this.onSearchBarInput.bind(this));
+        if(this.previousActiveElement) {
+            this.previousActiveElement.focus();
+        }
     }
 
 }
