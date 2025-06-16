@@ -15,7 +15,19 @@ export default {
                 exclude: /node_modules/,
             },
             {
-                test: /\.css$/i,
+                test: /\.module\.css$/i,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: true,
+                        },
+                    },
+                ],
+            },
+            {
+                test: /(?<!\.module)\.css$/i,
                 use: ['style-loader', 'css-loader'],
             },
         ],
