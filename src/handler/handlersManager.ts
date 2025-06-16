@@ -36,7 +36,8 @@ const localHandlersUrl = browser.runtime.getURL("/extensions")
 
 export async function getAvailableHandlers(): Promise<HandlerManifest[]> {
     let handlers: HandlerManifest[] = []
-    console.log("Fetching handlers list from GitHub...");
+    // TODO: create extensions repository
+/*    console.log("Fetching handlers list from GitHub...");
     try {
         const handlersList: string[] = await fetch(remoteHandlersUrl + "/manifests/extensions.json").then(response => response.json())
         for(const handler of handlersList) {
@@ -47,7 +48,7 @@ export async function getAvailableHandlers(): Promise<HandlerManifest[]> {
     }
     catch (e) {
         console.error("Error fetching handlers list from GitHub", e);
-    }
+    }*/
 
     console.log("Fetching local handlers...");
     try {
