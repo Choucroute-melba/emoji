@@ -4,6 +4,7 @@ import EmojiSelector from "../selector/emojiselector";
 import AriaDivHandler from "../features/aria/handler";
 import HTMLInputHandler from "../features/input/handler";
 import TextAreaHandler from "../features/textarea/handler";
+import HTMLIFrameHandler from "../features/iframe/handler";
 
 export type HandlerManifest = {
     name: string;
@@ -180,6 +181,8 @@ export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: Keybo
             handlerClass = HTMLInputHandler;
         else if(handler.name === "TextArea")
             handlerClass = TextAreaHandler;
+        else if(handler.name === "HTMLIframe")
+            handlerClass = HTMLIFrameHandler;
         else {
             // Charger dynamiquement la classe du handler via import()
             try {
