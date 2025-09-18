@@ -46,6 +46,28 @@ export default abstract class Handler<EltType extends HTMLElement> {
         throw new Error("Method 'canHandleTarget' must be implemented in subclasses.");
     }
 
+    protected static detectFrameworks() {
+        const frameworks: string[] = [];
+        if ((window as any).React || (window as any)['__REACT_DEVTOOLS_GLOBAL_HOOK__']) {
+            frameworks.push('React');
+        }
+        if ((window as any).Vue || (window as any)['__VUE_DEVTOOLS_GLOBAL_HOOK__']) {
+            frameworks.push('Vue');
+        }
+        if (!!(window as any).ng || !!document.querySelector('[ng-version]')) {
+            frameworks.push('Angular');
+        }
+        if (!!document.querySelector('[class*="svelte-"]')) {
+            frameworks.push('Svelte');
+        }
+        if (!!document.querySelector('#__next') || !!document.querySelector('[data-nextjs]')) {
+            frameworks.push('Next.js');
+        }
+        return frameworks;
+    }
+
+    protected readonly detectedFrameworks: string[] = Handler.detectFrameworks();
+
     protected es: EmojiSelector;
     protected target: EltType;
     protected instanceId: number = Date.now()
