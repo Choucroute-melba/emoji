@@ -22,9 +22,9 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     }
 
     protected searchPosition: {
-        begin: number,
-        end: number,
-        caret: number
+        begin: number;
+        end: number;
+        caret: number;
     }
 
     private readonly boundHandleKeydown: (e: KeyboardEvent) => void
@@ -183,6 +183,13 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
             e.preventDefault()
             this.selectEmoji(this.es.getFocusedEmoji())
         }
+    }
+
+    protected onEnabled() {
+        super.onEnabled();
+        this.searchPosition = this.getSearchPosition()
+        this.es.geometry = this.getSelectorGeometry()
+        this.es.display = true
     }
 
     protected onDestroy() {
