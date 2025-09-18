@@ -1,3 +1,10 @@
+# Version 3.1.0
+*18/09/2025*
+
+- Added support for mailbox editors
+- Improved the on-demand pop-up selector
+- Stability improvements
+
 # Version 3.0.0
 *13/06/2025*
 
