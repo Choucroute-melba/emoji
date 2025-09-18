@@ -1,0 +1,17 @@
+{
+  "name": "HTMLIframe",
+  "maintainer": "Choucroute-melba",
+  "sites": ["*"],
+  "targets": ["*"],
+  "file": "bundled",
+  "uri": "bundled",
+  "sources": {
+    "file": "src/features/iframe/handler.ts",
+    "repo": "https://github.com/Choucroute-melba/emoji"
+  },
+  "trigger": [
+    {
+      "type": "default"
+    }
+  ]
+}
