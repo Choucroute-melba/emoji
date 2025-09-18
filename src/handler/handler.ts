@@ -69,7 +69,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected readonly detectedFrameworks: string[] = Handler.detectFrameworks();
 
     protected es: EmojiSelector;
-    protected target: EltType;
+    protected _target: EltType;
     protected instanceId: number = Date.now()
     protected color = colors[Math.floor(Math.random() * colors.length)]
     private _search = ""
@@ -78,15 +78,16 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
     private readonly boundFocusLost: (e: FocusEvent) => void;
 
-    onExit: (() => void) = () => {}
+    onExit: (() => void) = () => {console.warn("onExit not provided.")}
 
-    protected constructor(es: EmojiSelector, target: EltType) {
+    protected constructor(es: EmojiSelector, target: EltType, onExit: () => void = () => {}) {
         this.es = es
-        this.target = target
+        this._target = target
+        this.onExit = onExit
         this.es.onEmojiSelected = this.onEmojiSelected.bind(this)
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
-        document.addEventListener('keydown', this.boundHandleDocumentKeydown)
+        document.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.log("new handler", "\t\t\t---")
@@ -208,7 +209,20 @@ export default abstract class Handler<EltType extends HTMLElement> {
             console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #dc240d;')
         }
         if (message)
-            console.warn(message)
+            console.error(message)
+        console.trace()
+        console.groupEnd()
+    }
+
+    protected info(message: any, title: string = "", collapsed = false, f = false) {
+        if(!collapsed) {
+            console.group(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #0dc5dc;')
+        }
+        else {
+            console.groupCollapsed(`[${this.HandlerName} %c${this.instanceId}%c] %c${title}`, `color: ${this.color}; font-weight: bold`, 'color: default, font-weight: normal', 'color: #0dc5dc;')
+        }
+        if (message)
+            console.info(message)
         console.trace()
         console.groupEnd()
     }
@@ -270,6 +284,13 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.onSearchUpdated()
     }
     protected get search() { return this._search }
+
+    protected set target(value: EltType) {
+        this._target = value;
+    }
+    get target(): EltType {
+        return this._target;
+    }
 
     /** the selector is active (selector visible and modify user input) or idle (instance kept only for reactivation on the same target) */
     protected set active(value: boolean) {
