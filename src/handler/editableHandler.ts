@@ -1,6 +1,7 @@
 import Handler from "./handler";
 import EmojiSelector from "../selector/emojiselector";
 import {Emoji} from "../emoji/emoji";
+import {setNativeValue, setValueFromSafeOrigin, verifyEmojiInsertion} from "./utils";
 
 type EditableElement = HTMLInputElement | HTMLTextAreaElement
 
@@ -45,16 +46,44 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         this.es.display = false
     }
 
-    protected onEmojiSelected(emoji: Emoji): void {
+    protected async onEmojiSelected(emoji: Emoji): Promise<void> {
         this.active = false
-        this.insertEmoji(emoji)
+        await this.insertEmoji(emoji)
         this.destroy()
     }
 
-    protected insertEmoji(emoji: Emoji) {
-        this.target.value = this.target.value.slice(0, this.searchPosition.begin) + emoji.unicode + this.target.value.slice(this.searchPosition.end)
-        this.target.setSelectionRange(this.searchPosition.begin + emoji.unicode.length, this.searchPosition.begin + emoji.unicode.length)
-        this.target.dispatchEvent(new Event('input', {bubbles: true}))
+    protected async insertEmoji(emoji: Emoji) {
+        const newValue =
+            this.target.value.slice(0, this.searchPosition.begin) +
+            emoji.unicode +
+            this.target.value.slice(this.searchPosition.end);
+
+        const setCursor = () => {
+            this.target.setSelectionRange(
+                this.searchPosition.begin + emoji.unicode.length,
+                this.searchPosition.begin + emoji.unicode.length
+            );
+        };
+
+        if (this.detectedFrameworks.includes("Next.js")) {
+            this.info(this.target, `Inserting emoji using setValueFromSafeOrigin for Next.js compatibility`, true);
+            setValueFromSafeOrigin(this.target, newValue);
+            setCursor();
+            return;
+        }
+
+        // Default: Native setter + input event
+        setNativeValue(this.target, newValue);
+        setCursor();
+        this.target.dispatchEvent(new Event("input", { bubbles: true }));
+        this.target.dispatchEvent(new Event("change", { bubbles: true }));
+
+        // Verify and fallback if needed
+        await verifyEmojiInsertion(this.target, newValue, () => {
+            this.warn(this.target, `Emoji not inserted correctly, falling back to safe-origin injection...`);
+            setValueFromSafeOrigin(this.target, newValue);
+            setCursor();
+        });
     }
 
     /**
