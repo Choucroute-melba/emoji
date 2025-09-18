@@ -35,7 +35,9 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         info.textContent = "Press Enter to copy the selected emoji to clipboard";
         container.appendChild(info)
         document.body.appendChild(container);
-        super(es, searchBar);
+
+        super(es, searchBar, onExit);
+
         this.mode = "default";
 
         this.searchBar = searchBar;

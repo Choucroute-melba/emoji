@@ -17,8 +17,8 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
     readonly sites: string[] = HTMLInputHandler.sites;
     readonly targets: string[] = HTMLInputHandler.targets;
 
-    constructor(es: EmojiSelector, target: HTMLInputElement) {
-        super(es, target);
+    constructor(es: EmojiSelector, target: HTMLInputElement, onExit: () => void = () => {}) {
+        super(es, target, onExit);
         this.active = true;
     }
 

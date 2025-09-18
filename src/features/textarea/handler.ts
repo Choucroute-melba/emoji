@@ -20,8 +20,8 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
     readonly sites: string[] = TextAreaHandler.sites;
     readonly targets: string[] = TextAreaHandler.targets;
 
-    constructor(es: EmojiSelector, target: HTMLTextAreaElement) {
-        super(es, target);
+    constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
+        super(es, target, onExit);
         this.active = true;
     }
 

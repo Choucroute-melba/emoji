@@ -27,8 +27,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         this.target.removeEventListener('input', this.tempInputListener, {capture: true});
     }
 
-    constructor(es: EmojiSelector, target: HTMLTextAreaElement) {
-        super(es, target);
+    constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
+        super(es, target, onExit);
         this.log(this.focusedChild, "focusedChild")
         this.boundAriaHandleSelectionChange = this.handleSelectionChange.bind(this);
         target.addEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});

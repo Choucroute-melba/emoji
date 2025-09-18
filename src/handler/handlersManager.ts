@@ -112,7 +112,7 @@ export function buildShortcutString(e: KeyboardEvent) {
  * @param handlers
  * @param e
  */
-export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent): Promise<new (es: EmojiSelector, target: any) => Handler<any>> {
+export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent): Promise<new (es: EmojiSelector, target: any, onExit: () => void) => Handler<any>> {
     const sc = buildShortcutString(e);
     const isCombo = (sc !== e.key);
     const domain = window.location.hostname;

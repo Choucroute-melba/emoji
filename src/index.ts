@@ -3,7 +3,6 @@ import TextAreaHandler from "./features/textarea/handler";
 import Handler from "./handler/handler";
 import HTMLInputHandler from "./features/input/handler";
 import AriaDivHandler from "./features/aria/handler";
-import browser from "webextension-polyfill";
 import {
     buildShortcutString,
     chooseAndLoadHandler,
@@ -48,14 +47,22 @@ async function mainListener(this: any, e: KeyboardEvent) {
         console.groupEnd()
         if(h) {
             if(!currentHandler) {
-                currentHandler = new h(es, e.target as any);
-                console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
-                currentHandler.onExit = () => {
+                const onExit = () => {
                     currentHandler = null
                     console.log("EmojiSelector closed")
-                    window.addEventListener('keydown', mainListener)
+                    window.addEventListener('keydown', mainListener, true)
                 }
-                window.removeEventListener('keydown', mainListener)
+                currentHandler = new h(es, e.target as any, onExit);
+                if(currentHandler) { // Handler may be destroyed during the instantiation
+                    console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
+                    window.removeEventListener('keydown', mainListener, true)
+                }
+                else {
+                    console.error("Something went wrong while creating the handler");
+                }
+            }
+            else {
+                console.warn("there is already a handler active", currentHandler.HandlerName, "for", currentHandler.target);
             }
         }
     }

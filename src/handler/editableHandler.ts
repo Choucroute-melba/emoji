@@ -32,8 +32,8 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
 
     private _mode: "selection" | "default" = "selection"
 
-    protected constructor(es: EmojiSelector, target: EditableType) {
-        super(es, target);
+    protected constructor(es: EmojiSelector, target: EditableType, onExit: () => void = () => {}) {
+        super(es, target, onExit);
 
         this.boundHandleKeydown = this.handleKeydown.bind(this)
         this.boundHandleSelectionChange = this.handleSelectionChange.bind(this)
