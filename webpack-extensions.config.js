@@ -7,9 +7,14 @@ const manifestsPath = path.resolve(extensionsDir, 'manifests/extensions.json');
 
 const extensionsManifestList = JSON.parse(fs.readFileSync(manifestsPath, 'utf8'));
 const extensionEntries = extensionsManifestList.reduce((entries, manifestFile) => {
-    const base = path.parse(manifestFile).name.replace('.manifest', '');
-    if(base !== 'input' && base !== 'textarea' && base !== 'editable' && base !== 'aria')
+    const manifest = JSON.parse(fs.readFileSync("extensions/manifests/" + manifestFile, 'utf8'));
+    if(manifest.file !== "bundled") {
+        const base = path.parse(manifestFile).name.replace('.manifest', '');
         entries[base] = path.join(extensionsDir, `${base}.ts`);
+    } else {
+        console.log("Skipping bundled extension: ", manifestFile);
+    }
+    console.log(entries)
     return entries;
 }, {});
 const outputDir = path.resolve(__dirname, 'dev/extensions/build');
