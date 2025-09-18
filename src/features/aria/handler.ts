@@ -20,7 +20,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     readonly targets: string[] = AriaDivHandler.targets;
     private boundAriaHandleSelectionChange: (e: Event) => void;
 
-    private readonly focusedChild: Node | null = null;
+    protected readonly focusedChild: Node | null = null;
     private backSpaceHandled: boolean = false;
     private tempInputListener = (e: Event) => {
         this.backSpaceHandled = true;
@@ -106,7 +106,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         return newSearchPosition
     }
 
-    protected insertEmoji(emoji: Emoji) {
+    protected async insertEmoji(emoji: Emoji) {
         const selection = window.getSelection();
         if(!selection) return;
         // this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
