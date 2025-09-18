@@ -68,7 +68,35 @@ async function mainListener(this: any, e: KeyboardEvent) {
     }
 }
 
+async function bindIframeListeners() {
+    const iframes: HTMLIFrameElement[] = Array.from(document.querySelectorAll('iframe'));
+    for (const iframe of iframes) {
+        let contentWindow = undefined
+        try {
+            contentWindow = iframe.contentWindow;
+        } catch (e) {}
+        if (contentWindow) {
+            if(!(contentWindow as any)._hasEmojiListener) {
+                console.groupCollapsed(`+ #${iframe.id}.${iframe.className} - ${iframe.src}`);
+                contentWindow.addEventListener('keydown', mainListener, true);
+                (contentWindow as any)._hasEmojiListener = true;
+                console.log(iframe)
+                console.log(contentWindow)
+                console.groupEnd();
+            }
+        } else {
+            console.info(`%cNo document found in iframe`, 'color: #4444FF', `#${iframe.id}.${iframe.className} - ${iframe.src}`);
+        }
+    }
+}
+
 window.addEventListener('keydown', mainListener, true)
+bindIframeListeners();
+
+document.addEventListener('DOMContentLoaded', bindIframeListeners);
+const observer = new MutationObserver(bindIframeListeners);
+
+observer.observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {
