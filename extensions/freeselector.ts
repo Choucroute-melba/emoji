@@ -21,11 +21,11 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
 
     searchBar: HTMLInputElement
     container: HTMLDivElement
-    info: HTMLParagraphElement
+    infoLine: HTMLParagraphElement
 
     previousActiveElement: HTMLElement | null = null;
 
-    constructor(es: EmojiSelector, target: any) {
+    constructor(es: EmojiSelector, target: any, onExit: () => void = () => {}) {
         const searchBar = document.createElement("input");
         const container = document.createElement("div");
         const info = document.createElement("p");
@@ -42,11 +42,11 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
 
         this.searchBar = searchBar;
         this.container = container;
-        this.info = info;
+        this.infoLine = info;
 
         this.searchBar.classList.add(s.searchBar);
         this.container.classList.add(s.container);
-        this.info.classList.add(s.info);
+        this.infoLine.classList.add(s.info);
 
         this.searchBar.addEventListener("input", this.onSearchBarInput.bind(this));
         this.active = true;
@@ -54,13 +54,18 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.previousActiveElement = document.activeElement as HTMLElement | null;
         this.log(this.previousActiveElement)
         // get caret position
-        const caretPosition = window.getSelection()?.getRangeAt(0).startOffset || 0;
-        this.log(null, "Caret position detected at: " + caretPosition);
-        this.searchBar.focus();
+        const selection = window.getSelection();
+        if(selection && selection.rangeCount > 0) {
+            const caretPosition = selection.getRangeAt(0).startOffset || 0;
+            this.log(null, "Caret position detected at: " + caretPosition);
+        }
+
+        this.searchBar.focus()
     }
 
 /*    protected onFocusLost() {
         this.log(null, "Focus lost")
+        super.onFocusLost();
     }*/
 
     onSearchBarInput(e: Event): void {
@@ -101,7 +106,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container.style.height = g.height + "px";
     }
 
-    protected insertEmoji(emoji: Emoji) {
+    protected async insertEmoji(emoji: Emoji) {
         navigator.clipboard.writeText(emoji.unicode).then(() => {
             this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
         }, (err) => {
@@ -122,6 +127,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         if(this.previousActiveElement) {
             this.previousActiveElement.focus();
         }
+        super.onDestroy();
     }
 
 }
