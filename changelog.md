@@ -1,3 +1,10 @@
+# Version 3.2.0
+*22/09/2025*
+
+- Improved the positioning of the selector in some cases
+- Improved the pop-up selector styling
+- Stability improvements for mailbox editors
+
 # Version 3.1.0
 *18/09/2025*
 
