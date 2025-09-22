@@ -22,16 +22,25 @@ export function getRelativeVerticalPlacement(y: number | Element) :"up" | "down"
  * @param placement - return the bottom left corner position if "up" and top left corner if "down"
  */
 export function calculateXYFromElt(elt: Element, placement: "up" | "down" | "auto" = "auto"): {x: number, y: number} {
+    const doc = elt.ownerDocument || document;
+    const fromWin = doc.defaultView || window;
     const rect = elt.getBoundingClientRect();
+    const topRect = rectToTopViewport(rect, fromWin);
+
+    const topWin = (fromWin.top || window);
+
+    // Determine placement relative to the top window viewport if auto
     if (placement == "auto") {
-        placement = getRelativeVerticalPlacement(elt);
+        placement = getRelativeVerticalPlacement(topRect.top);
     }
-    const scrollX = window.scrollX || document.documentElement.scrollLeft;
-    const scrollY = window.scrollY || document.documentElement.scrollTop;
+
+    const scrollX = topWin.scrollX || topWin.document.documentElement.scrollLeft;
+    const scrollY = topWin.scrollY || topWin.document.documentElement.scrollTop;
+
     if (placement == "up")
-        return {x: rect.left + scrollX, y: -(rect.top + (scrollY - window.innerHeight))};
+        return {x: topRect.left + scrollX, y: -(topRect.top + (scrollY - topWin.innerHeight))};
     else
-        return {x: rect.left + scrollX, y: rect.bottom + scrollY};
+        return {x: topRect.left + scrollX, y: topRect.bottom + scrollY};
 
 }
 
@@ -57,7 +66,7 @@ export function getAbsoluteCaretPosition(element: HTMLTextAreaElement) : {x: num
 }
 
 /**
- * Calculate and update the selector's position using given text input
+ * Calculate and update the selector's position using the given text input
  */
 export function getPositionFromElement(elt: HTMLInputElement | HTMLTextAreaElement) {
     const placement = getRelativeVerticalPlacement(elt);
@@ -65,6 +74,108 @@ export function getPositionFromElement(elt: HTMLInputElement | HTMLTextAreaEleme
     return {
         placement,
         position
+    }
+}
+
+/**
+ * Calculate and update the selector's position using the selection within the given element
+ * @param elt
+ * @param selection
+ */
+export function getPositionFromEditableDivCaret(elt: HTMLElement, selection?: Selection | null){
+    // Calculate caret absolute position for a contenteditable element (e.g., aria role textbox)
+    // IMPORTANT: build the caret range using selection offsets (focus/anchor) rather than relying solely on getRangeAt(0)
+    const doc = elt.ownerDocument || document;
+    const win = doc.defaultView || window;
+
+    const sel = selection ?? win.getSelection();
+    if (!sel) {
+        return getPositionFromElement(elt as any);
+    }
+
+    // Build a collapsed range from selection offsets so the caret position truly reflects focusNode/focusOffset
+    let range: Range | null = null;
+    try {
+        const focusNode = sel.focusNode ?? sel.anchorNode;
+        const focusOffset = (sel.focusNode != null ? sel.focusOffset : sel.anchorOffset) ?? 0;
+        if (focusNode) {
+            const r = doc.createRange();
+            // Range.setStart accepts both Text and Element nodes. For Element nodes, offset is the child index.
+            // We clamp offsets for text nodes to avoid IndexSizeError.
+            if (focusNode.nodeType === Node.TEXT_NODE) {
+                const textLen = (focusNode.nodeValue || '').length;
+                r.setStart(focusNode, Math.min(Math.max(focusOffset, 0), textLen));
+            } else {
+                const el = focusNode as Element;
+                const safeOffset = Math.min(Math.max(focusOffset, 0), el.childNodes.length);
+                r.setStart(el, safeOffset);
+            }
+            r.collapse(true);
+            range = r;
+        }
+    } catch (e) {
+        range = null;
+    }
+
+    if (!range) {
+        // Fallback to the current selection's range if offsets could not be used
+        if (!sel.rangeCount) {
+            return getPositionFromElement(elt as any);
+        }
+        range = sel.getRangeAt(0).cloneRange();
+        range.collapse(sel.type === 'Caret' ? true : false);
+    }
+
+    let rect: DOMRect | null = null;
+    const clientRects = range.getClientRects();
+    if (clientRects && clientRects.length > 0) {
+        rect = clientRects[clientRects.length - 1] as DOMRect;
+    } else {
+        // If the range has no rects (e.g., at the end of a line or on element boundary), insert a temporary zero-width marker
+        const marker = doc.createElement('span');
+        marker.textContent = '\u200b'; // zero-width space
+        marker.style.fontSize = 'inherit';
+        marker.style.lineHeight = 'inherit';
+        try {
+            // Insert at the computed caret range
+            range.insertNode(marker);
+            rect = marker.getBoundingClientRect();
+        } catch (e) {
+            // As a last resort, fall back to element position
+            return getPositionFromElement(elt as any);
+        } finally {
+            // Clean up marker while keeping selection intact
+            if (marker.parentNode) marker.parentNode.removeChild(marker);
+        }
+    }
+
+    if (!rect) {
+        return getPositionFromElement(elt as any);
+    }
+
+    // Map caret rect to the top window viewport coordinates (handles nested iframes)
+    const topRect = rectToTopViewport(rect, win);
+    const topWin = (win.top || window);
+
+    const caretX = topRect.left + (topWin.scrollX || topWin.document.documentElement.scrollLeft);
+    const caretYTop = topRect.top + (topWin.scrollY || topWin.document.documentElement.scrollTop);
+    const caretYBottom = topRect.bottom + (topWin.scrollY || topWin.document.documentElement.scrollTop);
+
+    // Determine whether to place the selector above or below based on top window viewport position
+    const placement = getRelativeVerticalPlacement(topRect.top);
+
+    if (placement === 'up') {
+        // When placing up, the y coordinate expects a negative offset from the bottom of the top window viewport
+        return {
+            placement,
+            position: { x: caretX, y: -(topRect.top + ((topWin.scrollY || topWin.document.documentElement.scrollTop) - topWin.innerHeight)) }
+        };
+    } else {
+        // When placing down, use the absolute bottom position of the caret line in the top document
+        return {
+            placement,
+            position: { x: caretX, y: caretYBottom }
+        };
     }
 }
 
@@ -151,4 +262,32 @@ const getCursorXY = (element: HTMLTextAreaElement) => {
         y: spanY,
         lineH: lineH
     }
+}
+
+// Helper: map a rect from a given window (possibly inside iframes) to the top window viewport coordinates
+export function rectToTopViewport(rect: DOMRect, fromWin: Window): { left: number, top: number, right: number, bottom: number, width: number, height: number } {
+    let left = rect.left;
+    let top = rect.top;
+    let right = rect.right;
+    let bottom = rect.bottom;
+    let currentWin: Window | null = fromWin;
+
+    // Walk up through nested iframes, accumulating each frameElement's client rect
+    try {
+        while (currentWin && currentWin.parent && currentWin !== currentWin.parent) {
+            const frameEl = (currentWin.frameElement as Element | null);
+            if (!frameEl) break;
+            const frameRect = frameEl.getBoundingClientRect();
+            left += frameRect.left;
+            top += frameRect.top;
+            right += frameRect.left;
+            bottom += frameRect.top;
+            currentWin = currentWin.parent;
+        }
+    } catch {
+        // Cross-origin may prevent access to parent; in that case, best effort with available frameElement
+        // If cross-origin prevents traversal, we still got the immediate frame offset above.
+    }
+
+    return { left, top, right, bottom, width: rect.width, height: rect.height };
 }
