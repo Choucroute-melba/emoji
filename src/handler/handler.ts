@@ -88,6 +88,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
+        // check if the target is within another document (iframe)
+        if(target.ownerDocument !== document) {
+            target.ownerDocument.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
+        }
         this.target.addEventListener('focusout', this.boundFocusLost)
 
         this.log("new handler", "\t\t\t---")
@@ -265,6 +269,9 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.active = false
         this.onDestroy()
         document.removeEventListener('keydown', this.boundHandleDocumentKeydown)
+        if(this.target.ownerDocument !== document) {
+            this.target.ownerDocument.removeEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
+        }
         this.target.removeEventListener('focusout', this.boundFocusLost)
         this.es.display = false
         this.es.onEmojiSelected = () => {}
