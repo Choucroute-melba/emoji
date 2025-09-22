@@ -8,17 +8,20 @@
     justify-content: start;
     align-items: center;
     padding: 10px;
+    margin: 0;
     border-radius: 5px 5px 0 0;
+    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .searchBar {
     width: 85%;
     border-radius: 3px;
-    border: 1px solid #ccc;
+    border: 1px solid #aaa;
     height: 30px;
+    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
 .info {
-    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 12px;
+    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }

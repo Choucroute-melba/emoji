@@ -2,7 +2,7 @@ import { Emoji } from "../src/emoji/emoji";
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
 import * as s from "./freeselector.module.css";
-
+import {applyInlineFromClasses} from "./freeselector-utils";
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
     static sites: string[] = ["*"];
@@ -44,9 +44,11 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container = container;
         this.infoLine = info;
 
-        this.searchBar.classList.add(s.searchBar);
-        this.container.classList.add(s.container);
-        this.infoLine.classList.add(s.info);
+
+        // Inline the CSS declarations from these classes to prevent host overrides
+        applyInlineFromClasses(this.container, [s.reset, s.container]);
+        applyInlineFromClasses(this.searchBar, [s.reset, s.searchBar]);
+        applyInlineFromClasses(this.infoLine, [s.reset, s.info]);
 
         this.searchBar.addEventListener("input", this.onSearchBarInput.bind(this));
         this.active = true;
