@@ -1,6 +1,6 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
-import {getPositionFromElement} from "../../selector/selector-utils";
+import {getPositionFromEditableDivCaret, getPositionFromElement} from "../../selector/selector-utils";
 import {Emoji} from "../../emoji/emoji";
 
 
@@ -20,6 +20,9 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     readonly targets: string[] = AriaDivHandler.targets;
     private boundAriaHandleSelectionChange: (e: Event) => void;
 
+    protected get window() {
+        return window;
+    }
     protected readonly focusedChild: Node | null = null;
     private backSpaceHandled: boolean = false;
     private tempInputListener = (e: Event) => {
@@ -36,14 +39,14 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
-        return getPositionFromElement(this.target);
+        return getPositionFromEditableDivCaret(this.target, this.window.getSelection());
     }
 
     protected getSelectionPosition(): { start: number; end: number; direction: string } {
         if(this.focusedChild == null) {
            // this.warn(this.focusedChild, "No focused child", true);
         }
-        const selection = window.getSelection();
+        const selection = this.window.getSelection();
         if(!selection) return {start: 0, end: 0, direction: "forward"}
         const newSelect = {
             start: selection.anchorOffset,
@@ -55,18 +58,18 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     protected getFieldValue(): string {
-        // this.log(window.getSelection()!.focusNode, "field value : '" + window.getSelection()!.focusNode!.nodeValue! + "'", true)
-        return window.getSelection()!.focusNode!.nodeValue!;
+        // this.log(this.window.getSelection()!.focusNode, "field value : '" + this.window.getSelection()!.focusNode!.nodeValue! + "'", true)
+        return this.window.getSelection()!.focusNode!.nodeValue!;
     }
 
     protected getSearchPosition(): { begin: number; end: number; caret: number } {
         const newSelection = this.getSelectionPosition();
         let newSearchPosition = this.searchPosition;
 
-        if(!window.getSelection()!.focusNode!.isEqualNode(this.focusedChild)) {
-            //this.warn([window.getSelection()!.focusNode, this.focusedChild], "Focus node changed", true)
-            if(window.getSelection()!.focusNode!.nodeValue) {
-                const nodeValue = window.getSelection()!.focusNode!.nodeValue!, caret = window.getSelection()!.focusOffset
+        if(!this.window.getSelection()!.focusNode!.isEqualNode(this.focusedChild)) {
+            //this.warn([this.window.getSelection()!.focusNode, this.focusedChild], "Focus node changed", true)
+            if(this.window.getSelection()!.focusNode!.nodeValue) {
+                const nodeValue = this.window.getSelection()!.focusNode!.nodeValue!, caret = this.window.getSelection()!.focusOffset
                 for(let i = caret; i > 0; i--) {
                     if(nodeValue[caret] == ":") {
                         newSearchPosition = {
@@ -81,8 +84,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
             else {
                 newSearchPosition = {
                     begin: 0,
-                    end: window.getSelection()!.focusOffset,
-                    caret: window.getSelection()!.focusOffset
+                    end: this.window.getSelection()!.focusOffset,
+                    caret: this.window.getSelection()!.focusOffset
                 }
             }
         }
@@ -107,7 +110,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     protected async insertEmoji(emoji: Emoji) {
-        const selection = window.getSelection();
+        const selection = this.window.getSelection();
         if(!selection) return;
         // this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
         // this.log(null, selection.focusNode!.nodeValue?.toString())
@@ -127,7 +130,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     protected handleKeydown(e: KeyboardEvent) {
         if(e.key == "Backspace") {
             this.target.addEventListener('input', this.tempInputListener, {capture: true});
-            window.setTimeout(() => {
+            this.window.setTimeout(() => {
                 if (!this.backSpaceHandled) {
                     this.target.dispatchEvent(new InputEvent('input', {bubbles: true}));
                     this.backSpaceHandled = false;
