@@ -1,3 +1,8 @@
+# Version 3.2.1
+*24/09/2025*
+
+- Improved compatibility with iframes
+
 # Version 3.2.0
 *22/09/2025*
 
