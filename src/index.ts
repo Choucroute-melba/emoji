@@ -83,14 +83,37 @@ async function bindIframeListeners() {
             contentWindow = iframe.contentWindow;
         } catch (e) {}
         if (contentWindow) {
+            if((contentWindow as any)._hasEmojiListener) {
+                console.groupCollapsed(`° #${iframe.id}.${iframe.className} - ${iframe.src}`);
+                contentWindow.removeEventListener('keydown', mainListener, true);
+            } else {
+                console.groupCollapsed(`+ #${iframe.id}.${iframe.className} - ${iframe.src}`);
+            }
+            contentWindow.addEventListener('keydown', mainListener, true);
+            (contentWindow as any)._hasEmojiListener = true;
+            (contentWindow as any)._emojiListenerLocation = window.location.href;
+            console.log(iframe)
+            console.log(contentWindow)
+            console.groupEnd();
+            /*
             if(!(contentWindow as any)._hasEmojiListener) {
                 console.groupCollapsed(`+ #${iframe.id}.${iframe.className} - ${iframe.src}`);
                 contentWindow.addEventListener('keydown', mainListener, true);
                 (contentWindow as any)._hasEmojiListener = true;
+                (contentWindow as any)._emojiListenerLocation = window.location.href;
                 console.log(iframe)
                 console.log(contentWindow)
                 console.groupEnd();
             }
+            else if(contentWindow.location.href !== (contentWindow as any)._emojiListenerLocation) {
+                console.groupCollapsed(`° #${iframe.id}.${iframe.className} - ${iframe.src}`);
+                contentWindow.addEventListener('keydown', mainListener, true);
+                (contentWindow as any)._hasEmojiListener = true;
+                (contentWindow as any)._emojiListenerLocation = window.location.href;
+                console.log(iframe)
+                console.log(contentWindow)
+                console.groupEnd();
+            }*/
         } else {
             console.info(`%cNo document found in iframe`, 'color: #4444FF', `#${iframe.id}.${iframe.className} - ${iframe.src}`);
         }
