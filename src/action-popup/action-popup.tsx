@@ -1,3 +1,4 @@
+import './action-popup.css';
 import React, {useState} from "react";
 import {SiteSettings} from "../settings/settingsManager";
 
@@ -38,11 +39,11 @@ function ActionPopup({
 
     return (
         <>
-            <button className={"browser-style"} onClick={onSetEnabled}>{enabled ? "Pause Extension" : "Activate"}</button>
-            <button className={"browser-style"} onClick={onSetEnabledForSite} style={{display: siteSettings.disabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
-            <p>
-                <a href="#">Settings</a> - <a href="https://github.com/Choucroute-melba/Emoji2">GitHub</a> - <a href="https://github.com/Choucroute-melba/Emoji2/issues">Report a bug</a>
-            </p>
+            <button className={enabled ? "" : "outlined"} onClick={onSetEnabled}>{enabled ? "Pause Extension" : "Activate"}</button>
+            <button className={enabledForSite ? "": "outlined"} onClick={onSetEnabledForSite} style={{display: siteSettings.disabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
+            <footer>
+                <a href={"https://github.com/Choucroute-melba/Emoji2"}>GitHub</a> - <a href="https://github.com/Choucroute-melba/emoji/issues/new">Report a Bug</a> - <a href={"https://addons.mozilla.org/en-US/firefox/addon/emojeezer/"}>Leave a Review</a>
+            </footer>
         </>
     )
 }
