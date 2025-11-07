@@ -37,7 +37,7 @@ export default {
         filename: '[name]-bundle.js',
         path: path.resolve(__dirname, 'dist'),
     },
-    mode: 'production',
+    mode: 'development',
 
     plugins: [
         new WebExtPlugin({
@@ -53,6 +53,6 @@ export default {
                 {from: 'assets', to: 'assets'}
             ]
         }),
-        new EmojeezerWebpackPlugin()
+        new EmojeezerWebpackPlugin({devVersion: true})
     ]
 };

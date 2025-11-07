@@ -37,6 +37,7 @@ export default class EmojeezerWebpackPlugin {
                         "72": "assets/ninja-2.png",
                         "256": "assets/ninja-3.png"
                     };
+                    manifest.browser_specific_settings.gecko.id = "emoji-dev@Choucroute-melba.github.io"
                 }
 
                 // Ensure the dist directory exists

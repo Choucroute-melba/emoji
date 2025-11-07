@@ -6,7 +6,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename);
 
 export default {
-    entry: './src/index.ts',
+    entry: {
+        'content-script': './src/index.ts',
+        'action-popup': './src/action.ts',
+        'background-script': './src/background.ts',
+    },
     module: {
         rules: [
             {
@@ -36,7 +40,7 @@ export default {
         extensions: ['.tsx', '.ts', '.js']
     },
     output: {
-        filename: 'bundle.js',
+        filename: '[name]-bundle.js',
         path: path.resolve(__dirname, 'dev'),
         clean: false,
     },

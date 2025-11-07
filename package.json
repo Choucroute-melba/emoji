@@ -1,16 +1,18 @@
 {
   "name": "Emoji2",
-  "version": "3.0.0",
+  "version": "3.2.1",
   "description": "",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
     "start": "webpack serve --config webpack.config.js",
     "watch": "webpack --watch --config webpack.config.js",
-    "build": "webpack --config webpack.debug.config.js",
+    "build": "webpack --config webpack.config.js",
+    "pre-release": "webpack --config webpack-pre-release.config.js",
     "build-package": "webpack --config webpack-package.config.js",
     "build-extension": "webpack --config webpack-extension.config.js",
-    "watch-extension": "webpack --watch --config webpack-extensions.config.js"
+    "watch-extension": "webpack --watch --config webpack-extensions.config.js",
+    "release": "webpack --config webpack-release.config.js"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",

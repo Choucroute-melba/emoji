@@ -1,11 +1,14 @@
 {
   "manifest_version": 2,
   "name": "Emojeezer - Dev",
-  "version": "3.2.1",
+  "version": "3.2.2",
   "description": "A simple extension to type emojis using the :emoji: syntax.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "emoji@Choucroute-melba.github.io"
+      "id": "emoji@Choucroute-melba.github.io",
+      "data_collection_permissions" : {
+        "required": ["none"]
+      }
     }
   },
   "icons": {
@@ -19,12 +22,24 @@
         "<all_urls>"
       ],
       "js": [
-        "bundle.js"
+        "content-script-bundle.js"
       ]
     }
   ],
+  "background": {
+    "scripts": [
+      "background-script-bundle.js"
+    ]
+  },
+  "browser_action": {
+    "default_icon": "assets/icon@48px.png",
+    "default_title": "Emojeezer",
+    "default_popup": "assets/action-popup.html",
+    "browser_style": true
+  },
   "permissions": [
     "activeTab",
-    "<all_urls>"
+    "<all_urls>",
+    "storage"
   ]
 }
