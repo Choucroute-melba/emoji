@@ -89,6 +89,9 @@ export default class EmojeezerWebpackPlugin {
                         },
                     }
                 }
+                if(this.options.devVersion) {
+                    amoMetadata.name = "Emojeezer Beta - " + version;
+                }
                 fs.writeFileSync(path.join(distDir, 'amo_metadata.json'), JSON.stringify(amoMetadata, null, 2));
                 console.log("AMO metadata created");
                 console.log(JSON.stringify(amoMetadata, null, 2))
