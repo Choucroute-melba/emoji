@@ -1,7 +1,8 @@
-import browser from "webextension-polyfill";
+import browser, {Runtime} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {callOnActiveTab} from "./background/utils";
+import {callOnActiveTab, getActiveTab} from "./background/utils";
 import SettingsManager from "./settings/settingsManager";
+import MessageSender = Runtime.MessageSender;
 
 console.log("background.ts");
 
@@ -30,58 +31,64 @@ browser.browserAction.onClicked.addListener(async (tab, click) => {
     }
 
     // browser.browserAction.openPopup();
-
 })
 
-browser.runtime.onMessage.addListener((message: any, sender, sendResponse): true => {
+async function messageListener(message: any, sender: MessageSender, sendResponse: (response?: any) => void): Promise<true> {
     const m = message as Message;
     switch (m.action) {
         case "getSettings":
-            sm.getSettings().then((settings) => {
+            await sm.getSettings().then((settings) => {
                 sendResponse(settings);
             })
             break;
         case "getSiteSettings":
             if(!m.data?.url) {
-                callOnActiveTab((tab) => {
-                    if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
-                    sm.getSettingsForSite(tab.url).then((settings) => {
-                        sendResponse(settings);
-                    });
-                })
+                const tab = await getActiveTab();
+                if(!tab) throw new Error("No active tab");
+                if(!tab.url || tab.url === "") throw new Error("No tab url (maybe no active tab?)");
+                const settings = await sm.getSettingsForSite(tab.url)
+                sendResponse(settings);
             }
             else
-                sm.getSettingsForSite(m.data.url).then((settings) => {
+                await sm.getSettingsForSite(m.data.url).then((settings) => {
                     sendResponse(settings);
                 });
             break;
         case "enable":
-            sm.enableGlobally(m.data.enabled);
+            await sm.enableGlobally(m.data.enabled);
             break;
         case "enableForSite":
-            callOnActiveTab((tab) => {
-                if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
-                sm.enableOnSite(tab.url, m.data.enabled);
-            })
+            const tab = await getActiveTab();
+            if(!tab) throw new Error("No active tab");
+            if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
+            await sm.enableOnSite(tab.url, m.data.enabled);
             break;
         case "setFreeSelector":
             if(m.data.thisSiteOnly || m.data.url) {
                 if (!m.data.url) {
-                    callOnActiveTab((tab) => {
-                        if (!tab.url) throw new Error("No tab url (maybe no active tab?)");
-                        sm.enableOnSite(tab.url, m.data.enabled);
-                    })
+                    const tab = await getActiveTab();
+                    if(!tab) throw new Error("No active tab");
+                    if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
+                    await sm.enableOnSite(tab.url, m.data.enabled);
                 }
                 else
-                    sm.enableOnSite(m.data.url, m.data.enabled);
+                    await sm.enableOnSite(m.data.url, m.data.enabled);
             }
             else
-                sm.enableFreeSelector(m.data.enabled);
+                await sm.enableFreeSelector(m.data.enabled);
             break;
         case "getTabId":
             sendResponse(sender.tab?.id);
             break;
     }
+    sendResponse(true);
     return true;
+}
+
+browser.runtime.onMessage.addListener((message: any, sender, sendResponse): true => {
+    messageListener(message, sender, sendResponse).then(() => {
+        return true
+    });
+    return true
 });
 

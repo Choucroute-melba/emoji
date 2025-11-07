@@ -26,21 +26,20 @@ function ActionPopup({
     onToggleEnabled: (enabled: boolean) => void;
     onToggleEnabledForSite: (enabled: boolean, url?: string) => void;
 }) {
-    const [enabled, setEnabled] = useState(siteSettings.disabledGlobally || false);
+    const enabled = !siteSettings.disabledGlobally
     const onSetEnabled = () => {
-        setEnabled(!enabled);
-        onToggleEnabled(enabled);
+        onToggleEnabled(!enabled);
     }
-    const [enabledForSite, setEnabledForSite] = useState(siteSettings.enabled);
+    const enabledForSite = siteSettings.enabled
     const onSetEnabledForSite = () => {
-        setEnabledForSite(!enabledForSite);
-        onToggleEnabledForSite(enabledForSite, siteSettings.url);
+        onToggleEnabledForSite(!enabledForSite, siteSettings.url);
     }
+    console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${siteSettings.disabledGlobally}, url=${siteSettings.url}`);
 
     return (
         <>
             <button className={"browser-style"} onClick={onSetEnabled}>{enabled ? "Pause Extension" : "Activate"}</button>
-            <button className={"browser-style"} onClick={onSetEnabledForSite} style={{display: enabled ? "inline" : "none"}}>{enabledForSite ? "Enable" : "Disable"} For This Site</button>
+            <button className={"browser-style"} onClick={onSetEnabledForSite} style={{display: siteSettings.disabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
             <p>
                 <a href="#">Settings</a> - <a href="https://github.com/Choucroute-melba/Emoji2">GitHub</a> - <a href="https://github.com/Choucroute-melba/Emoji2/issues">Report a bug</a>
             </p>

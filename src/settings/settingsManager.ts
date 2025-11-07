@@ -88,24 +88,34 @@ export default class SettingsManager {
     }
 
     private addListener(name: string, subs: SubscriptionScope[]) {
-        this.listeners.forEach(l => {
-            if(l.name == name) {
-                subs.forEach(s => {
-                    if(!l.subscriptions.includes(s))
-                        l.subscriptions.push(s);
-                })
-            }
-        })
+        const alreadyExists = this.listeners.findIndex((l) => l.name == name);
+        if(alreadyExists >= 0) {
+            const l = this.listeners[alreadyExists];
+            subs.forEach(s => {
+                if(!l.subscriptions.includes(s))
+                    l.subscriptions.push(s);
+            })
+        }
+        else {
+            this.listeners.push({
+                name,
+                subscriptions: subs
+            })
+        }
     }
 
     private async onSettingsChanged() {
+        console.log("Settings changed")
         for (const l of this.listeners) {
             if(l.subscriptions.includes("globalSettings")) {
                 const p = this.getPort(l.name);
                 if(p) {
+                    console.log("Sending settings to " + l.name, "port :", p.name);
                     p.postMessage({
-                        action: "settingsUpdated",
-                        data: await this.getSettings()
+                        event: "settingsUpdated",
+                        data: {
+                            settings: await this.getSettings()
+                        }
                     })
                 }
                 else
@@ -114,16 +124,20 @@ export default class SettingsManager {
         }
     }
 
-    private onSiteSettingsChanged(url: string) {
+    private async onSiteSettingsChanged(url: string) {
+        console.log("Settings changed for " + url)
         const domain = new URL(url).hostname;
         const sitePorts = this.connections.filter((p) => p.sender?.url?.includes(domain));
+        if(this.listeners.findIndex((l) => l.name == "action-popup") >= 0)
+            sitePorts.push(this.getPort("action-popup")!);
+        console.log(sitePorts)
         for (const p of sitePorts) {
             const listener = this.listeners.find((l) => l.name == p.name)
             if(listener && listener.subscriptions.includes("siteSettings")) {
                 p.postMessage({
-                    action: "siteSettingsUpdated",
+                    event: "siteSettingsUpdated",
                     data: {
-                        settings: this.getSettingsForSite(url)
+                        settings: await this.getSettingsForSite(url)
                     }
                 })
             }
@@ -131,7 +145,7 @@ export default class SettingsManager {
     }
 
     async enableOnSite(url: string, enable: boolean) {
-        console.log(enable ? "Enabled on" : "Disabled on", url);
+        console.log(enable ? "Enable on" : "Disable on", url);
         const disabledSites = await browser.storage.sync.get("settings.disabledSites").then((result: any) => {
             return result["settings.disabledSites"];
         })
@@ -145,7 +159,7 @@ export default class SettingsManager {
         await browser.storage.sync.set({
             "settings.disabledSites": disabledSites
         })
-        this.onSiteSettingsChanged(url);
+        await this.onSiteSettingsChanged(url);
     }
 
     async enableGlobally(enable: boolean) {
@@ -155,7 +169,7 @@ export default class SettingsManager {
         await browser.storage.sync.set({
             "settings.enabled": enable
         })
-        this.onSettingsChanged();
+        await this.onSettingsChanged();
     }
 
     async enableFreeSelector(enabled: boolean, url?: string) {
@@ -177,7 +191,7 @@ export default class SettingsManager {
             await browser.storage.sync.set({
                 "settings.freeSelectorDisabledSites": freeSelectorDisabledSites
             })
-            this.onSiteSettingsChanged(url);
+            await this.onSiteSettingsChanged(url);
         }
     }
 
