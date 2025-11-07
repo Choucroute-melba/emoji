@@ -3,7 +3,7 @@ name: Publish Pre-Release
 on:
   push:
     tags:
-      - 'b-'
+      - 'b*'
 
 jobs:
   release:
