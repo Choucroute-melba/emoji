@@ -1,7 +1,7 @@
 import { Emoji } from "../src/emoji/emoji";
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
-import s from "./freeselector.module.css";
+import * as s from "./freeselector.module.css";
 import {applyInlineFromClasses} from "./freeselector-utils";
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
