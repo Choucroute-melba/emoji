@@ -8,6 +8,9 @@ import {
     chooseAndLoadHandler,
     getAvailableHandlers
 } from "./handler/handlersManager";
+import browser from "webextension-polyfill";
+import {SiteSettings} from "./settings/settingsManager";
+import {AddSiteSettingsListenerMessage, EventMessage, Message} from "./background/messsaging";
 
 console.log('Emoji on the go ✨')
 
@@ -17,6 +20,8 @@ const availableHandlers = await getAvailableHandlers();
 
 let es = new EmojiSelector()
 let currentHandler: Handler<any> | null = null
+
+const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
 
 
 async function mainListener(this: any, e: KeyboardEvent) {
@@ -120,13 +125,77 @@ async function bindIframeListeners() {
     }
 }
 
-window.addEventListener('keydown', mainListener, true)
-bindIframeListeners();
+async function enableEmojiOnTheGo() {
+    window.addEventListener('keydown', mainListener, true)
+    bindIframeListeners();
 
-document.addEventListener('DOMContentLoaded', bindIframeListeners);
+    document.addEventListener('DOMContentLoaded', bindIframeListeners);
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    es.addToDom()
+}
+
+async function disableEmojiOnTheGo() {
+    es.removeFromDom()
+    window.removeEventListener('keydown', mainListener, true)
+    document.removeEventListener('DOMContentLoaded', bindIframeListeners);
+    observer.disconnect();
+    if(currentHandler) {
+        currentHandler.destroy()
+        currentHandler = null
+    }
+
+}
+
+
 const observer = new MutationObserver(bindIframeListeners);
 
-observer.observe(document.body, { childList: true, subtree: true });
+let siteSettings = await browser.runtime.sendMessage({ action: "getSiteSettings", data: { url: window.location.href }}) as SiteSettings
+const port = browser.runtime.connect({ name: `emoji-tab-${tabId}` });
+port.onMessage.addListener(async (message) => {
+    const msg = message as EventMessage
+    if(msg.event === "siteSettingsUpdated") {
+        console.log("siteSettingsUpdated", msg.data)
+        const newSettings = msg.data.settings
+        if(newSettings.enabled !== siteSettings.enabled) {
+            if(newSettings.enabled) {
+                await enableEmojiOnTheGo()
+            }
+            else {
+                await disableEmojiOnTheGo()
+            }
+            siteSettings = newSettings
+            console.log(`Site settings (${tabId}) :`, siteSettings);
+        }
+    }
+    if(msg.event === "settingsUpdated") {
+        console.log("Global settings updated", msg.data.settings)
+        if(msg.data.settings.enabled && siteSettings.disabledGlobally && siteSettings.enabled) {
+            await enableEmojiOnTheGo()
+            siteSettings.disabledGlobally = false
+            console.log(`Site settings (${tabId}) :`, siteSettings);
+        }
+        else if(!msg.data.settings.enabled && !siteSettings.disabledGlobally && siteSettings.enabled) {
+            await disableEmojiOnTheGo()
+            siteSettings.disabledGlobally = true
+            console.log(`Site settings (${tabId}) :`, siteSettings);
+        }
+    }
+})
+
+port.postMessage({action: "addSiteSettingsListener", data: {url: window.location.href}} as AddSiteSettingsListenerMessage)
+port.postMessage({action: "addSettingsListener", data: {url: window.location.href}} as Message)
+
+console.log(`Site settings (${tabId}) :`, siteSettings);
+
+if(siteSettings.enabled && !siteSettings.disabledGlobally) {
+    console.log("Emoji on the go is enabled for this site");
+    await enableEmojiOnTheGo()
+}
+else {
+    await disableEmojiOnTheGo()
+    console.log("Emoji on the go is disabled for this site");
+}
 
 window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {

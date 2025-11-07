@@ -36,6 +36,7 @@ export default class EmojiSelector {
     private _mode: "absolute" | "relative" | "fixed" | "sticky" = "absolute";
     private _debugText: string = ""
     private _shape = {w: 0, h: 0}; // the shape of the selector, used for resizing
+    private _inDocument = false;
 
     public onEmojiSelected: (emoji: Emoji) => void = () => {};
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
@@ -46,10 +47,20 @@ export default class EmojiSelector {
         this.root.classList.add('emoji-selector');
         this.root.style.display = 'none';
 
-        document.body.appendChild(this.root);
-
         this.reactRoot = createRoot(this.root);
         this.reactRoot.render(this.component());
+    }
+
+    addToDom() {
+        if(this._inDocument) return;
+        document.body.appendChild(this.root);
+        this._inDocument = true;
+    }
+
+    removeFromDom() {
+        if(!this._inDocument) return;
+        document.body.removeChild(this.root);
+        this._inDocument = false;
     }
 
     focusUp() {

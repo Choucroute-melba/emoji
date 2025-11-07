@@ -60,7 +60,7 @@ export default class SettingsManager {
         }
         else
             this.connections.push(p);
-        console.log("Connected to " + p.name + " (" + p.sender?.url + ")", JSON.stringify(p.sender?.tab))
+        console.log("Connected to " + p.name + " (" + p.sender?.url + ")")
         p.onMessage.addListener(this.onMessage.bind(this));
         p.postMessage({action: "greeting"})
     }
@@ -106,21 +106,37 @@ export default class SettingsManager {
 
     private async onSettingsChanged() {
         console.log("Settings changed")
+        const toRemove: string[] = [];
         for (const l of this.listeners) {
             if(l.subscriptions.includes("globalSettings")) {
                 const p = this.getPort(l.name);
                 if(p) {
                     console.log("Sending settings to " + l.name, "port :", p.name);
-                    p.postMessage({
-                        event: "settingsUpdated",
-                        data: {
-                            settings: await this.getSettings()
+                    try {
+                        p.postMessage({
+                            event: "settingsUpdated",
+                            data: {
+                                settings: await this.getSettings()
+                            }
+                        })
+                    } catch (e: any) {
+                        if(e.message.includes("Attempt to postMessage on disconnected port")) {
+                            console.log("Port disconnected, removing listener");
+                            toRemove.push(l.name);
                         }
-                    })
+                    }
                 }
                 else
                     console.error("Port not found");
             }
+        }
+        for(const r of toRemove) {
+            let i = this.listeners.findIndex((l) => l.name == r);
+            if(i >= 0)
+                this.listeners.splice(i, 1);
+            i = this.connections.findIndex((p) => p.name == r);
+            if(i >= 0)
+                this.connections.splice(i, 1);
         }
     }
 
@@ -207,7 +223,7 @@ export default class SettingsManager {
         const domain = new URL(url).hostname;
         const siteSettings: SiteSettings = {
             url: domain,
-            enabled: globallyEnabled && !disabledSites.includes(domain),
+            enabled: !disabledSites.includes(domain),
             freeSelector: globallyFreeSelector && !freeSelectorDisabledSites.includes(domain)
         }
         if(!globallyEnabled)
