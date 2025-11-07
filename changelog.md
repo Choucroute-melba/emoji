@@ -1,3 +1,13 @@
+# Version 4.0.0
+*07/11/2025*
+
+You can now disable autocomplete, totally or on specific websites. To do this, you just have to click on 
+the Emojeezer icon in your browser's toolbar (please check if it isn't in the overflow menu, aka the puzzle piece icon).
+
+- Implemented basic settings
+- Added a control panel in browser's toolbar
+- Added links to GitHub and Review
+
 # Version 3.2.1
 *24/09/2025*
 
