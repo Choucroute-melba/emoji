@@ -1,26 +1,5 @@
 body {
-    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 15px;
     width: 286px;
-}
-
-button {
-    margin: 5px;
-    padding: 5px;
-    border-radius: 5px;
-    border: none;
-    cursor: pointer;
-    font-size: 15px;
-    font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-weight: 600;
-}
-
-button:hover {
-    background-color: #f0f0f0;
-}
-
-button:focus {
-    background-color: #e0e0e0;
 }
 
 a {
@@ -30,10 +9,6 @@ a {
 footer {
     margin-top: 10px;
     text-align: center;
-}
-
-.outlined {
-    border: 1px solid #ccc;
 }
 
 .status {

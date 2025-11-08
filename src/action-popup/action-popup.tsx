@@ -1,3 +1,4 @@
+import '@src/base.css'
 import './action-popup.css';
 import React, {useState} from "react";
 import {SiteSettings} from "../settings/settingsManager";
