@@ -2,6 +2,7 @@ import '@src/base.css'
 import './action-popup.css';
 import React, {useState} from "react";
 import {SiteSettings} from "../settings/settingsManager";
+import browser from "webextension-polyfill";
 
 export default function Comp({
                               siteSettings,
@@ -36,7 +37,12 @@ function ActionPopup({
     const onSetEnabledForSite = () => {
         onToggleEnabledForSite(!enabledForSite, siteSettings.url);
     }
-    let hostname = new URL(siteSettings.url).host;
+    let hostname = ""
+    try {
+        hostname = new URL(siteSettings.url).host;
+    } catch (e) {
+        hostname = siteSettings.url
+    }
     if(hostname === "") hostname = siteSettings.url;
 
     console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${siteSettings.disabledGlobally}, url=${siteSettings.url}`);
@@ -54,7 +60,7 @@ function ActionPopup({
                 <p style={{color: statusColor}}>{statusText}</p>
             </div>
             <footer>
-                <a href={"https://github.com/Choucroute-melba/Emoji2"}>GitHub</a> - <a href="https://github.com/Choucroute-melba/emoji/issues/new">Report a Bug</a> - <a href={"https://addons.mozilla.org/en-US/firefox/addon/emojeezer/"}>Leave a Review</a>
+                <a href={browser.runtime.getURL("assets/settings.html")} target={"_blank"} >Settings</a> - <a href="https://github.com/Choucroute-melba/emoji/issues/new">Report a Bug</a> - <a href={"https://addons.mozilla.org/en-US/firefox/addon/emojeezer/"}>Leave a Review</a>
             </footer>
         </>
     )
