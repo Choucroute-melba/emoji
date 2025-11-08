@@ -16,6 +16,7 @@ export default {
         'content-script': './src/index.ts',
         'action-popup': './src/action.ts',
         'background-script': './src/background.ts',
+        'settings': './src/settings.ts',
     },
     module: {
         rules: [

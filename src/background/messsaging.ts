@@ -1,6 +1,6 @@
 import {GlobalSettings, SiteSettings} from "../settings/settingsManager";
 
-export type Message = GetSiteSettingsMessage | EnableForSiteMessage | EnableMessage | SetFreeSelectorMessage | AddSiteSettingsListenerMessage |
+export type Message = GetSiteSettingsMessage | EnableForSiteMessage | EnableMessage | SetFreeSelectorMessage | AddSiteSettingsListenerMessage | SetKeepFreeSelectorEnabledMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -49,6 +49,13 @@ export type SetFreeSelectorMessage = {
         enabled: boolean,
         thisSiteOnly?: boolean,
         url?: string,
+    }
+}
+
+export type SetKeepFreeSelectorEnabledMessage = {
+    action: "setKeepFreeSelectorEnabled",
+    data: {
+        enabled: boolean,
     }
 }
 

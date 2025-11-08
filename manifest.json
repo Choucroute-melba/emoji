@@ -16,6 +16,9 @@
     "72": "./assets/ninja-2.png",
     "256": "./assets/ninja-3.png"
   },
+  "options_ui": {
+    "page": "assets/settings.html"
+  },
   "content_scripts": [
     {
       "matches": [

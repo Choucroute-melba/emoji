@@ -13,6 +13,8 @@ export type SiteSettings = {
 export type GlobalSettings = {
     enabled: boolean,
     freeSelector: boolean,
+    actionIcon?: string,
+    keepFreeSelectorEnabled: boolean
     sites: { [url: string]: SiteSettings },
 }
 
@@ -21,6 +23,7 @@ export type SubscriptionScope = "siteSettings" | "globalSettings";
 export default class SettingsManager {
     private connections: Port[] = [];
     private listeners: {name: string, subscriptions: SubscriptionScope[]}[] = []
+    private defaultActionIcon = "U+1F609"
 
     constructor() {
         browser.runtime.onConnect.addListener(this.onConnect.bind(this));
@@ -30,8 +33,10 @@ export default class SettingsManager {
         const s = await browser.storage.sync.get([
             "settings.enabled",
             "settings.freeSelectorEnabled",
+            "settings.keepFreeSelectorEnabled",
             "settings.disabledSites",
             "settings.freeSelectorDisabledSites",
+            "settings.actionIcon"
         ])
         if(!s["settings.enabled"])
             await browser.storage.sync.set({
@@ -49,6 +54,15 @@ export default class SettingsManager {
             await browser.storage.sync.set({
                 "settings.freeSelectorDisabledSites": []
             })
+        if(!s["settings.actionIcon"])
+            await browser.storage.sync.set({
+                "settings.actionIcon": this.defaultActionIcon
+            })
+        if(!s["settings.keepFreeSelectorEnabled"])
+            await browser.storage.sync.set({
+                "settings.keepFreeSelectorEnabled": true
+            })
+        console.log("Storage initialized")
     }
 
     private onConnect(p: Port) {
@@ -121,7 +135,7 @@ export default class SettingsManager {
                         })
                     } catch (e: any) {
                         if(e.message.includes("Attempt to postMessage on disconnected port")) {
-                            console.log("Port disconnected, removing listener");
+                            console.log(`Port ${p.name} disconnected, removing listener`);
                             toRemove.push(l.name);
                         }
                     }
@@ -142,21 +156,42 @@ export default class SettingsManager {
 
     private async onSiteSettingsChanged(url: string) {
         console.log("Settings changed for " + url)
-        const domain = new URL(url).hostname;
+        let domain = new URL(url).host;
+        if(domain === "") domain = url;
         const sitePorts = this.connections.filter((p) => p.sender?.url?.includes(domain));
         if(this.listeners.findIndex((l) => l.name == "action-popup") >= 0)
             sitePorts.push(this.getPort("action-popup")!);
+        if(this.listeners.findIndex((l) => l.name == "settings-page") >= 0)
+            sitePorts.push(this.getPort("settings-page")!);
         console.log(sitePorts)
+        const toRemove: string[] = [];
+
         for (const p of sitePorts) {
             const listener = this.listeners.find((l) => l.name == p.name)
             if(listener && listener.subscriptions.includes("siteSettings")) {
-                p.postMessage({
-                    event: "siteSettingsUpdated",
-                    data: {
-                        settings: await this.getSettingsForSite(url)
+                try {
+                    p.postMessage({
+                        event: "siteSettingsUpdated",
+                        data: {
+                            settings: await this.getSettingsForSite(url)
+                        }
+                    })
+                }
+                catch (e: any) {
+                    if(e.message.includes("Attempt to postMessage on disconnected port")) {
+                        console.log(`Port ${p.name} disconnected, removing listener`);
+                        toRemove.push(listener.name);
                     }
-                })
+                }
             }
+        }
+        for(const r of toRemove) {
+            let i = this.listeners.findIndex((l) => l.name == r);
+            if(i >= 0)
+                this.listeners.splice(i, 1);
+            i = this.connections.findIndex((p) => p.name == r);
+            if(i >= 0)
+                this.connections.splice(i, 1);
         }
     }
 
@@ -165,7 +200,9 @@ export default class SettingsManager {
         const disabledSites = await browser.storage.sync.get("settings.disabledSites").then((result: any) => {
             return result["settings.disabledSites"];
         })
-        const domain = new URL(url).hostname;
+        const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
+            return result["settings.keepFreeSelectorEnabled"];
+        })
         let domain = new URL(url).host
         if(domain === "") domain = url;
         const index = disabledSites.indexOf(domain);
@@ -183,10 +220,17 @@ export default class SettingsManager {
     async enableGlobally(enable: boolean) {
         console.log((enable ? "Enabled" : "Disabled") + " on all sites");
         const enabledGlobally = await browser.storage.sync.get("settings.enabled").then((result: any) => {return result["settings.enabled"]})
+        const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
+            return result["settings.keepFreeSelectorEnabled"];
+        })
         if(enabledGlobally == enable) return;
         await browser.storage.sync.set({
             "settings.enabled": enable
         })
+        if(!keepFreeSelectorEnabled)
+            await browser.storage.sync.set({
+                "settings.freeSelectorEnabled": enable
+            })
         await this.onSettingsChanged();
     }
 
@@ -214,6 +258,18 @@ export default class SettingsManager {
         }
     }
 
+    async toggleKeepFreeSelectorEnabled(enable: boolean) {
+        console.log((enable ? "Enabled" : "Disabled") + " keep free selector enabled");
+        const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
+            return result["settings.keepFreeSelectorEnabled"];
+        })
+        if(keepFreeSelectorEnabled == enable) return;
+        await browser.storage.sync.set({
+            "settings.keepFreeSelectorEnabled": enable
+        })
+        await this.onSettingsChanged();
+    }
+
     async getSettingsForSite(url: string): Promise<SiteSettings> {
         let globallyEnabled: boolean;
         let globallyFreeSelector: boolean;
@@ -223,13 +279,15 @@ export default class SettingsManager {
         globallyFreeSelector = await browser.storage.sync.get("settings.freeSelectorEnabled").then((result: any) => {return result["settings.freeSelectorEnabled"]})
         disabledSites = await browser.storage.sync.get("settings.disabledSites").then((result: any) => {return result["settings.disabledSites"]})
         freeSelectorDisabledSites = await browser.storage.sync.get("settings.freeSelectorDisabledSites").then((result: any) => {return result["settings.freeSelectorDisabledSites"]})
-        const domain = new URL(url).hostname;
+        const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
+            return result["settings.keepFreeSelectorEnabled"];
+        })
         let domain = new URL(url).host;
         if(domain === "") domain = url;
         const siteSettings: SiteSettings = {
             url: domain,
             enabled: !disabledSites.includes(domain),
-            freeSelector: globallyFreeSelector && !freeSelectorDisabledSites.includes(domain)
+            freeSelector: globallyEnabled || keepFreeSelectorEnabled
         }
         if(!globallyEnabled)
             siteSettings.disabledGlobally = true;
@@ -247,14 +305,18 @@ export default class SettingsManager {
         globallyFreeSelector = await browser.storage.sync.get("settings.freeSelectorEnabled").then((result: any) => {return result["settings.freeSelectorEnabled"]})
         disabledSites = await browser.storage.sync.get("settings.disabledSites").then((result: any) => {return result["settings.disabledSites"]})
         freeSelectorDisabledSites = await browser.storage.sync.get("settings.freeSelectorDisabledSites").then((result: any) => {return result["settings.freeSelectorDisabledSites"]})
+        const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
+            return result["settings.keepFreeSelectorEnabled"];
+        })
         return {
             enabled: globallyEnabled,
-            freeSelector: globallyFreeSelector,
+            freeSelector: globallyEnabled || keepFreeSelectorEnabled,
+            keepFreeSelectorEnabled: keepFreeSelectorEnabled,
             sites: {...disabledSites.reduce((acc, url) => {
                 acc[url] = {
                     url: url,
                     enabled: false,
-                    freeSelector: !freeSelectorDisabledSites.includes(url),
+                    freeSelector: keepFreeSelectorEnabled,
                 }
                 return acc;
             }, {} as {[url: string]: SiteSettings})}

@@ -1,0 +1,9 @@
+.siteBlacklistItem {
+    margin: 5px;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid #ccc;
+}

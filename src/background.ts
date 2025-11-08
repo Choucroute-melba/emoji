@@ -58,10 +58,15 @@ async function messageListener(message: any, sender: MessageSender, sendResponse
             await sm.enableGlobally(m.data.enabled);
             break;
         case "enableForSite":
-            const tab = await getActiveTab();
-            if(!tab) throw new Error("No active tab");
-            if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
-            await sm.enableOnSite(tab.url, m.data.enabled);
+            if (!m.data.url){
+                const tab = await getActiveTab();
+                if (!tab) throw new Error("No active tab");
+                if (!tab.url) throw new Error("No tab url (maybe no active tab?)");
+                await sm.enableOnSite(tab.url, m.data.enabled);
+            }
+            else {
+                await sm.enableOnSite(m.data.url, m.data.enabled);
+            }
             break;
         case "setFreeSelector":
             if(m.data.thisSiteOnly || m.data.url) {
@@ -77,6 +82,9 @@ async function messageListener(message: any, sender: MessageSender, sendResponse
             else
                 await sm.enableFreeSelector(m.data.enabled);
             break;
+        case "setKeepFreeSelectorEnabled":
+            await sm.toggleKeepFreeSelectorEnabled(m.data.enabled);
+            break
         case "getTabId":
             sendResponse(sender.tab?.id);
             break;

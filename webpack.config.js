@@ -10,6 +10,7 @@ export default {
         'content-script': './src/index.ts',
         'action-popup': './src/action.ts',
         'background-script': './src/background.ts',
+        'settings': './src/settings.ts',
     },
     module: {
         rules: [
@@ -37,7 +38,10 @@ export default {
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: ['.tsx', '.ts', '.js'],
+        alias: {
+            '@src': path.resolve(__dirname, 'src'),
+        }
     },
     output: {
         filename: '[name]-bundle.js',
