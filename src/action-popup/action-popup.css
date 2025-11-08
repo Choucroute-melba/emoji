@@ -35,3 +35,12 @@ footer {
 .outlined {
     border: 1px solid #ccc;
 }
+
+.status {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: baseline;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
