@@ -166,6 +166,8 @@ export default class SettingsManager {
             return result["settings.disabledSites"];
         })
         const domain = new URL(url).hostname;
+        let domain = new URL(url).host
+        if(domain === "") domain = url;
         const index = disabledSites.indexOf(domain);
         if(enable && index >= 0)
                 disabledSites.splice(index, 1);
@@ -197,7 +199,8 @@ export default class SettingsManager {
             const freeSelectorDisabledSites = await browser.storage.sync.get("settings.freeSelectorDisabledSites").then((result: any) => {
                 return result["settings.freeSelectorDisabledSites"];
             })
-            const domain = new URL(url).hostname;
+            let domain = new URL(url).host;
+            if(domain === "") domain = url;
             const index = freeSelectorDisabledSites.indexOf(domain);
             if(enabled && index >= 0)
                 freeSelectorDisabledSites.splice(index, 1);
@@ -221,6 +224,8 @@ export default class SettingsManager {
         disabledSites = await browser.storage.sync.get("settings.disabledSites").then((result: any) => {return result["settings.disabledSites"]})
         freeSelectorDisabledSites = await browser.storage.sync.get("settings.freeSelectorDisabledSites").then((result: any) => {return result["settings.freeSelectorDisabledSites"]})
         const domain = new URL(url).hostname;
+        let domain = new URL(url).host;
+        if(domain === "") domain = url;
         const siteSettings: SiteSettings = {
             url: domain,
             enabled: !disabledSites.includes(domain),

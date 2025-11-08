@@ -36,12 +36,8 @@ function ActionPopup({
     const onSetEnabledForSite = () => {
         onToggleEnabledForSite(!enabledForSite, siteSettings.url);
     }
-    let hostname = ""
-    try {
-        hostname = new URL(siteSettings.url).host
-    } catch (e) {
-        hostname = siteSettings.url;
-    }
+    let hostname = new URL(siteSettings.url).host;
+    if(hostname === "") hostname = siteSettings.url;
 
     console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${siteSettings.disabledGlobally}, url=${siteSettings.url}`);
     const statusText = enabled ? (enabledForSite ? "Active on " : "Disabled for ") + hostname : "Disabled globally"
