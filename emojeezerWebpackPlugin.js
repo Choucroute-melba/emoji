@@ -76,7 +76,8 @@ export default class EmojeezerWebpackPlugin {
                         goodVersion = true;
                     }
                 });
-
+                if(!goodVersion)
+                    changelog = "# Changelog\n\n## " + version + "\n\nNo changelog found for this version."
                 fs.writeFileSync(path.join(distDir, 'changelog.txt'), changelog);
 
                 console.log("Changelog extracted");
