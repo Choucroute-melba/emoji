@@ -3,6 +3,7 @@
   "name": "Emojeezer - Dev",
   "version": "4.0.3",
   "description": "A simple extension to type emojis using the :emoji: syntax.",
+  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "browser_specific_settings": {
     "gecko": {
       "id": "emoji@Choucroute-melba.github.io",
