@@ -24,3 +24,14 @@ export async function getActiveTab() {
     }
     return null
 }
+export function getDomainName(url: string) {
+    let domain = ""
+    try {
+        domain = new URL(url).host
+    } catch (e) {
+        domain = url
+    }
+    if(domain === "")
+        domain = url
+    return domain
+}

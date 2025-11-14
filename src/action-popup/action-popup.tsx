@@ -3,6 +3,7 @@ import './action-popup.css';
 import React, {useState} from "react";
 import {SiteSettings} from "../settings/settingsManager";
 import browser from "webextension-polyfill";
+import {getDomainName} from "../background/utils";
 
 export default function Comp({
                               siteSettings,
@@ -39,7 +40,7 @@ function ActionPopup({
     }
     let hostname = ""
     try {
-        hostname = new URL(siteSettings.url).host;
+        hostname = getDomainName(siteSettings.url)
     } catch (e) {
         hostname = siteSettings.url
     }

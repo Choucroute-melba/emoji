@@ -1,6 +1,7 @@
 import browser, {Runtime} from "webextension-polyfill";
 import Port = Runtime.Port;
 import {Message} from "../background/messsaging";
+import {getDomainName} from "../background/utils";
 
 export type SiteSettings = {
     url: string,
@@ -156,8 +157,7 @@ export default class SettingsManager {
 
     private async onSiteSettingsChanged(url: string) {
         console.log("Settings changed for " + url)
-        let domain = new URL(url).host;
-        if(domain === "") domain = url;
+        let domain = getDomainName(url)
         const sitePorts = this.connections.filter((p) => p.sender?.url?.includes(domain));
         if(this.listeners.findIndex((l) => l.name == "action-popup") >= 0)
             sitePorts.push(this.getPort("action-popup")!);
@@ -203,8 +203,7 @@ export default class SettingsManager {
         const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
             return result["settings.keepFreeSelectorEnabled"];
         })
-        let domain = new URL(url).host
-        if(domain === "") domain = url;
+        let domain = getDomainName(url)
         const index = disabledSites.indexOf(domain);
         if(enable && index >= 0)
                 disabledSites.splice(index, 1);
@@ -243,8 +242,7 @@ export default class SettingsManager {
             const freeSelectorDisabledSites = await browser.storage.sync.get("settings.freeSelectorDisabledSites").then((result: any) => {
                 return result["settings.freeSelectorDisabledSites"];
             })
-            let domain = new URL(url).host;
-            if(domain === "") domain = url;
+            let domain = getDomainName(url)
             const index = freeSelectorDisabledSites.indexOf(domain);
             if(enabled && index >= 0)
                 freeSelectorDisabledSites.splice(index, 1);
@@ -282,8 +280,7 @@ export default class SettingsManager {
         const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
             return result["settings.keepFreeSelectorEnabled"];
         })
-        let domain = new URL(url).host;
-        if(domain === "") domain = url;
+        let domain = getDomainName(url)
         const siteSettings: SiteSettings = {
             url: domain,
             enabled: !disabledSites.includes(domain),
