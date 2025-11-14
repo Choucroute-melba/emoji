@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Emojeezer - Dev",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "A simple extension to type emojis using the :emoji: syntax.",
   "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
   "browser_specific_settings": {
