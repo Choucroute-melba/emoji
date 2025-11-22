@@ -257,7 +257,7 @@ export default class SettingsManager {
     }
 
     async toggleKeepFreeSelectorEnabled(enable: boolean) {
-        console.log((enable ? "Enabled" : "Disabled") + " keep free selector enabled");
+        console.log((enable ? "Enabled" : "Disabled") + " keepFreeSelectorEnabled");
         const keepFreeSelectorEnabled = await browser.storage.sync.get("settings.keepFreeSelectorEnabled").then((result: any) => {
             return result["settings.keepFreeSelectorEnabled"];
         })
@@ -284,7 +284,7 @@ export default class SettingsManager {
         const siteSettings: SiteSettings = {
             url: domain,
             enabled: !disabledSites.includes(domain),
-            freeSelector: globallyEnabled || keepFreeSelectorEnabled
+            freeSelector: !disabledSites.includes(domain) || keepFreeSelectorEnabled
         }
         if(!globallyEnabled)
             siteSettings.disabledGlobally = true;

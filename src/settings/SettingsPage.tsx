@@ -3,9 +3,9 @@ import './SettingsPage.css'
 import React from 'react';
 import {GlobalSettings, SiteSettings} from "./settingsManager";
 
-export default function SettingsPage({settings, toggleFreeSelector, toggleGloballyEnabled, toggleSiteEnabled} : {
+export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled} : {
     settings: GlobalSettings
-    toggleFreeSelector: (enable: boolean) => void,
+    toggleKeepFreeSelectorEnabled: (enable: boolean) => void,
     toggleGloballyEnabled: (enable: boolean) => void,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
 }) {
@@ -25,7 +25,7 @@ export default function SettingsPage({settings, toggleFreeSelector, toggleGlobal
             </div>
             <label>
                 <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
-                    toggleFreeSelector(e.target.checked || settings.enabled);
+                    toggleKeepFreeSelectorEnabled(e.target.checked);
                 }} />
                 Always keep the <code>Ctrl + ,</code> shortcut enabled
             </label>

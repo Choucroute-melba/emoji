@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
 import {GlobalSettings} from "./settings/settingsManager";
 
-function toggleFreeSelector(enable: boolean) {
+function toggleKeepFreeSelectorEnabled(enable: boolean) {
     browser.runtime.sendMessage({
         action: "setKeepFreeSelectorEnabled",
         data: {
@@ -39,11 +39,11 @@ port.onMessage.addListener((message: any) => {
     const m = message as EventMessage;
     switch (m.event) {
         case "settingsUpdated":
-            root.render(SettingsPage({settings: m.data.settings, toggleFreeSelector, toggleGloballyEnabled, toggleSiteEnabled}));
+            root.render(SettingsPage({settings: m.data.settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
             break;
         case "siteSettingsUpdated":
             browser.runtime.sendMessage({action: "getSettings"}).then((settings) => {
-                root.render(SettingsPage({settings: settings as GlobalSettings, toggleFreeSelector, toggleGloballyEnabled, toggleSiteEnabled}));
+                root.render(SettingsPage({settings: settings as GlobalSettings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
             })
     }
 })
@@ -56,4 +56,4 @@ const settings = (await browser.runtime.sendMessage({action: "getSettings"})) as
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)
 
-root.render(SettingsPage({settings, toggleFreeSelector, toggleGloballyEnabled, toggleSiteEnabled}));
+root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
