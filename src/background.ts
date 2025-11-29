@@ -57,8 +57,8 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                         freeSelector: true
                     }
                 }
-                if(!dm.settings.freeSelector) // free selector is disabled globally
-                    settings.freeSelector = false;
+                /* if(!dm.settings.freeSelector) // free selector is disabled globally
+                    settings.freeSelector = false; */
                 if(!dm.settings.enabled) { // autocomplete is disabled globally
                     settings.enabled = false;
                     if(settings.freeSelector && !dm.settings.keepFreeSelectorEnabled)
@@ -93,13 +93,15 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.freeSelector = m.data.enabled;
                 resolve(true);
                 break;
-            case "enableFreeSelectorForSite": {
+            case "enableFreeSelectorForSite": {/*
                 let url = ""
                 if(!m.data.url) {
                     url = await getActiveTabUrl()
                 }
                 else url = m.data.url
                 dm.settings.freeSelector = m.data.enabled;
+                resolve(true);*/
+                console.info("enableFreeSelectorForSite not implemented yet") // TODO
                 resolve(true);
             }
                 break;
