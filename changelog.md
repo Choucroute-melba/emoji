@@ -1,3 +1,16 @@
+# Version 4.1.0
+*30/11/2025*
+
+A new setting page allows you to control the extension's behavior and see sites where you've disabled the extension.
+Accessible from the extension's icon or in your browser's settings.
+
+- Allow disabling either the autocomplete or the selector
+- Added a settings page
+- Improved the control panel
+- Implemented a new data management system
+- Fixed multiple bugs
+- Improved build and release process
+
 # Version 4.0.0
 *07/11/2025*
 
