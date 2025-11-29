@@ -92,30 +92,34 @@ port.onMessage.addListener(async (message: any) => {
         siteSettings = await getSettingsForSite()
         settings = await getSettings();
         console.log("siteSettings", siteSettings);
-        root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, onToggleEnabled, onToggleEnabledForSite}));
+        root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled, onToggleEnabled, onToggleEnabledForSite}));
     }
     const e = message as DataChangedEvent;
     if(e.event !== "dataChanged") return;
 
     if(e.data.key === "settings.enabled") {
-        root.render(ActionPopup({
-            siteSettings,
-            enabledGlobally: e.data.value,
-            onToggleEnabled,
-            onToggleEnabledForSite
-        }));
+
         settings.enabled = e.data.value;
     }
-    else if(e.data.key.startsWith("settings.sites")) {
+    if(e.data.key === "settings.keepFreeSelectorEnabled") {
+        settings.keepFreeSelectorEnabled = e.data.value;
+    }
+    if(e.data.key.startsWith("settings.sites")) {
         const changedKey = parseStorageKey(e.data.key)!.pop() as string;
         siteSettings = await getSettingsForSite();
         console.log("new siteSettings: ", siteSettings, "\nchangedKey:", changedKey);
-        root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, onToggleEnabled, onToggleEnabledForSite}));
     }
+    root.render(ActionPopup({
+        siteSettings,
+        enabledGlobally: e.data.value,
+        keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled,
+        onToggleEnabled,
+        onToggleEnabledForSite
+    }));
 })
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
     "settings.**"
         ]}})
 
-root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, onToggleEnabled, onToggleEnabledForSite}));
+root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled, onToggleEnabled, onToggleEnabledForSite}));
