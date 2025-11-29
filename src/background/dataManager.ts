@@ -64,17 +64,17 @@ export default class DataManager {
         const handler: ProxyHandler<any> = {
             get(target, prop, receiver) {
                 const key = getStorageKey(prefix, prop);
-                console.groupCollapsed(`- proxy get ${key}`)
+                //console.groupCollapsed(`- proxy get ${key}`)
                 const res = Reflect.get(target, prop, receiver);
                 if(typeof res === 'object' && res !== null) {
-                    console.log(res)
+                    /*console.log(res)
                     console.trace()
-                    console.groupEnd()
+                    console.groupEnd()*/
                     return self.getProxy(res, key);
                 }
-                console.log(res)
+/*                console.log(res)
                 console.trace()
-                console.groupEnd()
+                console.groupEnd()*/
                 return res;
             },
             set(target, prop, value, receiver) {
