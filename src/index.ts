@@ -6,7 +6,7 @@ import AriaDivHandler from "./features/aria/handler";
 import {
     buildShortcutString,
     chooseAndLoadHandler,
-    getAvailableHandlers
+    getAvailableHandlers, HandlerManifest
 } from "./handler/handlersManager";
 import browser from "webextension-polyfill";
 import {SiteSettings} from "./background/dataManager";
@@ -23,12 +23,67 @@ console.log('Emoji on the go ✨')
 
 const handlers = [HTMLInputHandler, TextAreaHandler, AriaDivHandler]
 const availableHandlers = await getAvailableHandlers();
+const disabledHandlers: HandlerManifest[] = []
+
+function disableHandler(handlerName: string) {
+    const handlerIndex = availableHandlers.findIndex(h => h.name === handlerName)
+    if(handlerIndex !== -1) {
+        disabledHandlers.push(availableHandlers[handlerIndex])
+        availableHandlers.splice(handlerIndex, 1)
+    }
+    if(currentHandler && currentHandler.HandlerName === handlerName) {
+        currentHandler.destroy()
+        currentHandler = null
+    }
+}
+
+function disableEveryHandleExcept(handlerNames: string[]) {
+    for (let i = availableHandlers.length - 1; i >= 0; i--) {
+        const handler = availableHandlers[i]
+        if (!handlerNames.includes(handler.name))
+            disableHandler(handler.name)
+    }
+    for(let i = disabledHandlers.length - 1; i >= 0; i--) {
+        const handler = disabledHandlers[i]
+        if (handlerNames.includes(handler.name))
+            enableHandler(handler.name)
+    }
+    console.log(availableHandlers)
+    console.log(disabledHandlers)
+}
+
+function enableHandler(handlerName: string) {
+    const handlerIndex = disabledHandlers.findIndex(h => h.name === handlerName)
+    if(handlerIndex !== -1) {
+        availableHandlers.push(disabledHandlers[handlerIndex])
+        disabledHandlers.splice(handlerIndex, 1)
+    }
+}
+
+function enableEveryHandlerExcept(handlerNames: string[]) {
+    for (let i = disabledHandlers.length - 1; i >= 0; i--) {
+        const handler = disabledHandlers[i]
+        if (!handlerNames.includes(handler.name))
+            enableHandler(handler.name)
+    }
+    for (let i = availableHandlers.length - 1; i >= 0; i--) {
+        const handler = availableHandlers[i]
+        if (handlerNames.includes(handler.name))
+            disableHandler(handler.name)
+    }
+    console.log(availableHandlers)
+    console.log(disabledHandlers)
+}
+
+function isHandlerEnabled(handlerName: string) {
+    return availableHandlers.findIndex(h => h.name === handlerName) !== -1
+}
 
 let es = new EmojiSelector()
 let currentHandler: Handler<any> | null = null
+let listening = false
 
 const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
-let freeSelectorEnabled = false
 
 
 async function mainListener(this: any, e: KeyboardEvent) {
@@ -68,67 +123,6 @@ async function mainListener(this: any, e: KeyboardEvent) {
                 if(currentHandler) { // Handler may be destroyed during the instantiation
                     console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
                     window.removeEventListener('keydown', mainListener, true)
-                }
-                else {
-                    console.error("Something went wrong while creating the handler");
-                }
-            }
-            else {
-                console.warn("there is already a handler active", currentHandler.HandlerName, "for", currentHandler.target);
-            }
-        }
-    }
-    catch (e) {
-        console.group("Exception ---")
-        console.error(e)
-        if(currentHandler)
-            currentHandler.destroy()
-        console.groupEnd()
-    }
-}
-
-async function freeSelectorOnlyListener(this: any, e: KeyboardEvent) {
-
-    try {
-        const sc = buildShortcutString(e);
-        const isCombo = (sc !== e.key);
-        console.groupCollapsed(`%c${e.code}%c ${isCombo ? sc : e.key} \tTarget : %c${e.target}`,
-            'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
-            'color: default; background-color: default',
-            'color: #999; ');
-        console.log(e.target)
-        console.log(buildShortcutString(e))
-
-        const domain = window.location.hostname
-        if(!(sc === "Ctrl+," || sc === "AltGraph+,")) {
-            console.info("%cNot a free selector shortcut, and autocomplete is disabled", 'color: #FF0000; font-weight: bold');
-            console.groupEnd()
-            return
-        }
-        const h = await chooseAndLoadHandler(availableHandlers, e).catch((err: Error) => {
-            if(err.message === "NO_HANDLER_TRIGGERED") {
-                console.info("%cNo handler triggered for this event", 'color: #FF0000; font-weight: bold');
-                console.groupEnd()
-            }
-            else {
-                console.groupEnd()
-                console.info("%cError while choosing handler: " + err.message, 'color: #FF0000; font-weight: bold');
-            }
-            return null;
-        });
-
-        console.groupEnd()
-        if(h) {
-            if(!currentHandler) {
-                const onExit = () => {
-                    currentHandler = null
-                    console.log("EmojiSelector closed")
-                    window.addEventListener('keydown', freeSelectorOnlyListener, true)
-                }
-                currentHandler = new h(es, e.target as any, onExit);
-                if(currentHandler) { // Handler may be destroyed during the instantiation
-                    console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
-                    window.removeEventListener('keydown', freeSelectorOnlyListener, true)
                 }
                 else {
                     console.error("Something went wrong while creating the handler");
@@ -209,54 +203,47 @@ async function removeIframeListeners() {
     }
 }
 
-async function enableEmojiOnTheGo() { // TODO : support disabling free selector only
-    console.log(`enableEmojiOnTheGo() \tcurrentHandler=${currentHandler ? currentHandler.HandlerName : "null"}\tfreeSelectorEnabled=${freeSelectorEnabled}`);
-    window.addEventListener('keydown', mainListener, true)
-    await bindIframeListeners();
-    if (!freeSelectorEnabled) {
-        document.addEventListener('DOMContentLoaded', bindIframeListeners);
+let mainListenerLoaded = false
+let DOMChangesListenerLoaded = false
 
-        observer.observe(document.body, {childList: true, subtree: true});
+async function applySettings(settings: SiteSettings) {
+    if(settings.enabled || settings.freeSelector) {
+        if(!mainListenerLoaded) {
+            window.addEventListener('keydown', mainListener, true)
+            mainListenerLoaded = true
+        }
+        if(!DOMChangesListenerLoaded) {
+            document.addEventListener('DOMContentLoaded', bindIframeListeners);
+            await bindIframeListeners();
+            observer.observe(document.body, {childList: true, subtree: true});
+            DOMChangesListenerLoaded = true
+        }
         es.addToDom()
     }
     else {
-        window.removeEventListener('keydown', freeSelectorOnlyListener, true)
-    }
-
-    freeSelectorEnabled = true
-}
-
-async function disableEmojiOnTheGo(keepFreeSelector: boolean = false) {
-    console.log(`disableEmojiOnTheGo(keepFreeSelector=${keepFreeSelector}) \tcurrentHandler=${currentHandler ? currentHandler.HandlerName : "null"}\tfreeSelectorEnabled=${freeSelectorEnabled}`);
-    window.removeEventListener('keydown', mainListener, true)
-    if (!keepFreeSelector) {
-        window.removeEventListener('keydown', freeSelectorOnlyListener, true)
-        es.removeFromDom()
+        window.removeEventListener('keydown', mainListener, true)
+        mainListenerLoaded = false
         document.removeEventListener('DOMContentLoaded', bindIframeListeners);
-        await removeIframeListeners();
+        DOMChangesListenerLoaded = false
         observer.disconnect();
-        freeSelectorEnabled = false
+        await removeIframeListeners();
+        es.removeFromDom()
     }
-    if(currentHandler && (!keepFreeSelector || currentHandler.HandlerName != "FreeSelector")) {
-        currentHandler.destroy()
-        currentHandler = null
-    }
-    if(keepFreeSelector) {
-        console.info("Keeping free selector enabled")
-        window.addEventListener('keydown', freeSelectorOnlyListener, true)
-        es.addToDom()
-        freeSelectorEnabled = true
-    }
-}
 
-async function updateSettings(settings: SiteSettings) {
-    if(settings.enabled)
-        await enableEmojiOnTheGo()
-    else
-        if(settings.freeSelector)
-            await enableEmojiOnTheGo()
-        await disableEmojiOnTheGo(settings.freeSelector)
+    if(settings.enabled && settings.freeSelector) {
+        enableEveryHandlerExcept([])
+    }
+    else if(settings.enabled && !settings.freeSelector) {
+        enableEveryHandlerExcept(["FreeSelector"])
+    }
+    else if(!settings.enabled && settings.freeSelector) {
+        disableEveryHandleExcept(["FreeSelector"])
+    }
+    else if(!settings.enabled && !settings.freeSelector) {
+        disableEveryHandleExcept([])
+    }
     siteSettings = settings
+    console.log(`Site settings (${tabId}) :`, siteSettings);
 }
 
 const observer = new MutationObserver(bindIframeListeners);
@@ -269,7 +256,7 @@ port.onMessage.addListener(async (message) => {
     if(msg.event === "dataChanged") {
         console.log(`dataChanged event : ${msg.data.key} = ${msg.data.value}`)
         const newSettings = await browser.runtime.sendMessage({ action: "getEffectiveModeOnSite", data: { url: window.location.href }}) as SiteSettings
-        await updateSettings(newSettings)
+        await applySettings(newSettings)
     }
 })
 
@@ -286,7 +273,7 @@ port.postMessage({
 
 console.log(`Site settings (${tabId}) :`, siteSettings);
 
-await updateSettings(siteSettings)
+await applySettings(siteSettings)
 
 /*window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {
