@@ -296,7 +296,7 @@ export default class DataManager {
     }
 
     get readonlySettings(): typeof this._settings.value {
-        return this._settings.value;
+        return JSON.parse(JSON.stringify(this._settings.value)) as typeof this._settings.value;
     }
 
     protected set settings(value: typeof this._settings.value) {
