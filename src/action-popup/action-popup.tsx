@@ -8,17 +8,19 @@ import {getDomainName} from "../background/utils";
 export default function Comp({
                               siteSettings,
                               enabledGlobally,
+                              keepFreeSelectorEnabled,
                               onToggleEnabled,
                               onToggleEnabledForSite
                           }: {
     siteSettings: SiteSettings;
     enabledGlobally: boolean;
+    keepFreeSelectorEnabled: boolean;
     onToggleEnabled: (enabled: boolean) => void;
     onToggleEnabledForSite: (enabled: boolean, url?: string) => void;
 }) {
     return (
         <div>
-            <ActionPopup siteSettings={siteSettings} enabledGlobally={enabledGlobally} onToggleEnabled={onToggleEnabled} onToggleEnabledForSite={onToggleEnabledForSite}/>
+            <ActionPopup siteSettings={siteSettings} enabledGlobally={enabledGlobally} keepFreeSelectorEnabled={keepFreeSelectorEnabled} onToggleEnabled={onToggleEnabled} onToggleEnabledForSite={onToggleEnabledForSite}/>
         </div>
     )
 }
@@ -26,11 +28,13 @@ export default function Comp({
 function ActionPopup({
     siteSettings,
     enabledGlobally,
+    keepFreeSelectorEnabled,
     onToggleEnabled,
     onToggleEnabledForSite
 }: {
     siteSettings: SiteSettings;
     enabledGlobally: boolean;
+    keepFreeSelectorEnabled: boolean;
     onToggleEnabled: (enabled: boolean) => void;
     onToggleEnabledForSite: (enabled: boolean, url?: string) => void;
 }) {

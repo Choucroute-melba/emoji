@@ -4,11 +4,15 @@ body {
 
 a {
     font-size: 12px;
+    color: #204895;
+    text-decoration: none;
 }
 
 footer {
     margin-top: 10px;
     text-align: center;
+    color: #204895;
+    margin-bottom: 7px;
 }
 
 .status {
