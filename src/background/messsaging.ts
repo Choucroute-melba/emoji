@@ -1,11 +1,13 @@
-import {GlobalSettings, SiteSettings} from "../settings/settingsManager";
+import {GlobalSettings, SiteSettings} from "./dataManager";
 
-export type Message = GetSiteSettingsMessage | EnableForSiteMessage | EnableMessage | SetFreeSelectorMessage | AddSiteSettingsListenerMessage | SetKeepFreeSelectorEnabledMessage |
+export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
+    EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
+    SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
 
-export type EventMessage = SettingsUpdatedEvent | SiteSettingsUpdatedEvent;
+export type EventMessage = SettingsUpdatedEvent | SiteSettingsUpdatedEvent | DataChangedEvent;
 
 export type SettingsUpdatedEvent = {
     event: "settingsUpdated",
@@ -21,8 +23,24 @@ export type SiteSettingsUpdatedEvent = {
     }
 }
 
+export type DataChangedEvent = {
+    event: "dataChanged",
+    data: {
+        key: string,
+        value: any,
+        oldValue: any,
+    }
+}
+
 export type GetSiteSettingsMessage = {
     action: "getSiteSettings",
+    data?: {
+        url?: string,
+    }
+}
+
+export type GetEffectiveModeOnSiteMessage = {
+    action: "getEffectiveModeOnSite",
     data?: {
         url?: string,
     }
@@ -43,11 +61,17 @@ export type EnableMessage = {
     }
 }
 
-export type SetFreeSelectorMessage = {
-    action: "setFreeSelector",
+export type EnableFreeSelectorMessage = {
+    action: "enableFreeSelector",
+    data: {
+        enabled: boolean
+    }
+}
+
+export type EnableFreeSelectorForSiteMessage = {
+    action: "enableFreeSelectorForSite",
     data: {
         enabled: boolean,
-        thisSiteOnly?: boolean,
         url?: string,
     }
 }
@@ -63,5 +87,36 @@ export type AddSiteSettingsListenerMessage = {
     action: "addSiteSettingsListener",
     data?: {
         url?: string,
+    }
+}
+
+export type ReadDataMessage = {
+    action: "readData",
+    data: {
+        key: string,
+    }
+}
+
+/**
+ * to Add a new data change listener, send this through the port you opened with the background. The listener will be
+ * called whenever one of the specified keys changes.
+ * key syntax: `base.subkey1.subkey2`. use [www.keyname.com] if your key name contains a dot.
+ * use `base.subkey1.*` to listen to all immediate subkeys of `base.subkey1`, not including `base.subkey1` itself.
+ * use `base.subkey1.**` to listen to all subkeys of `base.subkey1`, not including `base.subkey1` itself.
+ *
+ * @param action - "addDataChangeListener"
+ * @param data.keys - One key string, or an array of keys to listen to.
+ */
+export type AddDataChangeListenerMessage = {
+    action: "addDataChangeListener",
+    data: {
+        keys: string | string[],
+    }
+}
+
+export type RemoveDataChangeListenerMessage = {
+    action: "removeDataChangeListener",
+    data: {
+        keys: string | string[],
     }
 }
