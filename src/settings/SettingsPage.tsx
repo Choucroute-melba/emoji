@@ -3,10 +3,11 @@ import './SettingsPage.css'
 import React from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
 
-export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled} : {
+export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled} : {
     settings: GlobalSettings
     toggleKeepFreeSelectorEnabled: (enable: boolean) => void,
     toggleGloballyEnabled: (enable: boolean) => void,
+    toggleFreeSelectorGloballyEnabled: (enable: boolean) => void,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
 }) {
     const disabledSites: SiteSettings[] = [];
@@ -24,10 +25,17 @@ export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, t
                 }}>{settings.enabled ? "Disable Autocomplete" : "Enable Autocomplete"}</button>
             </div>
             <label>
-                <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
-                    toggleKeepFreeSelectorEnabled(e.target.checked);
+                <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
+                    toggleFreeSelectorGloballyEnabled(e.target.checked)
                 }} />
-                Always keep the <code>Ctrl + ,</code> shortcut enabled
+                Enable the <code>Ctrl + ,</code> shortcut for easy copy-paste emoji
+                <br/>
+                <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
+                    <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
+                        toggleKeepFreeSelectorEnabled(e.target.checked);
+                    }} disabled={!settings.freeSelector}/>
+                    Keep it enabled even when autocomplete is off
+                </label>
             </label>
             <h3>Sites where autocomplete is disabled : </h3>
             <div className={"siteBlacklist"}>

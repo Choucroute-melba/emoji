@@ -57,8 +57,8 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                         freeSelector: true
                     }
                 }
-                /* if(!dm.settings.freeSelector) // free selector is disabled globally
-                    settings.freeSelector = false; */
+                 if(!dm.settings.freeSelector) // free selector is disabled globally
+                    settings.freeSelector = false;
                 if(!dm.settings.enabled) { // autocomplete is disabled globally
                     settings.enabled = false;
                     if(!dm.settings.keepFreeSelectorEnabled)

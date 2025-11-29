@@ -23,6 +23,15 @@ function toggleGloballyEnabled(enable: boolean) {
     } as Message)
 }
 
+function toggleFreeSelectorGloballyEnabled(enable: boolean) {
+    browser.runtime.sendMessage({
+        action: "enableFreeSelector",
+        data: {
+            enabled: enable,
+        }
+    })
+}
+
 function toggleSiteEnabled(url: string, enable: boolean) {
     browser.runtime.sendMessage({
         action: "enableForSite",
@@ -53,19 +62,22 @@ port.onMessage.addListener((message: any) => {
             case "settings.sites":
                 settings.sites = m.data.value;
                 break;
+            case "settings.freeSelector":
+                settings.freeSelector = m.data.value;
+                break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {
                     const changedSite = parseStorageKey(m.data.key)![2] as string;
                     browser.runtime.sendMessage({action: "getSiteSettings", data: {url: changedSite}})
                         .then((siteSettings: any) => {
                             settings.sites[changedSite] = siteSettings
-                            root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
+                            root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled}));
                         })
                 }
             }
         }
     }
-    root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
+    root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
 })
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
@@ -76,4 +88,4 @@ port.postMessage({action: "addDataChangeListener", data: {keys: [
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)
 
-root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled}));
+root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
