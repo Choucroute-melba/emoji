@@ -95,11 +95,17 @@ port.onMessage.addListener(async (message: any) => {
         root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, onToggleEnabled, onToggleEnabledForSite}));
     }
     const e = message as DataChangedEvent;
-    console.log("Event received:");
     if(e.event !== "dataChanged") return;
-    console.log("key : ", e.data.key, "\nvalue : ", e.data.value)
-    if(e.data.key === "settings.enabled")
-        root.render(ActionPopup({siteSettings, enabledGlobally: e.data.value, onToggleEnabled, onToggleEnabledForSite}));
+
+    if(e.data.key === "settings.enabled") {
+        root.render(ActionPopup({
+            siteSettings,
+            enabledGlobally: e.data.value,
+            onToggleEnabled,
+            onToggleEnabledForSite
+        }));
+        settings.enabled = e.data.value;
+    }
     else if(e.data.key.startsWith("settings.sites")) {
         const changedKey = parseStorageKey(e.data.key)!.pop() as string;
         siteSettings = await getSettingsForSite();
