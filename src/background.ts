@@ -1,102 +1,123 @@
 import browser, {Runtime} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {callOnActiveTab, getActiveTab} from "./background/utils";
-import SettingsManager from "./settings/settingsManager";
+import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName} from "./background/utils";
+import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
 
 console.log("background.ts");
 
-const sm = new SettingsManager();
+const dm = new DataManager();
 console.log("Initializing storage")
-await sm.initializeStorage();
+dm.initializeStorage();
 
-browser.browserAction.onClicked.addListener(async (tab, click) => {
-    console.log(`Action clicked on ${tab.id} - ${tab.url}`);
-    if(!click)
-        throw new Error("No click data");
-    if(!tab.url)
-        throw new Error("No tab url");
-    const siteSettings = await sm.getSettingsForSite(tab.url)
-    const globalSettings = await sm.getSettings()
-    if(click.modifiers.length > 0) {
-        switch (click.modifiers) {
-            case ["Shift"]:
-                sm.enableOnSite(tab.url, !siteSettings.enabled);
+function listener(message: any, sender: MessageSender): Promise<unknown> {
+    console.groupCollapsed(`%c${message.action || message.event}%c`,
+        'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
+        'color: default; background-color: default', message.data);
+    const p = new Promise<unknown>(async (resolve, reject) => {
+        const m = message as Message;
+        const activeTab = await getActiveTab()
+        console.log("from: ", sender.tab ? `${sender.tab.id} ${sender.tab.url}` : `${sender.url} - ${activeTab?.id} ${activeTab?.url}`);
+        switch (m.action) {
+            case "readData":
+                resolve(await dm.readData(m.data.key));
                 break;
-            case ["Alt"]:
-                sm.enableGlobally(!globalSettings.enabled);
+            case "getSettings":
+                resolve(dm.readonlySettings)
+                break;
+            case "getSiteSettings": {
+                let url = ""
+                if (!m.data?.url) {
+                    url = await getActiveTabUrl()
+                } else url = m.data.url;
+
+                const domain = getDomainName(url)
+                let settings: SiteSettings = dm.readonlySettings.sites[domain];
+                if (!settings) {
+                    settings = {
+                        url: domain,
+                        enabled: true,
+                        freeSelector: true
+                    }
+                }
+                resolve(settings);
+            }
+                break;
+            case "getEffectiveModeOnSite": {
+                let url = ""
+                if(!m.data?.url)
+                    url = await getActiveTabUrl()
+                else url = m.data.url
+                const domain = getDomainName(url)
+                let settings: SiteSettings = dm.readonlySettings.sites[domain];
+                if (!settings) {
+                    settings = {
+                        url: domain,
+                        enabled: true,
+                        freeSelector: true
+                    }
+                }
+                if(!dm.settings.freeSelector) // free selector is disabled globally
+                    settings.freeSelector = false;
+                if(!dm.settings.enabled) { // autocomplete is disabled globally
+                    settings.enabled = false;
+                    if(settings.freeSelector && !dm.settings.keepFreeSelectorEnabled)
+                        settings.freeSelector = false;
+                }
+                resolve(settings);
+            }
+                break;
+            case "enable":
+                dm.settings.enabled = m.data.enabled;
+                resolve(true);
+                break;
+            case "enableForSite": {
+                let url = ""
+                if (!m.data.url) {
+                    url = await getActiveTabUrl()
+                } else url = m.data.url;
+                if (dm.settings.sites[url]) {
+                    dm.settings.sites[url].enabled = m.data.enabled;
+                }
+                else if(!m.data.enabled) {
+                    dm.settings.sites[url] = {
+                        url: url,
+                        enabled: m.data.enabled,
+                        freeSelector: true,
+                    }
+                }
+                resolve(true);
+            }
+                break;
+            case "enableFreeSelector":
+                dm.settings.freeSelector = m.data.enabled;
+                resolve(true);
+                break;
+            case "enableFreeSelectorForSite": {
+                let url = ""
+                if(!m.data.url) {
+                    url = await getActiveTabUrl()
+                }
+                else url = m.data.url
+                dm.settings.freeSelector = m.data.enabled;
+                resolve(true);
+            }
+                break;
+            case "setKeepFreeSelectorEnabled":
+                dm.settings.keepFreeSelectorEnabled = m.data.enabled;
+                resolve(true);
+                break
+            case "getTabId":
+                resolve(sender.tab?.id);
+                break;
+            default:
+                reject(`Unknown action: ${m.action}`)
                 break;
         }
-        return;
-    }
-
-    // browser.browserAction.openPopup();
-})
-
-async function messageListener(message: any, sender: MessageSender, sendResponse: (response?: any) => void): Promise<true> {
-    const m = message as Message;
-    switch (m.action) {
-        case "getSettings":
-            await sm.getSettings().then((settings) => {
-                sendResponse(settings);
-            })
-            break;
-        case "getSiteSettings":
-            if(!m.data?.url) {
-                const tab = await getActiveTab();
-                if(!tab) throw new Error("No active tab");
-                if(!tab.url || tab.url === "") throw new Error("No tab url (maybe no active tab?)");
-                const settings = await sm.getSettingsForSite(tab.url)
-                sendResponse(settings);
-            }
-            else
-                await sm.getSettingsForSite(m.data.url).then((settings) => {
-                    sendResponse(settings);
-                });
-            break;
-        case "enable":
-            await sm.enableGlobally(m.data.enabled);
-            break;
-        case "enableForSite":
-            if (!m.data.url){
-                const tab = await getActiveTab();
-                if (!tab) throw new Error("No active tab");
-                if (!tab.url) throw new Error("No tab url (maybe no active tab?)");
-                await sm.enableOnSite(tab.url, m.data.enabled);
-            }
-            else {
-                await sm.enableOnSite(m.data.url, m.data.enabled);
-            }
-            break;
-        case "setFreeSelector":
-            if(m.data.thisSiteOnly || m.data.url) {
-                if (!m.data.url) {
-                    const tab = await getActiveTab();
-                    if(!tab) throw new Error("No active tab");
-                    if(!tab.url) throw new Error("No tab url (maybe no active tab?)");
-                    await sm.enableOnSite(tab.url, m.data.enabled);
-                }
-                else
-                    await sm.enableOnSite(m.data.url, m.data.enabled);
-            }
-            else
-                await sm.enableFreeSelector(m.data.enabled);
-            break;
-        case "setKeepFreeSelectorEnabled":
-            await sm.toggleKeepFreeSelectorEnabled(m.data.enabled);
-            break
-        case "getTabId":
-            sendResponse(sender.tab?.id);
-            break;
-    }
-    sendResponse(true);
-    return true;
+    })
+    console.log("Listener returned")
+    console.groupEnd()
+    return p;
 }
 
-browser.runtime.onMessage.addListener((message: any, sender, sendResponse): true => {
-    messageListener(message, sender, sendResponse).then(() => {
-        return true
-    });
-    return true
-});
-
+browser.runtime.onMessage.addListener(listener)

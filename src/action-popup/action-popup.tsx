@@ -1,36 +1,40 @@
 import '@src/base.css'
 import './action-popup.css';
 import React, {useState} from "react";
-import {SiteSettings} from "../settings/settingsManager";
+import {SiteSettings} from "../background/dataManager";
 import browser from "webextension-polyfill";
 import {getDomainName} from "../background/utils";
 
 export default function Comp({
                               siteSettings,
+                              enabledGlobally,
                               onToggleEnabled,
                               onToggleEnabledForSite
                           }: {
     siteSettings: SiteSettings;
+    enabledGlobally: boolean;
     onToggleEnabled: (enabled: boolean) => void;
     onToggleEnabledForSite: (enabled: boolean, url?: string) => void;
 }) {
     return (
         <div>
-            <ActionPopup siteSettings={siteSettings} onToggleEnabled={onToggleEnabled} onToggleEnabledForSite={onToggleEnabledForSite}/>
+            <ActionPopup siteSettings={siteSettings} enabledGlobally={enabledGlobally} onToggleEnabled={onToggleEnabled} onToggleEnabledForSite={onToggleEnabledForSite}/>
         </div>
     )
 }
 
 function ActionPopup({
     siteSettings,
+    enabledGlobally,
     onToggleEnabled,
     onToggleEnabledForSite
 }: {
     siteSettings: SiteSettings;
+    enabledGlobally: boolean;
     onToggleEnabled: (enabled: boolean) => void;
     onToggleEnabledForSite: (enabled: boolean, url?: string) => void;
 }) {
-    const enabled = !siteSettings.disabledGlobally
+    const enabled = enabledGlobally
     const onSetEnabled = () => {
         onToggleEnabled(!enabled);
     }
@@ -46,14 +50,14 @@ function ActionPopup({
     }
     if(hostname === "") hostname = siteSettings.url;
 
-    console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${siteSettings.disabledGlobally}, url=${siteSettings.url}`);
+    console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${!enabledGlobally}, url=${siteSettings.url}`);
     const statusText = enabled ? (enabledForSite ? "Active on " : "Disabled for ") + hostname : "Disabled globally"
     const statusColor = enabled ? enabledForSite ? "green" : "orange" : "red"
 
     return (
         <>
             <button className={enabled ? "" : "outlined"} onClick={onSetEnabled}>{enabled ? "Pause Extension" : "Activate"}</button>
-            <button className={enabledForSite ? "": "outlined"} onClick={onSetEnabledForSite} style={{display: siteSettings.disabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
+            <button className={enabledForSite ? "": "outlined"} onClick={onSetEnabledForSite} style={{display: !enabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
             <div className={"status"}>
                 <svg style={{width: "10px", height: "10px", marginRight: "5px"}}>
                     <circle cx="5" cy="5" r="5" fill={statusColor}/>

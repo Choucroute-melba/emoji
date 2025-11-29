@@ -9,8 +9,14 @@ import {
     getAvailableHandlers
 } from "./handler/handlersManager";
 import browser from "webextension-polyfill";
-import {SiteSettings} from "./settings/settingsManager";
-import {AddSiteSettingsListenerMessage, EventMessage, Message} from "./background/messsaging";
+import {SiteSettings} from "./background/dataManager";
+import {
+    AddDataChangeListenerMessage,
+    AddSiteSettingsListenerMessage,
+    EventMessage,
+    Message
+} from "./background/messsaging";
+import {getDomainName} from "./background/utils";
 
 console.log('Emoji on the go ✨')
 
@@ -203,7 +209,7 @@ async function removeIframeListeners() {
     }
 }
 
-async function enableEmojiOnTheGo() {
+async function enableEmojiOnTheGo() { // TODO : support disabling free selector only
     console.log(`enableEmojiOnTheGo() \tcurrentHandler=${currentHandler ? currentHandler.HandlerName : "null"}\tfreeSelectorEnabled=${freeSelectorEnabled}`);
     window.addEventListener('keydown', mainListener, true)
     await bindIframeListeners();
@@ -243,72 +249,46 @@ async function disableEmojiOnTheGo(keepFreeSelector: boolean = false) {
     }
 }
 
+async function updateSettings(settings: SiteSettings) {
+    if(settings.enabled)
+        await enableEmojiOnTheGo()
+    else
+        if(settings.freeSelector)
+            await enableEmojiOnTheGo()
+        await disableEmojiOnTheGo(settings.freeSelector)
+    siteSettings = settings
+}
 
 const observer = new MutationObserver(bindIframeListeners);
 
-let siteSettings = await browser.runtime.sendMessage({ action: "getSiteSettings", data: { url: window.location.href }}) as SiteSettings
+let siteSettings = await browser.runtime.sendMessage({ action: "getEffectiveModeOnSite", data: { url: window.location.href }}) as SiteSettings
 
 const port = browser.runtime.connect({ name: `emoji-tab-${tabId}` });
 port.onMessage.addListener(async (message) => {
     const msg = message as EventMessage
-    if(msg.event === "siteSettingsUpdated") {
-        console.log("siteSettingsUpdated", msg.data)
-        const newSettings = msg.data.settings
-        if(newSettings.enabled !== siteSettings.enabled) {
-            if(newSettings.enabled) {
-                await enableEmojiOnTheGo()
-            }
-            else {
-                await disableEmojiOnTheGo(newSettings.freeSelector)
-            }
-            siteSettings = newSettings
-            console.log(`Site settings (${tabId}) :`, siteSettings);
-        }
-    }
-    if(msg.event === "settingsUpdated") {
-        console.log("Global settings updated", msg.data.settings)
-        let newSiteSettings = await browser.runtime.sendMessage({ action: "getSiteSettings", data: { url: window.location.href }}) as SiteSettings;
-        if(msg.data.settings.enabled && newSiteSettings.enabled) {
-            await enableEmojiOnTheGo()
-            console.log(`Site settings (${tabId}) :`, newSiteSettings);
-        }
-        else if(!msg.data.settings.enabled) {
-            await disableEmojiOnTheGo(msg.data.settings.keepFreeSelectorEnabled)
-            console.log(`Site settings (${tabId}) :`, newSiteSettings);
-        }
-        else if(!newSiteSettings.enabled && siteSettings.enabled) {
-            await disableEmojiOnTheGo(siteSettings.freeSelector)
-            console.log(`Site settings (${tabId}) :`, newSiteSettings);
-        }
-        else if(newSiteSettings.enabled && !siteSettings.enabled) {
-            await enableEmojiOnTheGo()
-            console.log(`Site settings (${tabId}) :`, newSiteSettings);
-        }
-        else if(newSiteSettings.freeSelector !== siteSettings.freeSelector) {
-            await disableEmojiOnTheGo(newSiteSettings.freeSelector)
-            console.log(`Site settings (${tabId}) :`, newSiteSettings);
-        }
-        siteSettings = newSiteSettings
+    if(msg.event === "dataChanged") {
+        console.log(`dataChanged event : ${msg.data.key} = ${msg.data.value}`)
+        const newSettings = await browser.runtime.sendMessage({ action: "getEffectiveModeOnSite", data: { url: window.location.href }}) as SiteSettings
+        await updateSettings(newSettings)
     }
 })
 
-port.postMessage({action: "addSiteSettingsListener", data: {url: window.location.href}} as AddSiteSettingsListenerMessage)
-port.postMessage({action: "addSettingsListener", data: {url: window.location.href}} as Message)
+port.postMessage({
+    action: "addDataChangeListener",
+    data: {
+        keys: [
+            "settings.*",
+            "settings.sites[" + getDomainName(window.location.href) + "]",
+            "settings.sites[" + getDomainName(window.location.href) + "].**",
+        ]
+    }
+} as AddDataChangeListenerMessage)
 
 console.log(`Site settings (${tabId}) :`, siteSettings);
 
-if(siteSettings.enabled && !siteSettings.disabledGlobally) {
-    console.log("Emoji on the go is enabled for this site");
-    await enableEmojiOnTheGo()
-}
-else {
-    console.log("autocomplete is disabled for this site");
-    if(siteSettings.freeSelector)
-        await enableEmojiOnTheGo()
-    await disableEmojiOnTheGo(siteSettings.freeSelector)
-}
+await updateSettings(siteSettings)
 
-window.addEventListener('keydown', (e) => {
+/*window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {
         const mirror = document.querySelector("#mirrorForCaret") as HTMLDivElement
         if(mirror) {
@@ -320,4 +300,4 @@ window.addEventListener('keydown', (e) => {
             }
         }
     }
-});
+});*/

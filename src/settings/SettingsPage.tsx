@@ -1,7 +1,7 @@
 import '@src/base.css'
 import './SettingsPage.css'
 import React from 'react';
-import {GlobalSettings, SiteSettings} from "./settingsManager";
+import {GlobalSettings, SiteSettings} from "../background/dataManager";
 
 export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleSiteEnabled} : {
     settings: GlobalSettings
