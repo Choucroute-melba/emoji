@@ -61,9 +61,11 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                     settings.freeSelector = false; */
                 if(!dm.settings.enabled) { // autocomplete is disabled globally
                     settings.enabled = false;
-                    if(settings.freeSelector && !dm.settings.keepFreeSelectorEnabled)
+                    if(!dm.settings.keepFreeSelectorEnabled)
                         settings.freeSelector = false;
                 }
+                if(!settings.enabled && !dm.settings.keepFreeSelectorEnabled) // don't keep the free selector if autocomplete is disabled for the site
+                    settings.freeSelector = false;
                 resolve(settings);
             }
                 break;
