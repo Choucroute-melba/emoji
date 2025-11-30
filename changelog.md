@@ -1,3 +1,9 @@
+# Version 4.1.1
+*30/11/2025*
+
+- Fixed a bug that prevented the extension from working on some sites
+- fixed a display bug in the action popup
+
 # Version 4.1.0
 *30/11/2025*
 
