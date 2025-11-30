@@ -1,16 +1,8 @@
-import React from 'react';
-import {createRoot, Root} from 'react-dom/client';
+import {createRoot} from 'react-dom/client';
 import ActionPopup from "./action-popup/action-popup";
 import browser from "webextension-polyfill";
-import {
-    DataChangedEvent,
-    EnableForSiteMessage,
-    EnableMessage,
-    EventMessage,
-    Message,
-    ReadDataMessage
-} from "./background/messsaging";
-import {GlobalSettings, SiteSettings} from "./background/dataManager";
+import {DataChangedEvent, EnableForSiteMessage, EnableMessage, Message, ReadDataMessage} from "./background/messsaging";
+import {SiteSettings} from "./background/dataManager";
 import {parseStorageKey} from "./background/utils";
 
 console.log("action.ts");
@@ -56,23 +48,19 @@ async function getSettings(): Promise<{
     freeSelector: boolean,
     actionIcon: string
 }> {
-    const s = {
+    return {
         enabled: await readData("settings.enabled"),
         keepFreeSelectorEnabled: await readData("settings.keepFreeSelectorEnabled"),
         freeSelector: await readData("settings.freeSelector"),
         actionIcon: await readData("settings.actionIcon")
     };
-    console.log("Settings:", s);
-    return s;
 }
 
 async function getSettingsForSite(): Promise<SiteSettings> {
     console.log("Getting settings");
-    const settings: any = await browser.runtime.sendMessage<Message>({
+    return (await browser.runtime.sendMessage<Message>({
         action: "getSiteSettings"
-    });
-    console.log("Site settings:", settings);
-    return settings;
+    })) as SiteSettings;
 }
 
 
@@ -98,7 +86,6 @@ port.onMessage.addListener(async (message: any) => {
     if(e.event !== "dataChanged") return;
 
     if(e.data.key === "settings.enabled") {
-
         settings.enabled = e.data.value;
     }
     if(e.data.key === "settings.keepFreeSelectorEnabled") {
@@ -111,7 +98,7 @@ port.onMessage.addListener(async (message: any) => {
     }
     root.render(ActionPopup({
         siteSettings,
-        enabledGlobally: e.data.value,
+        enabledGlobally: settings.enabled,
         keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled,
         onToggleEnabled,
         onToggleEnabledForSite
