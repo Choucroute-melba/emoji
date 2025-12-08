@@ -1,8 +1,9 @@
 import browser, {Runtime} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName} from "./background/utils";
+import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName, getMostUsedEmoji} from "./background/utils";
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
+import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
 
 console.log("background.ts");
 
@@ -111,6 +112,28 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.keepFreeSelectorEnabled = m.data.enabled;
                 resolve(true);
                 break
+            case "reportEmojiUsage":
+                if(!dm.emojiUsage[m.data.emoji]) {
+                    dm.emojiUsage[m.data.emoji] = {count: 1, firstUsed: Date.now(), lastUsed: Date.now()}
+                }
+                else {
+                    dm.emojiUsage[m.data.emoji].count++;
+                    dm.emojiUsage[m.data.emoji].lastUsed = Date.now();
+                }
+                resolve(true);
+                break;
+            case "getMostUsedEmoji": {
+                const scores = getMostUsedEmoji(dm.emojiUsage, m.data?.count)
+                const emojis: Emoji[] = []
+                for(const e of scores) {
+                    const emojiData = getEmojiFromUnicode(e.e)
+                    if(!emojiData)
+                        throw new Error(`non existent emoji: ${e.e}`)
+                    emojis.push(emojiData);
+                }
+                resolve(emojis);
+            }
+            break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;
