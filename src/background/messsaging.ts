@@ -3,6 +3,7 @@ import {GlobalSettings, SiteSettings} from "./dataManager";
 export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
+    GetMostUsedEmojiMessage | ReportEmojiUsageMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -29,6 +30,20 @@ export type DataChangedEvent = {
         key: string,
         value: any,
         oldValue: any,
+    }
+}
+
+export type GetMostUsedEmojiMessage = {
+    action: "getMostUsedEmoji",
+    data?: {
+        count?: number,
+    }
+}
+
+export type ReportEmojiUsageMessage = {
+    action: "reportEmojiUsage",
+    data: {
+        emoji: string,
     }
 }
 
