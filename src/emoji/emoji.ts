@@ -27,13 +27,25 @@ export function getEmojiDataset() : Emoji[] {
 export const emojis = getEmojiDataset();
 const emojiIndex = Fuse.createIndex(["shortcodes", "name", "keywords"], emojis)
 
-export function searchEmoji(searchValue: string, maxResults: number = 10) :Emoji[] {
-    const fuse = new Fuse(emojis, {
+export function searchEmoji(searchValue: string, favorites: Emoji[], maxResults: number = 10) :Emoji[] {
+    const favIndex = Fuse.createIndex(["shortcodes", "name", "keywords"], favorites)
+    const favFuse = new Fuse(favorites, {
         threshold: 0.1,
         keys: ["shortcodes", "name", "keywords"]
+    }, favIndex);
+    const favResults = favFuse.search(searchValue, {limit: maxResults});
+    let fav = favResults.map((r: any) => r.item);
+
+    const fuse = new Fuse(emojis, {
+        threshold: 0.1,
+        keys: ["shortcodes", "name", "keywords"],
+        shouldSort: true,
     }, emojiIndex);
-    let result = fuse.search(searchValue, {limit: maxResults});
-    return result.map((r: any) => r.item);
+    fuse.remove((doc: Emoji, idx: number) => fav.some(f => f.unicode.includes(doc.unicode)))
+    let result = fuse.search(searchValue, {limit: maxResults - fav.length});
+    const otherEmojis = result.map((r: any) => r.item);
+    console.log(fav, otherEmojis);
+    return fav.concat(otherEmojis);
 }
 
 export function getEmojiFromShortCode(shortcode: string): Emoji | undefined {
