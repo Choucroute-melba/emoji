@@ -49,6 +49,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     protected async onEmojiSelected(emoji: Emoji): Promise<void> {
         this.active = false
         await this.insertEmoji(emoji)
+        this.reportEmojiUsage(emoji)
         this.destroy()
     }
 

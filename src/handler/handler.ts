@@ -1,5 +1,7 @@
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../selector/emojiselector";
 import {Emoji, getEmojiFromShortCode, searchEmoji} from "../emoji/emoji";
+import {Message, ReportEmojiUsageMessage} from "../background/messsaging";
+import browser from "webextension-polyfill";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
     '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
@@ -74,6 +76,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected color = colors[Math.floor(Math.random() * colors.length)]
     private _search = ""
     protected searchResults: Emoji[] = []
+    private mostUsedEmojis: Emoji[] = []
     private _active = false
     private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
     private readonly boundFocusLost: (e: FocusEvent) => void;
@@ -93,6 +96,13 @@ export default abstract class Handler<EltType extends HTMLElement> {
             target.ownerDocument.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         }
         this.target.addEventListener('focusout', this.boundFocusLost)
+
+        this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: 10}}).then((emojis: Emoji[]) => {
+            this.mostUsedEmojis = emojis
+            this.searchResults = this.mostUsedEmojis.slice(0, 10)
+            this.onSearchUpdated()
+            console.log("most used emojis : ", emojis)
+        })
 
         this.log("new handler", "\t\t\t---")
     }
@@ -118,6 +128,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     /** Called when an emoji is selected
+     * Should call reportEmojiUsage if allowed by settings and use case
      * @param {Emoji} emoji - the selected emoji
      * @protected
      */
@@ -164,6 +175,20 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.trace(null, `search dismissed  ${trigger}`)
         this.destroy()
     }
+
+    protected reportEmojiUsage(emoji: Emoji | string) {
+        this.sendMessageToBackground({
+            action: "reportEmojiUsage",
+            data: {
+                emoji: typeof emoji === "string" ? emoji : emoji.unicode,
+            }
+        })
+    }
+
+    protected sendMessageToBackground(message: Message): Promise<any> {
+        return browser.runtime.sendMessage(message)
+    }
+
     // TODO : implement logging levels for production
     protected log(message: any, title: string = "", collapsed = false, f = false) {
         if(!collapsed) {
@@ -287,7 +312,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
      * shortcodes are automatically detected by default, override onSearchUpdated to change this */
     protected set search(value: string) {
         this._search = value;
-        this.searchResults = searchEmoji(this._search);
+        if(this._search.length == 0 || this._search === ":")
+            this.searchResults = this.mostUsedEmojis.slice(0, 10)
+        else
+            this.searchResults = searchEmoji(this._search, this.mostUsedEmojis);
         this.onSearchUpdated()
     }
     protected get search() { return this._search }
