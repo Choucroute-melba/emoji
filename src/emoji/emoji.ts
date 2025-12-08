@@ -39,3 +39,7 @@ export function searchEmoji(searchValue: string, maxResults: number = 10) :Emoji
 export function getEmojiFromShortCode(shortcode: string): Emoji | undefined {
     return emojis.find((e) => e.shortcodes.includes(shortcode));
 }
+
+export function getEmojiFromUnicode(unicode: string): Emoji | undefined {
+    return emojis.find((e) => e.unicode === unicode);
+}
