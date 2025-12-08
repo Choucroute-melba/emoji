@@ -106,7 +106,9 @@ export function getMostUsedEmoji(emojis: typeof DataManager.prototype.emojiUsage
         const score = calculateEmojiScore(emoji)
         map.set(emojiName, score)
     }
-    const mostUsedEmojis = Array.from(map.entries()).sort((a, b) => b[1] - a[1]).slice(0, items)
+    let mostUsedEmojis = Array.from(map.entries()).sort((a, b) => b[1] - a[1])
+    if(items != -1)
+        mostUsedEmojis = mostUsedEmojis.slice(0, items)
     return mostUsedEmojis.map(([e, score]) => ({e, score}))
 }
 
