@@ -39,6 +39,11 @@ export default class DataManager {
         }
     };
 
+    private _emojiUsage = {
+        key: "emojiUsage",
+        value: {} as {[emoji: string]: { count: number, firstUsed: number, lastUsed: number }},
+    }
+
     private _proxyCache = new WeakMap<object, any>();
 
     constructor() {
@@ -230,6 +235,11 @@ export default class DataManager {
         else {
             this.settings = await this._readData(this._settings.key) as typeof this._settings.value;
         }
+        if(!(await this._readData("emojiUsage")))
+            await this.writeData("emojiUsage", this._emojiUsage.value)
+        else {
+            this.emojiUsage = await this._readData(this._emojiUsage.key) as typeof this._emojiUsage.value;
+        }
         console.log("Storage initialized")
     }
 
@@ -302,5 +312,18 @@ export default class DataManager {
     protected set settings(value: typeof this._settings.value) {
         this._settings.value = value;
         this.getProxy(this._settings.value, this._settings.key, true);
+    }
+
+    get emojiUsage():typeof this._emojiUsage.value {
+        return this.getProxy(this._emojiUsage.value, this._emojiUsage.key);
+    }
+
+    get readonlyEmojiUsage(): typeof this._emojiUsage.value {
+        return JSON.parse(JSON.stringify(this._emojiUsage.value)) as typeof this._emojiUsage.value;
+    }
+
+    protected set emojiUsage(value: typeof this._emojiUsage.value) {
+        this._emojiUsage.value = value;
+        this.getProxy(this._emojiUsage.value, this._emojiUsage.key, true);
     }
 }
