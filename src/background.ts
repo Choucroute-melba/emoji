@@ -122,7 +122,7 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(true);
                 break;
             case "getMostUsedEmoji": {
-                const scores = getMostUsedEmoji(dm.emojiUsage, m.data?.count)
+                const scores = getMostUsedEmoji(dm.readonlyEmojiUsage, m.data?.count)
                 const emojis: Emoji[] = []
                 for(const e of scores) {
                     const emojiData = getEmojiFromUnicode(e.e)
