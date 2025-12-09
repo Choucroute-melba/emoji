@@ -3,7 +3,8 @@ import SettingsPage from "./settings/SettingsPage";
 import browser from "webextension-polyfill";
 import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
 import {GlobalSettings} from "./background/dataManager";
-import {parseStorageKey} from "./background/utils";
+import {calculateEmojiScore, calculateEmojiSignals, parseStorageKey} from "./background/utils";
+import {Emoji} from "./emoji/emoji";
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
     browser.runtime.sendMessage({
@@ -71,21 +72,38 @@ port.onMessage.addListener((message: any) => {
                     browser.runtime.sendMessage({action: "getSiteSettings", data: {url: changedSite}})
                         .then((siteSettings: any) => {
                             settings.sites[changedSite] = siteSettings
-                            root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled}));
+                            root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled}));
                         })
                 }
             }
         }
     }
-    root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
+    root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
 })
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
     "settings.**"
 ]}})
 
+const mostUsedEmojis = (await browser.runtime.sendMessage({action: "getMostUsedEmoji", data: {limit: -1}})) as Emoji[];
+const usageData = new Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>();
+for (const emoji of mostUsedEmojis) {
+    const usage = await browser.runtime.sendMessage({action: "readData", data: {key: "emojiUsage[" + emoji.unicode + "]"}} as Message) as {count: number, firstUsed: number, lastUsed: number}
+    const signals = calculateEmojiSignals(usage)
+    const score = calculateEmojiScore(usage)
+    usageData.set(emoji, {
+        count: usage.count,
+        firstUsed: usage.firstUsed,
+        lastUsed: usage.lastUsed,
+        recency: signals.recency,
+        frequency: signals.frequency,
+        score: score
+    });
+}
+
+
 
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)
 
-root.render(SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
+root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));

@@ -2,9 +2,11 @@ import '@src/base.css'
 import './SettingsPage.css'
 import React from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
+import {Emoji} from "../emoji/emoji";
 
-export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled} : {
+export default function SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled} : {
     settings: GlobalSettings
+    usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
     toggleKeepFreeSelectorEnabled: (enable: boolean) => void,
     toggleGloballyEnabled: (enable: boolean) => void,
     toggleFreeSelectorGloballyEnabled: (enable: boolean) => void,
@@ -37,6 +39,18 @@ export default function SettingsPage({settings, toggleKeepFreeSelectorEnabled, t
                     Keep it enabled even when autocomplete is off
                 </label>
             </label>
+            <h3>Usage data</h3>
+            <label>
+                <input type={"checkbox"} checked={true} disabled={true} />
+                Show emoji suggestions based on your usage (stored locally)
+            </label>
+            <div className={"emojiUsageList"}>
+                {
+                    usageData.size === 0 ? <p>No usage data yet</p> : Array.from(usageData.entries()).map(([emoji, data]) => {
+                        return <EmojiUsageItem emoji={emoji} data={data} key={emoji.unicode}/>
+                    })
+                }
+            </div>
             <h3>Sites where autocomplete is disabled : </h3>
             <div className={"siteBlacklist"}>
                 {
@@ -61,6 +75,46 @@ function SiteBlacklistItem({siteSettings, onEnable}: {
             <button onClick={() => {onEnable()}}>
                 Enable
             </button>
+        </div>
+    )
+}
+
+function EmojiUsageItem({emoji, data}: {
+    emoji: Emoji,
+    data: {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}
+}) {
+    const [displayDetails, setDisplayDetails] = React.useState(false);
+    return (
+        <>
+            <p onMouseEnter={() => setDisplayDetails(true)}
+                     onMouseLeave={() => setDisplayDetails(false)}
+                     style={{cursor: "pointer", display: "inline-block", padding: "5px", border: "1px solid lightgray", borderRadius: "5px", margin: "5px", fontSize: "20px"}}
+                     onClick={() => {
+                         setDisplayDetails(!displayDetails)
+                     }}
+            >{emoji.unicode}</p>
+            {displayDetails && <EmojiUsageDetails emoji={emoji} data={data}/>}
+        </>
+
+    )
+}
+
+function EmojiUsageDetails({emoji, data}: {
+    emoji: Emoji
+    data: {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}
+}) {
+    return (
+        <div className={"emojiUsageDetails"}>
+            <p style={{fontSize: "16px", color: "white", fontWeight: "bold", marginBottom: "3px"}}>{emoji.name}</p>
+            <p style={{fontSize: "14px", color: "lightgrey", marginTop: "0px"}}>{emoji.shortcodes.join(", ")}</p>
+            <div style={{marginTop: "7px", fontSize: "12px", color: "white"}}>
+                <p>Used {data.count} times</p>
+                <p>First used: {new Date(data.firstUsed).toLocaleDateString()}</p>
+                <p>Last used: {new Date(data.lastUsed).toLocaleDateString()}</p>
+                <p>Recency score: {data.recency.toFixed(4)}</p>
+                <p>Frequency score: {data.frequency.toFixed(4)}</p>
+                <p>Total score: {data.score.toFixed(4)}</p>
+            </div>
         </div>
     )
 }
