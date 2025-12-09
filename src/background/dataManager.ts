@@ -44,7 +44,8 @@ export default class DataManager {
         value: {} as {[emoji: string]: { count: number, firstUsed: number, lastUsed: number }},
     }
 
-    private _proxyCache = new WeakMap<object, any>();
+    private proxyCache = new WeakMap<object, any>();
+    private pendingWrites: Map<string, Promise<boolean>> = new Map<string, Promise<boolean>>();
 
     constructor() {
         browser.runtime.onConnect.addListener(this.onConnect.bind(this));
@@ -58,7 +59,7 @@ export default class DataManager {
      * */
     private getProxy(obj: any, prefix: string = "", replaceCache = false): any {
         if(!replaceCache)
-            if (this._proxyCache.has(obj)) return this._proxyCache.get(obj);
+            if (this.proxyCache.has(obj)) return this.proxyCache.get(obj);
         if(obj === undefined) {
             console.error(`Error creating proxy for ${prefix}: object is undefined`)
             return obj;
@@ -93,35 +94,44 @@ export default class DataManager {
                 const newValue = (typeof value === 'object' && value !== null)
                     ? self.getProxy(value, key)
                     : value;
+                const plainValue = (typeof newValue === 'object' && newValue !== null)
+                    ? JSON.parse(JSON.stringify(newValue))
+                    : newValue;
 
-                if(!self.writeData(key, newValue)) {
-                    console.error(`Error writing setting ${key}: failed to write data`)
-                    return false;
-                }
-
-                const status = Reflect.set(target, prop, newValue, receiver);
-                self.onDataChange(key, value, oldValue);
-                return status;
+                self.writeData(key, plainValue)
+                    .then(() => {
+                        const status = Reflect.set(target, prop, newValue, receiver);
+                        if(status)
+                            self.onDataChange(key, plainValue, oldValue);
+                    })
+                    .catch(err => {
+                        console.error(`Error writing setting ${key}: failed to write data\n`, err)
+                    });
+                return true;
             },
             deleteProperty(target, prop): boolean {
                 const key = getStorageKey(prefix, prop);
                 const oldValue = target[prop];
-                if(!self.writeData(key, undefined)) {
-                    console.error(`Error deleting setting ${key}: failed to write data`)
+                self.writeData(key, undefined)
+                    .then(() => {
+                        const res = Reflect.deleteProperty(target, prop);
+                        if(res)
+                            self.onDataChange(key, undefined, oldValue);
+                    })
+                    .catch(err => {
+                    console.error(`Error deleting setting ${key}: failed to write data\n`, err)
                     return false;
-                }
-                const res = Reflect.deleteProperty(target, prop);
-                self.onDataChange(key, undefined, oldValue);
-                return res;
+                })
+
+                return true;
             },
         }
 
         const proxy = new Proxy(obj, handler);
-        this._proxyCache.set(obj, proxy);
-        this._proxyCache.set(proxy, proxy)
+        this.proxyCache.set(obj, proxy);
+        this.proxyCache.set(proxy, proxy)
         return proxy
     }
-
     private onDataChange(changedKey: string | null, value: any, oldValue: any) {
         console.log(`- Data changed: ${changedKey} : ${oldValue} -> ${value}`);
         const firedListeners: string[] = []
@@ -186,47 +196,60 @@ export default class DataManager {
         return await this._readData(key)
     }
 
-
     private async writeData(key: string, value: any): Promise<boolean> {
         let parsedKey = parseStorageKey(key)
+        const queueKey = parsedKey == null ? "__GLOBAL__" : parsedKey[0];
+        const doWrite = async () => {
+            if (parsedKey == null) {
+                return await browser.storage.sync.set(value).catch(err => {
+                    console.error(`Error writing setting ${key}: ${err}`)
+                    throw err
+                }).then(() => true)
+            }
 
-        if(parsedKey == null) {
-            return await browser.storage.sync.set(value).catch(err => {
-                console.error(`Error writing setting ${key}: ${err}`)
+            if (parsedKey.length === 0)
                 return false
+
+            const topKey = parsedKey[0]
+            const res = await browser.storage.sync.get(topKey)
+            let root = (res as any)[topKey]
+
+            if (parsedKey.length === 1) {
+                return await browser.storage.sync.set({[topKey]: value}).catch(err => {
+                    console.error(`Error writing setting ${key}: ${err}`)
+                    throw err
+                }).then(() => true)
+            }
+
+            if (root === undefined || root === null)
+                root = {}
+
+            let current: any = root
+            for (let i = 1; i < parsedKey.length - 1; i++) {
+                const seg = parsedKey[i]
+                if (current[seg] === undefined || current[seg] === null)
+                    current[seg] = {}
+                current = current[seg]
+            }
+
+            current[parsedKey[parsedKey.length - 1]] = value
+            return await browser.storage.sync.set({[topKey]: root}).catch(err => {
+                console.error(`Error writing setting ${key}: ${err}`)
+                throw err
             }).then(() => true)
         }
 
-        if(parsedKey.length === 0)
-            return false
-
-        const topKey = parsedKey[0]
-        const res = await browser.storage.sync.get(topKey)
-        let root = (res as any)[topKey]
-
-        if(parsedKey.length === 1) {
-            return await browser.storage.sync.set({ [topKey]: value }).catch(err => {
-                console.error(`Error writing setting ${key}: ${err}`)
-                return false
-            }).then(() => true)
-        }
-
-        if(root === undefined || root === null)
-            root = {}
-
-        let current: any = root
-        for(let i = 1; i < parsedKey.length - 1; i++) {
-            const seg = parsedKey[i]
-            if(current[seg] === undefined || current[seg] === null)
-                current[seg] = {}
-            current = current[seg]
-        }
-
-        current[parsedKey[parsedKey.length - 1]] = value
-        return await browser.storage.sync.set({ [topKey]: root }).catch(err => {
-            console.error(`Error writing setting ${key}: ${err}`)
-            return false
-        }).then(() => true)
+        // Chaîner la nouvelle écriture après la précédente pour la même queueKey
+        const prev = this.pendingWrites.get(queueKey) ?? Promise.resolve(true);
+        const next = prev.then(() => doWrite()).catch(() => doWrite());
+        // stocker la promesse courante (ne pas await ici)
+        this.pendingWrites.set(queueKey, next);
+        // quand la promesse est terminée, si c'était la dernière, on peut la retirer (optionnel)
+        next.finally(() => {
+            // si la promesse stockée est bien la même, la supprimer
+            if (this.pendingWrites.get(queueKey) === next) this.pendingWrites.delete(queueKey);
+        });
+        return next;
     }
 
     async initializeStorage() {
@@ -253,7 +276,7 @@ export default class DataManager {
         }
         else
             this.connections.push(p);
-        console.log("Connected to " + p.name + " (" + p.sender?.url + ")")
+//        console.log("Connected to " + p.name + " (" + p.sender?.url + ")")
         p.onDisconnect.addListener(this.boundOnDisconnect);
         p.onMessage.addListener(this.onMessage.bind(this));
         p.postMessage({action: "greeting"})
@@ -275,7 +298,7 @@ export default class DataManager {
     }
 
     private onMessage(message: any, sender: Port) {
-        console.log("Message received from " + sender.name + ": " + message.action)
+//        console.log("Message received from " + sender.name + ": " + message.action)
 
         if(message.action == "addDataChangeListener") {
             if(!message.data.keys)
