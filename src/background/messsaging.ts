@@ -3,7 +3,7 @@ import {GlobalSettings, SiteSettings} from "./dataManager";
 export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
-    GetMostUsedEmojiMessage | ReportEmojiUsageMessage |
+    GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -109,6 +109,13 @@ export type ReadDataMessage = {
     action: "readData",
     data: {
         key: string,
+    }
+}
+
+export type SetAllowEmojiSuggestionsMessage = {
+    action: "setAllowEmojiSuggestions",
+    data: {
+        allow: boolean,
     }
 }
 

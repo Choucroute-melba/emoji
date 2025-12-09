@@ -43,6 +43,15 @@ function toggleSiteEnabled(url: string, enable: boolean) {
     })
 }
 
+function toggleAllowEmojiSuggestions(allow: boolean) {
+    browser.runtime.sendMessage({
+        action: "setAllowEmojiSuggestions",
+        data: {
+            allow: allow,
+        }
+    })
+}
+
 let settings = (await browser.runtime.sendMessage({action: "getSettings"})) as GlobalSettings;
 const port = browser.runtime.connect({name: "settings-page"});
 
@@ -66,19 +75,22 @@ port.onMessage.addListener((message: any) => {
             case "settings.freeSelector":
                 settings.freeSelector = m.data.value;
                 break;
+            case "settings.allowEmojiSuggestions":
+                settings.allowEmojiSuggestions = m.data.value;
+                break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {
                     const changedSite = parseStorageKey(m.data.key)![2] as string;
                     browser.runtime.sendMessage({action: "getSiteSettings", data: {url: changedSite}})
                         .then((siteSettings: any) => {
                             settings.sites[changedSite] = siteSettings
-                            root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled}));
+                            root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled, toggleAllowEmojiSuggestions}));
                         })
                 }
             }
         }
     }
-    root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
+    root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled, toggleAllowEmojiSuggestions}));
 })
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
@@ -106,4 +118,4 @@ for (const emoji of mostUsedEmojis) {
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)
 
-root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled}));
+root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled, toggleAllowEmojiSuggestions}));

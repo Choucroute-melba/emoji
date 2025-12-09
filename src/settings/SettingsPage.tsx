@@ -4,13 +4,21 @@ import React from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
 import {Emoji} from "../emoji/emoji";
 
-export default function SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled} : {
+export default function SettingsPage({settings, usageData,
+     toggleKeepFreeSelectorEnabled,
+     toggleGloballyEnabled,
+     toggleFreeSelectorGloballyEnabled,
+     toggleSiteEnabled,
+     toggleAllowEmojiSuggestions
+
+} : {
     settings: GlobalSettings
     usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
     toggleKeepFreeSelectorEnabled: (enable: boolean) => void,
     toggleGloballyEnabled: (enable: boolean) => void,
     toggleFreeSelectorGloballyEnabled: (enable: boolean) => void,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
+    toggleAllowEmojiSuggestions: (enable: boolean) => void
 }) {
     const disabledSites: SiteSettings[] = [];
     for (let sitesKey in settings.sites) {
@@ -41,7 +49,9 @@ export default function SettingsPage({settings, usageData, toggleKeepFreeSelecto
             </label>
             <h3>Usage data</h3>
             <label>
-                <input type={"checkbox"} checked={true} disabled={true} />
+                <input type={"checkbox"} checked={settings.allowEmojiSuggestions} onChange={(e) => {
+                    toggleAllowEmojiSuggestions(e.target.checked);
+                }} />
                 Show emoji suggestions based on your usage (stored locally)
             </label>
             <div className={"emojiUsageList"}>

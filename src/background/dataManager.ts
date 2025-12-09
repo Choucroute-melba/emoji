@@ -20,7 +20,8 @@ export type GlobalSettings = {
     enabled: boolean,
     freeSelector: boolean,
     actionIcon: string,
-    keepFreeSelectorEnabled: boolean
+    keepFreeSelectorEnabled: boolean,
+    allowEmojiSuggestions: boolean,
     sites: { [url: string]: SiteSettings },
 }
 
@@ -35,6 +36,7 @@ export default class DataManager {
             freeSelector: true,
             keepFreeSelectorEnabled: true,
             actionIcon: "😉",
+            allowEmojiSuggestions: true,
             sites: {} as {[url: string]: SiteSettings},
         }
     };

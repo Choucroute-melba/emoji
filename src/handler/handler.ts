@@ -2,6 +2,7 @@ import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../se
 import {Emoji, getEmojiFromShortCode, searchEmoji} from "../emoji/emoji";
 import {Message, ReportEmojiUsageMessage} from "../background/messsaging";
 import browser from "webextension-polyfill";
+import {GlobalSettings} from "../background/dataManager";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
     '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
@@ -78,6 +79,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected searchResults: Emoji[] = []
     private mostUsedEmojis: Emoji[] = []
     private _active = false
+    private allowEmojiSuggestions = true
     private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
     private readonly boundFocusLost: (e: FocusEvent) => void;
 
@@ -97,12 +99,21 @@ export default abstract class Handler<EltType extends HTMLElement> {
         }
         this.target.addEventListener('focusout', this.boundFocusLost)
 
-        this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: 10}}).then((emojis: Emoji[]) => {
-            this.mostUsedEmojis = emojis
-            this.searchResults = this.mostUsedEmojis.slice(0, 10)
-            this.onSearchUpdated()
-            console.log("most used emojis : ", emojis)
+        this.sendMessageToBackground({action: "readData", data: {key: "settings.allowEmojiSuggestions"}}).then((allow: boolean) => {
+            this.allowEmojiSuggestions = allow
+            if(allow)
+                this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: 10}}).then((emojis: Emoji[]) => {
+                    this.mostUsedEmojis = emojis
+                    this.searchResults = this.mostUsedEmojis.slice(0, 10)
+                    this.onSearchUpdated()
+                    console.log("most used emojis : ", emojis)
+                })
+            else {
+                this.searchResults = []
+                this.onSearchUpdated()
+            }
         })
+
 
         this.log("new handler", "\t\t\t---")
     }
@@ -177,6 +188,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     protected reportEmojiUsage(emoji: Emoji | string) {
+        if(!this.allowEmojiSuggestions) return
         this.sendMessageToBackground({
             action: "reportEmojiUsage",
             data: {
@@ -312,10 +324,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
      * shortcodes are automatically detected by default, override onSearchUpdated to change this */
     protected set search(value: string) {
         this._search = value;
-        if(this._search.length == 0 || this._search === ":")
+        if((this._search.length == 0 || this._search === ":") && this.allowEmojiSuggestions)
             this.searchResults = this.mostUsedEmojis.slice(0, 10)
         else
-            this.searchResults = searchEmoji(this._search, this.mostUsedEmojis);
+            this.searchResults = searchEmoji(this._search, this.allowEmojiSuggestions ? this.mostUsedEmojis : []);
         this.onSearchUpdated()
     }
     protected get search() { return this._search }
