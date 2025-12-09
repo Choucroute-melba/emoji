@@ -12,13 +12,19 @@ console.log("Initializing storage")
 dm.initializeStorage();
 
 function listener(message: any, sender: MessageSender): Promise<unknown> {
-    console.groupCollapsed(`%c${message.action || message.event}%c`,
-        'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
-        'color: default; background-color: default', message.data);
-    const p = new Promise<unknown>(async (resolve, reject) => {
+
+    const p = new Promise<unknown>(async (r, reject) => {
+        const resolve = (value: unknown) => {
+            console.groupEnd();
+            r(value);
+        }
         const m = message as Message;
         const activeTab = await getActiveTab()
+        console.groupCollapsed(`%c${message.action || message.event}%c`,
+            'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
+            'color: default; background-color: default', message.data);
         console.log("from: ", sender.tab ? `${sender.tab.id} ${sender.tab.url}` : `${sender.url} - ${activeTab?.id} ${activeTab?.url}`);
+
         switch (m.action) {
             case "readData":
                 resolve(await dm.readData(m.data.key));
@@ -96,14 +102,7 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.freeSelector = m.data.enabled;
                 resolve(true);
                 break;
-            case "enableFreeSelectorForSite": {/*
-                let url = ""
-                if(!m.data.url) {
-                    url = await getActiveTabUrl()
-                }
-                else url = m.data.url
-                dm.settings.freeSelector = m.data.enabled;
-                resolve(true);*/
+            case "enableFreeSelectorForSite": {
                 console.info("enableFreeSelectorForSite not implemented yet") // TODO
                 resolve(true);
             }
@@ -142,8 +141,6 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 break;
         }
     })
-    console.log("Listener returned")
-    console.groupEnd()
     return p;
 }
 
