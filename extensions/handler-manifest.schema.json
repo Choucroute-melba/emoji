@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "HandlerManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "sites", "targets", "trigger", "sources", "maintainer"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "maintainer": {
+      "type": "string",
+      "minLength": 1
+    },
+    "sites": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "targets": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "trigger": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type"],
+            "properties": {
+              "type": { "const": "default" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "combo"],
+            "properties": {
+              "type": { "const": "combo" },
+              "combo": { "type": "string", "minLength": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "key"],
+            "properties": {
+              "type": { "const": "key" },
+              "key": { "type": "string", "minLength": 1 }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["type", "command"],
+            "properties": {
+              "type": { "const": "command" },
+              "command": { "type": "string", "minLength": 1 }
+            }
+          }
+        ]
+      },
+      "minItems": 1
+    },
+    "uri": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "file": {
+      "anyOf": [
+        { "type": "string", "minLength": 1 },
+        { "type": "null" }
+      ]
+    },
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "repo"],
+      "properties": {
+        "file": { "type": "string", "minLength": 1 },
+        "repo": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

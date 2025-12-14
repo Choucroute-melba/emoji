@@ -10,7 +10,8 @@ export type HandlerManifest = {
     name: string;
     sites: string[];
     targets: string[];
-    trigger: HandlerTrigger<"combo" | "default" | "key">[]
+    maintainer: string;
+    trigger: HandlerTrigger<"combo" | "default" | "key" | "command">[]
     uri: string | undefined;
     file: string | undefined;
     sources: {
@@ -19,12 +20,13 @@ export type HandlerManifest = {
     }
 }
 
-export type TriggerType = "default" | "combo" | "key";
+export type TriggerType = "default" | "combo" | "key" | "command";
 
 export type HandlerTrigger<T extends TriggerType> =
     T extends "default" ? {type: T} :
     T extends "combo" ? {type: T, combo: string} :
     T extends "key" ? {type: T, key: string} :
+    T extends "command" ? {type: T, command: string} :
     never;
 
 let availableHandlers: {
@@ -113,24 +115,31 @@ export function buildShortcutString(e: KeyboardEvent) {
  * @param handlers
  * @param e
  */
-export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent): Promise<new (es: EmojiSelector, target: any, onExit: () => void) => Handler<any>> {
-    const sc = buildShortcutString(e);
-    const isCombo = (sc !== e.key);
+export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent | string): Promise<new (es: EmojiSelector, target: any, onExit: () => void) => Handler<any>> {
+    const isCommand = typeof e === "string";
+    const sc = isCommand ? e : buildShortcutString(e);
+    const isCombo = isCommand ? false : (sc !== e.key);
     const domain = window.location.hostname;
-    const target = e.target as HTMLElement | null;
+    const target = isCommand ? document.activeElement : (e.target as HTMLElement | null);
     const targetTag = target ? target.tagName.toLowerCase() : null;
 
     // Filtrer les handlers en fonction du trigger
     const triggeredHandlers = handlers.filter(h => {
         return h.trigger.some((tr: HandlerTrigger<TriggerType>) => {
             console.log(tr)
-            if (tr.type === "combo" && isCombo) {
+            if(tr.type === "command" && isCommand) {
+                return tr.command === e;
+            }
+            else if(isCommand)
+                return false;
+            else if (tr.type === "combo" && isCombo) {
                 return tr.combo === sc;
             }
-            if (tr.type === "key" && !isCombo) {
+            else if (tr.type === "key" && !isCombo) {
                 return tr.key === e.key;
             }
-            return tr.type === "default" && !isCombo && e.code === "Period";
+            else
+                return tr.type === "default" && !isCombo && e.code === "Period";
 
         });
     })

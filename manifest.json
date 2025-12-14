@@ -17,6 +17,14 @@
     "72": "./assets/ninja-2.png",
     "256": "./assets/ninja-3.png"
   },
+  "commands": {
+    "show-free-selector": {
+      "suggested_key": {
+        "default": "Ctrl+Comma"
+      },
+      "description": "Show the emoji selector"
+    }
+  },
   "options_ui": {
     "page": "assets/settings.html"
   },

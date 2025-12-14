@@ -60,7 +60,7 @@
         "type": "object",
         "properties": {
           "type": {
-            "enum": ["default", "key", "combo"],
+            "enum": ["default", "key", "combo", "command"],
             "description": "The type of trigger"
           },
           "value": {

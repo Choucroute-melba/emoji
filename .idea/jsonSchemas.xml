@@ -8,7 +8,8 @@
             <SchemaInfo>
               <option name="generatedName" value="New Schema" />
               <option name="name" value="Handlers Manifest Shema" />
-              <option name="relativePathToSchema" value="devEnv/handlers.schema.json" />
+              <option name="relativePathToSchema" value="extensions/handler-manifest.schema.json" />
+              <option name="schemaVersion" value="JSON Schema 7" />
               <option name="patterns">
                 <list>
                   <Item>

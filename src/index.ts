@@ -8,7 +8,7 @@ import {
     chooseAndLoadHandler,
     getAvailableHandlers, HandlerManifest
 } from "./handler/handlersManager";
-import browser from "webextension-polyfill";
+import browser, {Tabs} from "webextension-polyfill";
 import {SiteSettings} from "./background/dataManager";
 import {
     AddDataChangeListenerMessage,
@@ -17,6 +17,7 @@ import {
     Message
 } from "./background/messsaging";
 import {getDomainName} from "./background/utils";
+import Tab = Tabs.Tab;
 
 console.log('Emoji on the go ✨')
 
@@ -86,16 +87,17 @@ let listening = false
 const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
 
 
-async function mainListener(this: any, e: KeyboardEvent) {
+async function mainListener(this: any, e: KeyboardEvent | string) {
     try {
-        const sc = buildShortcutString(e);
-        const isCombo = (sc !== e.key);
-        console.groupCollapsed(`%c${e.code}%c ${isCombo ? sc : e.key} \tTarget : %c${e.target}`,
+        const isCommand = (typeof e === "string")
+        const sc = isCommand ? e : buildShortcutString(e);
+        const isCombo = isCommand? false : (sc !== e.key);
+        console.groupCollapsed(`%c${isCommand ? e : e.code}%c ${isCombo ? sc : (isCommand ? e : e.key)} \tTarget : %c${isCommand ? "" : e.target}`,
             'color: #FFC300; background-color: #201800; border-radius: 3px; padding: 2px 4px;',
             'color: default; background-color: default',
             'color: #999; ');
-        console.log(e.target)
-        console.log(buildShortcutString(e))
+        console.log(isCommand ? "Command Event" : e.target)
+        console.log(sc)
 
         const domain = window.location.hostname
 
@@ -119,7 +121,7 @@ async function mainListener(this: any, e: KeyboardEvent) {
                     console.log("EmojiSelector closed")
                     window.addEventListener('keydown', mainListener, true)
                 }
-                currentHandler = new h(es, e.target as any, onExit);
+                currentHandler = new h(es, (isCommand ? document.activeElement : e.target) as any, onExit);
                 if(currentHandler) { // Handler may be destroyed during the instantiation
                     console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
                     window.removeEventListener('keydown', mainListener, true)
@@ -140,6 +142,16 @@ async function mainListener(this: any, e: KeyboardEvent) {
             currentHandler.destroy()
         console.groupEnd()
     }
+}
+
+async function commandsListener(name: string, tab: Tab) {
+    const commands = await browser.commands.getAll();
+    const command = commands.find(c => c.name === name);
+    if(!command) {
+        console.warn(`Command ${name} not found`);
+        return
+    }
+    const sc = command.shortcut;
 }
 
 async function bindIframeListeners() {
@@ -260,6 +272,11 @@ port.postMessage({
 console.log(`Site settings (${tabId}) :`, siteSettings);
 
 await applySettings(siteSettings)
+browser.runtime.onMessage.addListener((command: any) => {
+    if(typeof command !== "string")
+        return
+    mainListener(command)
+});
 
 /*window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {

@@ -11,8 +11,8 @@
   },
   "trigger": [
     {
-      "type": "combo",
-      "combo": "Ctrl+,"
+      "type": "command",
+      "command": "show-free-selector"
     },
     {
       "type": "combo",

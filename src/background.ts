@@ -1,4 +1,4 @@
-import browser, {Runtime} from "webextension-polyfill";
+import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
 import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName, getMostUsedEmoji} from "./background/utils";
 import DataManager, {SiteSettings} from "./background/dataManager";
@@ -149,3 +149,16 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
 }
 
 browser.runtime.onMessage.addListener(listener)
+
+browser.commands.onCommand.addListener((command, tab) => {
+    console.log(`Command ${command} for tab ${tab?.id} triggered.`)
+    if(!tab) {
+        console.warn("No tab information available for command:", command)
+        return
+    }
+    if(tab.id === undefined) {
+        console.warn("Tab id is undefined for command:", command)
+        return
+    }
+    browser.tabs.sendMessage<string>(tab.id, command)
+})
