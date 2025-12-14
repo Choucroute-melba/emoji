@@ -144,14 +144,10 @@ async function mainListener(this: any, e: KeyboardEvent | string) {
     }
 }
 
-async function commandsListener(name: string, tab: Tab) {
-    const commands = await browser.commands.getAll();
-    const command = commands.find(c => c.name === name);
-    if(!command) {
-        console.warn(`Command ${name} not found`);
-        return
-    }
-    const sc = command.shortcut;
+const commandsListener = (command: any, tab: any) => {
+    if(typeof command !== "string")
+        return;
+    mainListener(command)
 }
 
 async function bindIframeListeners() {
@@ -208,6 +204,7 @@ async function applySettings(settings: SiteSettings) {
     if(settings.enabled || settings.freeSelector) {
         if(!mainListenerLoaded) {
             window.addEventListener('keydown', mainListener, true)
+            browser.runtime.onMessage.addListener(commandsListener);
             mainListenerLoaded = true
         }
         if(!DOMChangesListenerLoaded) {
@@ -220,6 +217,7 @@ async function applySettings(settings: SiteSettings) {
     }
     else {
         window.removeEventListener('keydown', mainListener, true)
+        browser.runtime.onMessage.removeListener(commandsListener);
         mainListenerLoaded = false
         document.removeEventListener('DOMContentLoaded', bindIframeListeners);
         DOMChangesListenerLoaded = false
@@ -272,11 +270,6 @@ port.postMessage({
 console.log(`Site settings (${tabId}) :`, siteSettings);
 
 await applySettings(siteSettings)
-browser.runtime.onMessage.addListener((command: any) => {
-    if(typeof command !== "string")
-        return
-    mainListener(command)
-});
 
 /*window.addEventListener('keydown', (e) => {
     if(e.code == "NumpadDivide") {
