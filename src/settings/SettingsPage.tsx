@@ -3,6 +3,7 @@ import './SettingsPage.css'
 import React from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
 import {Emoji} from "../emoji/emoji";
+import browser from "webextension-polyfill";
 
 export default function SettingsPage({settings, usageData,
      toggleKeepFreeSelectorEnabled,
@@ -26,6 +27,11 @@ export default function SettingsPage({settings, usageData,
             disabledSites.push(settings.sites[sitesKey]);
         }
     }
+    const openShortcutManagementPage = (e: any) => {
+        e.preventDefault();
+        browser.commands.openShortcutSettings()
+    }
+
     return (
         <div>
             <h1>Emojeezer Settings</h1>
@@ -34,19 +40,26 @@ export default function SettingsPage({settings, usageData,
                     toggleGloballyEnabled(!settings.enabled);
                 }}>{settings.enabled ? "Disable Autocomplete" : "Enable Autocomplete"}</button>
             </div>
-            <label>
-                <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
-                    toggleFreeSelectorGloballyEnabled(e.target.checked)
-                }} />
-                Enable the <code>Ctrl + ,</code> shortcut for easy copy-paste emoji
-                <br/>
-                <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
-                    <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
-                        toggleKeepFreeSelectorEnabled(e.target.checked);
-                    }} disabled={!settings.freeSelector}/>
-                    Keep it enabled even when autocomplete is off
+            <div>
+                <label>
+                    <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
+                        toggleFreeSelectorGloballyEnabled(e.target.checked)
+                    }} />
+                    Enable the <code>Ctrl + ,</code> shortcut for easy copy-paste emoji
+                    <br/>
+                    <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
+                        <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
+                            toggleKeepFreeSelectorEnabled(e.target.checked);
+                        }} disabled={!settings.freeSelector}/>
+                        Keep it enabled even when autocomplete is off
+                    </label>
                 </label>
-            </label>
+                <p style={{color: "gray", marginTop: "7px"}}>You can <a href={"about:addons"} onClick={openShortcutManagementPage}>change this shortcut</a>.
+                    See <a
+                        href={"https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox"}
+                        target={"_blank"}
+                    >Mozilla documentation</a> for more information. </p>
+            </div>
             <h3>Usage data</h3>
             <label>
                 <input type={"checkbox"} checked={settings.allowEmojiSuggestions} onChange={(e) => {
