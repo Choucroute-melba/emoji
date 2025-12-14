@@ -351,4 +351,8 @@ export default class DataManager {
         this._emojiUsage.value = value;
         this.getProxy(this._emojiUsage.value, this._emojiUsage.key, true);
     }
+
+    deleteEmojiUsage() {
+        this.emojiUsage = {};
+    }
 }

@@ -3,7 +3,7 @@ import {GlobalSettings, SiteSettings} from "./dataManager";
 export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
-    GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage |
+    GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -141,4 +141,11 @@ export type RemoveDataChangeListenerMessage = {
     data: {
         keys: string | string[],
     }
+}
+
+/**
+ * Deletes all emoji usage data.
+ */
+export type DeleteUsageDataMessage = {
+    action: "deleteUsageData"
 }

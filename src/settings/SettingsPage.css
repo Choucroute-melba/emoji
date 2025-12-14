@@ -8,11 +8,6 @@
     border-bottom: 1px solid #ccc;
 }
 
-a {
-    color: #204895;
-    text-decoration: none;
-}
-
 .emojiUsageDetails {
     position: absolute;
     z-index: 1001;

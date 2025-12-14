@@ -3,6 +3,11 @@ body {
     font-size: 15px;
 }
 
+a {
+    color: #204895;
+    text-decoration: none;
+}
+
 button {
     margin: 5px;
     padding: 5px;
@@ -22,6 +27,46 @@ button:focus {
     background-color: #e0e0e0;
 }
 
+.dangerButton {
+    background-color: #ffe9e9;
+    color: red;
+    border: 1px solid #ff5151;
+}
+
+.dangerButton:hover {
+    background-color: #ffd9d9;
+}
+
+.dangerButton:focus {
+    background-color: #ffb9b9;
+}
+
 .outlined {
     border: 1px solid #ccc;
+}
+
+.confirmationPopup {
+    position: absolute;
+    top: calc( 50% - 100px );
+    left: calc( 50% - 150px );
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    z-index: 1000;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.popupBackground {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.0);
+    z-index: 999;
 }

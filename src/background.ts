@@ -137,6 +137,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.allowEmojiSuggestions = m.data.allow
                 resolve(true);
                 break;
+            case "deleteUsageData":
+                dm.deleteEmojiUsage();
+                resolve(true);
+                break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

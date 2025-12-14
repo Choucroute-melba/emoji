@@ -1,6 +1,7 @@
 import '@src/base.css'
 import './SettingsPage.css'
-import React from 'react';
+import React from 'react'
+import {useState} from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
 import {Emoji} from "../emoji/emoji";
 import browser from "webextension-polyfill";
@@ -10,7 +11,8 @@ export default function SettingsPage({settings, usageData,
      toggleGloballyEnabled,
      toggleFreeSelectorGloballyEnabled,
      toggleSiteEnabled,
-     toggleAllowEmojiSuggestions
+     toggleAllowEmojiSuggestions,
+     deleteUsageData
 
 } : {
     settings: GlobalSettings
@@ -20,6 +22,7 @@ export default function SettingsPage({settings, usageData,
     toggleFreeSelectorGloballyEnabled: (enable: boolean) => void,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
     toggleAllowEmojiSuggestions: (enable: boolean) => void
+    deleteUsageData: () => void
 }) {
     const disabledSites: SiteSettings[] = [];
     for (let sitesKey in settings.sites) {
@@ -32,11 +35,13 @@ export default function SettingsPage({settings, usageData,
         browser.commands.openShortcutSettings()
     }
 
+    const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+
     return (
         <div>
             <h1>Emojeezer Settings</h1>
             <div>
-                <button className={"globalEnableButton" + settings.enabled ? "" : " outlined"} onClick={() => {
+                <button className={"globalEnableButton" + (settings.enabled ? "" : " outlined")} onClick={() => {
                     toggleGloballyEnabled(!settings.enabled);
                 }}>{settings.enabled ? "Disable Autocomplete" : "Enable Autocomplete"}</button>
             </div>
@@ -61,12 +66,17 @@ export default function SettingsPage({settings, usageData,
                     >Mozilla documentation</a> for more information. </p>
             </div>
             <h3>Usage data</h3>
-            <label>
-                <input type={"checkbox"} checked={settings.allowEmojiSuggestions} onChange={(e) => {
-                    toggleAllowEmojiSuggestions(e.target.checked);
-                }} />
-                Show emoji suggestions based on your usage (stored locally)
-            </label>
+            <div>
+                <label>
+                    <input type={"checkbox"} checked={settings.allowEmojiSuggestions} onChange={(e) => {
+                        toggleAllowEmojiSuggestions(e.target.checked);
+                    }} />
+                    Show emoji suggestions based on your usage (stored locally)
+                    <br/>
+                </label>
+                <button className={"dangerButton"} onClick={() => {setShowDeleteConfirmation(true)}}>Delete History</button>
+                {showDeleteConfirmation && <ConfirmUsageDataDeletion onConfirm={deleteUsageData} onCancel={() => {setShowDeleteConfirmation(false)}}/>}
+            </div>
             <div className={"emojiUsageList"}>
                 {
                     usageData.size === 0 ? <p>No usage data yet</p> : Array.from(usageData.entries()).map(([emoji, data]) => {
@@ -137,6 +147,19 @@ function EmojiUsageDetails({emoji, data}: {
                 <p>Recency score: {data.recency.toFixed(4)}</p>
                 <p>Frequency score: {data.frequency.toFixed(4)}</p>
                 <p>Total score: {data.score.toFixed(4)}</p>
+            </div>
+        </div>
+    )
+}
+
+function ConfirmUsageDataDeletion({onConfirm, onCancel}: {onConfirm: () => void, onCancel: () => void}) {
+    return (
+        <div className={"popupBackground"} onClick={() => {onCancel()}}>
+            <div className={"confirmationPopup"}>
+                <p>Are you sure you want to delete all your usage data?</p>
+                <p>This action cannot be undone.</p>
+                <button className={"outlined"} style={{alignSelf: "end"}} onClick={() => {onCancel()}}>Cancel</button>
+                <button className={"dangerButton"} style={{alignSelf: "end"}} onClick={() => {onConfirm()}}>Confirm</button>
             </div>
         </div>
     )

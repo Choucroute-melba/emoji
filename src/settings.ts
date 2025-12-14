@@ -5,6 +5,7 @@ import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./backgr
 import {GlobalSettings} from "./background/dataManager";
 import {calculateEmojiScore, calculateEmojiSignals, parseStorageKey} from "./background/utils";
 import {Emoji} from "./emoji/emoji";
+import React from "react";
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
     browser.runtime.sendMessage({
@@ -52,6 +53,25 @@ function toggleAllowEmojiSuggestions(allow: boolean) {
     })
 }
 
+async function deleteUsageData() {
+    await browser.runtime.sendMessage({action: "deleteUsageData"})
+    window.location.reload();
+}
+
+function renderSettings() {
+    root.render(React.createElement(SettingsPage, {
+        settings,
+        usageData,
+        toggleKeepFreeSelectorEnabled,
+        toggleGloballyEnabled,
+        toggleFreeSelectorGloballyEnabled,
+        toggleSiteEnabled,
+        toggleAllowEmojiSuggestions,
+        deleteUsageData
+    }))
+
+}
+
 let settings = (await browser.runtime.sendMessage({action: "getSettings"})) as GlobalSettings;
 const port = browser.runtime.connect({name: "settings-page"});
 
@@ -84,13 +104,13 @@ port.onMessage.addListener((message: any) => {
                     browser.runtime.sendMessage({action: "getSiteSettings", data: {url: changedSite}})
                         .then((siteSettings: any) => {
                             settings.sites[changedSite] = siteSettings
-                            root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled ,toggleSiteEnabled, toggleAllowEmojiSuggestions}));
+                            renderSettings();
                         })
                 }
             }
         }
     }
-    root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled, toggleAllowEmojiSuggestions}));
+    renderSettings();
 })
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
@@ -118,4 +138,6 @@ for (const emoji of mostUsedEmojis) {
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)
 
-root.render(SettingsPage({settings, usageData, toggleKeepFreeSelectorEnabled, toggleGloballyEnabled, toggleFreeSelectorGloballyEnabled, toggleSiteEnabled, toggleAllowEmojiSuggestions}));
+
+
+renderSettings();
