@@ -1,3 +1,16 @@
+# Version 4.2.0
+*14/12/2025*
+
+Emoji suggestions are here ─ Now when you open a selector, you'll see a list of suggested emojis based on your recent usage.
+This feature can be disabled in the extension's settings.
+
+- Allow changing the shortcut for the selector
+- Added a new setting to disable emoji suggestions
+- Allow deleting usage history
+- Show most used emojis first in the selector
+- Lots of internal code improvements
+- bug fixes
+
 # Version 4.1.1
 *30/11/2025*
 
