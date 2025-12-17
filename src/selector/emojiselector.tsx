@@ -1,3 +1,4 @@
+import '@src/base.css'
 import React from 'react';
 import './Components/Selector.css';
 import {createRoot, Root} from 'react-dom/client';
@@ -28,6 +29,7 @@ export type EmojiSelectorGeometry = {
 export default class EmojiSelector {
     private root: HTMLElement;
     private reactRoot: Root;
+    private popupBackground: HTMLDivElement;
     private _searchResults: Emoji[] = [];
     private _display = false;
     private _focusedEmojiIndex = 0; // The index of the currently focused emoji in selector
@@ -40,6 +42,8 @@ export default class EmojiSelector {
 
     public onEmojiSelected: (emoji: Emoji) => void = () => {};
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
+    public onBlur: () => void = () => {};
+    public onClose: () => void = () => {};
 
     constructor() {
         this.root = document.createElement('div');
@@ -47,19 +51,27 @@ export default class EmojiSelector {
         this.root.classList.add('emoji-selector');
         this.root.style.display = 'none';
 
+        this.popupBackground = document.createElement('div');
+        this.popupBackground.classList.add('popupBackground');
+        this.popupBackground.addEventListener('click', () => {this.onClose()});
+
+        this.root.addEventListener('blur', () => {this.onBlur()});
+
         this.reactRoot = createRoot(this.root);
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.component));
     }
 
     addToDom() {
         if(this._inDocument) return;
         document.body.appendChild(this.root);
+        this.root.appendChild(this.popupBackground);
         this._inDocument = true;
     }
 
     removeFromDom() {
         if(!this._inDocument) return;
         document.body.removeChild(this.root);
+        this.root.removeChild(this.popupBackground);
         this._inDocument = false;
     }
 
@@ -101,6 +113,7 @@ export default class EmojiSelector {
                 debugText={this._debugText}
                 onEmojiSelected={this.onEmojiSelected}
                 onResize={this.onResize}
+                onToggleEmojiFavorite={() => {}}
             />
         );
     }
@@ -155,6 +168,10 @@ export default class EmojiSelector {
     set debugText(value: string) {
         this._debugText = value;
         this.reactRoot.render(this.component());
+    }
+
+    get hasFocus(): boolean {
+        return this.root.contains(document.activeElement);
     }
 
 }

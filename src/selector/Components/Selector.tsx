@@ -14,7 +14,8 @@ export default function Selector({
                                      selectedEmojiIndex,
                                      debugText,
                                      onEmojiSelected,
-                                     onResize
+                                     onResize,
+                                        onToggleEmojiFavorite,
                                  }:
                                      {position: {x: number, y: number},
                                         displayAbove: boolean,
@@ -24,7 +25,8 @@ export default function Selector({
                                          selectedEmojiIndex: number,
                                          debugText: string,
                                          onEmojiSelected: (emoji: Emoji) => void,
-                                         onResize: (geometry: EmojiSelectorGeometry) => void
+                                         onResize: (geometry: EmojiSelectorGeometry) => void,
+                                         onToggleEmojiFavorite: (emoji: Emoji) => void,
                                      }) {
 
     const selectorRef = useRef<HTMLDivElement>(null);
@@ -77,13 +79,17 @@ export default function Selector({
             if (i > 10) return null;
             if (i === selectedEmojiIndex) return (
                 <EmojiCard emoji={emoji} selected={true} onClick={() => {
-                    dispatchEmojiClick(emoji);
-                }} cardStyle={"full"} key={emoji.unicode}/>
+                        dispatchEmojiClick(emoji);
+                    }} cardStyle={"full"} key={emoji.unicode}
+                    onFavoriteToggle={onToggleEmojiFavorite}
+                />
             )
             else return (
                 <EmojiCard emoji={emoji} selected={false} onClick={() => {
-                    dispatchEmojiClick(emoji);
-                }} cardStyle={"full"} key={emoji.unicode}/>
+                        dispatchEmojiClick(emoji);
+                    }} cardStyle={"full"} key={emoji.unicode}
+                    onFavoriteToggle={onToggleEmojiFavorite}
+                />
             )
         })
     }
