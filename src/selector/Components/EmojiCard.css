@@ -1,35 +1,30 @@
 .emoji-card {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    height: 25px;
     padding: 7px;
-    margin-bottom: 4px;
     border-radius: 5px;
     min-width: 100%;
     cursor: pointer;
 }
 
-.lineTop {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-}
-
-.emoji-card:hover {
+.emoji-card:hover, .emoji-card-square:hover {
     background-color: #c9c9c9;
 }
 
-.emoji-card:focus {
+.emoji-card:focus, .emoji-card-square:focus {
     background-color: #d9d9d9;
     box-shadow: 0px 0px 0px 8px #000000
 }
 
 .emoji-card_focus {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     padding: 7px;
-    margin-bottom: 4px;
     border-radius: 5px;
     min-width: 100%;
     background-color: #ededed;
@@ -37,7 +32,61 @@
     cursor: pointer;
 }
 
-.emoji-card__p {
+.emoji-card_left {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 85%;
+}
+
+.emoji-card_right {
+    padding: 6px;
+    border-radius: 5px;
+}
+.emoji-card_right:hover {
+    background-color: #c9c9c9;
+}
+
+.emoji-card-square {
+    height: 35px;
+    width: 35px;
+    min-width: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-radius: 5px;
+    position: relative;
+}
+
+.emoji-card-square_focus {
+    height: 35px;
+    width: 35px;
+    min-width: 35px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+
+    background-color: #ededed;
+    box-shadow: 0px 0px 0px 1px #636363;
+    border-radius: 5px;
+}
+
+.emoji-card-square_focus .emoji-card_right, .emoji-card-square .emoji-card_right {
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 100%;
+}
+
+.emoji-card__p, .emoji-card-square__p {
     padding: 0 4px;
     margin: 0px;
 }
@@ -52,4 +101,12 @@
     padding: 5px;
     font-family: monospace;
     font-size: 1em;
+}
+
+.shortcode {
+    padding: 0px;
+    margin: 0px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
