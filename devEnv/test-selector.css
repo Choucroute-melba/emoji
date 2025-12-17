@@ -1,0 +1,10 @@
+
+#headLine {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+#emojiCardPreview {
+    margin: 20px;
+}
