@@ -7,6 +7,7 @@ import Star from "./Star";
 export default function EmojiCard(props: {
     emoji: Emoji,
     selected: boolean,
+    isFavorite: boolean,
     onClick: (emoji: Emoji) => void,
     onFavoriteToggle: (emoji: Emoji) => void,
     cardStyle: "square" | "full",
@@ -40,13 +41,13 @@ export default function EmojiCard(props: {
                 <p className={"emoji-card__p"}>{props.emoji.unicode} {props.cardStyle === "full" && props.emoji.name}</p>
                 {(props.selected && props.cardStyle === "full") && <p className={"shortcode"}>{props.emoji.shortcodes.join(", ")}</p>}
             </div>
-            <div className={"emoji-card_right"} style={{display: displayStar || props.selected ? "flex" : "none"}}
+            <div className={"emoji-card_right"} style={{display: displayStar || (props.selected || props.isFavorite) ? "flex" : "none"}}
                  onClick={(e) => {
                      e.stopPropagation()
                      props.onFavoriteToggle(props.emoji);
                  }}
             >
-                <Star filled={false} height={props.cardStyle === "full" ? 24 : 12} width={props.cardStyle === "full" ? 24 : 12}/>
+                <Star filled={props.isFavorite} height={props.cardStyle === "full" ? 24 : 12} width={props.cardStyle === "full" ? 24 : 12}/>
             </div>
             {displayTooltip && <EmojiTooltip emoji={props.emoji} position={tooltipPosition}/>}
         </div>

@@ -78,14 +78,14 @@ export default function Selector({
             i++;
             if (i > 10) return null;
             if (i === selectedEmojiIndex) return (
-                <EmojiCard emoji={emoji} selected={true} onClick={() => {
+                <EmojiCard emoji={emoji} selected={true} isFavorite={false} onClick={() => {
                         dispatchEmojiClick(emoji);
                     }} cardStyle={"full"} key={emoji.unicode}
                     onFavoriteToggle={onToggleEmojiFavorite}
                 />
             )
             else return (
-                <EmojiCard emoji={emoji} selected={false} onClick={() => {
+                <EmojiCard emoji={emoji} selected={false} isFavorite={true} onClick={() => {
                         dispatchEmojiClick(emoji);
                     }} cardStyle={"full"} key={emoji.unicode}
                     onFavoriteToggle={onToggleEmojiFavorite}
