@@ -7,6 +7,10 @@ import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
 
 console.log("background.ts");
 
+browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
+    .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
+    .catch(err => console.error("Error while setting uninstall URL:", err))
+
 const dm = new DataManager();
 console.log("Initializing storage")
 dm.initializeStorage();
