@@ -1,3 +1,8 @@
+# Version 4.2.1
+*14/12/2025*
+
+- Added a survey to fill when the addon is uninstalled
+
 # Version 4.2.0
 *14/12/2025*
 
