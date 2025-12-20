@@ -15,19 +15,21 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
     if(temporary) return;
     switch (reason) {
         case "install": {
+            console.log("Installing extension")
             fetch("https://emojeezer-website.vercel.app/api/onboard", {
                 method: "POST",
-            })
+            }).catch(err => console.error("Error while sending onboard request:", err))
         }
         break;
         case "update": {
+            console.log("Updating extension")
             fetch("https://emojeezer-website.vercel.app/api/update", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
-            })
+            }).catch(err => console.error("Error while sending update request:", err))
         }
     }
 })
