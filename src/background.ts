@@ -11,6 +11,27 @@ browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
     .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
     .catch(err => console.error("Error while setting uninstall URL:", err))
 
+browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
+    if(temporary) return;
+    switch (reason) {
+        case "install": {
+            fetch("https://emojeezer-website.vercel.app/api/onboard", {
+                method: "POST",
+            })
+        }
+        break;
+        case "update": {
+            fetch("https://emojeezer-website.vercel.app/api/update", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
+            })
+        }
+    }
+})
+
 const dm = new DataManager();
 console.log("Initializing storage")
 dm.initializeStorage();
