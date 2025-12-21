@@ -1,0 +1,48 @@
+{
+  "emojiUsage": {
+    "😆": {
+      "count": 1,
+      "firstUsed": 1766323003497,
+      "lastUsed": 1766323003497
+    },
+    "🤣": {
+      "count": 1,
+      "firstUsed": 1766323012798,
+      "lastUsed": 1766323012798
+    },
+    "🚀": {
+      "count": 1,
+      "firstUsed": 1766323023546,
+      "lastUsed": 1766323023546
+    }
+  },
+  "favoriteEmojis": [
+    "😅",
+    "😭",
+    "🥹",
+    "🖕",
+    "👍️",
+    "🤘",
+    "🪨",
+    "🚀"
+  ],
+  "settings": {
+    "enabled": true,
+    "freeSelector": true,
+    "keepFreeSelectorEnabled": true,
+    "actionIcon": "😉",
+    "allowEmojiSuggestions": true,
+    "sites": {
+      "github.com": {
+        "url": "github.com",
+        "enabled": false,
+        "freeSelector": true
+      },
+      "www.labanquepostale.fr": {
+        "url": "www.labanquepostale.fr",
+        "enabled": false,
+        "freeSelector": true
+      }
+    }
+  }
+}

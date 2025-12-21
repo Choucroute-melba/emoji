@@ -74,8 +74,8 @@ export default {
     plugins: [
         new WebExtPlugin({
             sourceDir: path.resolve(__dirname, 'dev'),
-            firefox: "C:\\Program Files\\Firefox Developer Edition\\firefox.exe",
-            firefoxProfile: "C:\\Users\\Vivien\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\kv2tckr8.dev-edition-default",
+            firefox: "D:\\Program\\FirefoxDeveloperEdition\\firefox.exe",
+            firefoxProfile: "C:\\Users\\Vivien\\AppData\\Roaming\\Mozilla\\Firefox\\Profiles\\pqq5rt9r.dev-edition-default-1766176210126",
             startUrl: ["about:debugging#/runtime/this-firefox", "http://localhost:8080/test-site.html"],
         }),
         new CopyPlugin({

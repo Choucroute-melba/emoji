@@ -6,7 +6,7 @@
     height: 25px;
     padding: 7px;
     border-radius: 5px;
-    min-width: 100%;
+    width: 260px;
     cursor: pointer;
 }
 
@@ -26,7 +26,7 @@
     justify-content: space-between;
     padding: 7px;
     border-radius: 5px;
-    min-width: 100%;
+    width: 260px;
     background-color: #ededed;
     box-shadow: 0px 0px 0px 1px #636363;
     cursor: pointer;
@@ -44,14 +44,11 @@
     padding: 6px;
     border-radius: 5px;
 }
-.emoji-card_right:hover {
-    background-color: #c9c9c9;
-}
 
 .emoji-card-square {
-    height: 35px;
-    width: 35px;
-    min-width: 35px;
+    height: 45px;
+    width: 45px;
+    min-width: 45px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -61,9 +58,9 @@
 }
 
 .emoji-card-square_focus {
-    height: 35px;
-    width: 35px;
-    min-width: 35px;
+    height: 45px;
+    width: 45px;
+    min-width: 45px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -77,8 +74,8 @@
 
 .emoji-card-square_focus .emoji-card_right, .emoji-card-square .emoji-card_right {
     position: absolute;
-    right: -1px;
-    bottom: -1px;
+    right: -3px;
+    bottom: -3px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -86,9 +83,25 @@
     border-radius: 100%;
 }
 
-.emoji-card__p, .emoji-card-square__p {
+.emoji-card p, .emoji-card_focus p {
+    font-weight: 600;
     padding: 0 4px;
     margin: 0px;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+.emoji-card-square p, .emoji-card-square_focus p {
+    font-weight: 600;
+    margin: auto;
+    font-size: 1.2em;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
 }
 
 .emoji-tooltip {
@@ -104,9 +117,13 @@
 }
 
 .shortcode {
+    font-size: small;
+    font-family: "JetBrains Mono", monospace;
+    color: #818181;
     padding: 0px;
     margin: 0px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    max-width: 100%;
 }

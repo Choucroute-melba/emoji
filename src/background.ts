@@ -1,6 +1,7 @@
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName, getMostUsedEmoji} from "./background/utils";
+import {getDomainName, getMostUsedEmoji} from "./background/utils";
+import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
 import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
@@ -141,6 +142,28 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.deleteEmojiUsage();
                 resolve(true);
                 break;
+            case "toggleFavoriteEmoji": {
+                const index = dm.favoriteEmojis.indexOf(m.data.emoji)
+                if(index == -1)
+                    dm.favoriteEmojis.push(m.data.emoji);
+                else {
+                    await dm.removeFavoriteEmoji(m.data.emoji);
+                }
+                resolve(true);
+            }
+            break
+            case "getFavoriteEmojis": {
+                const unicodes = dm.favoriteEmojis;
+                const emojis: Emoji[] = []
+                for(const e of unicodes) {
+                    const emojiData = getEmojiFromUnicode(e)
+                    if(!emojiData)
+                        throw new Error(`non existent emoji: ${e}`)
+                    emojis.push(emojiData);
+                }
+                resolve(emojis);
+            }
+            break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

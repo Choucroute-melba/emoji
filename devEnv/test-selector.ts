@@ -14,6 +14,7 @@ es.onClose = () => console.log("closed")
 es.onEmojiSelected = (emoji) => console.log(emoji)
 es.onBlur = () => console.log("blurred")
 es.onResize = () => console.log("resized")
+es.onToggleEmojiFavorite = (emoji: Emoji) => console.log("toggle favorite for ", emoji.unicode)
 
 console.log(es)
 

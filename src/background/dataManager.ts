@@ -40,10 +40,13 @@ export default class DataManager {
             sites: {} as {[url: string]: SiteSettings},
         }
     };
-
     private _emojiUsage = {
         key: "emojiUsage",
         value: {} as {[emoji: string]: { count: number, firstUsed: number, lastUsed: number }},
+    }
+    private _favoriteEmojis = {
+        key: "favoriteEmojis",
+        value: [] as string[],
     }
 
     private proxyCache = new WeakMap<object, any>();
@@ -199,60 +202,60 @@ export default class DataManager {
     }
 
     private async writeData(key: string, value: any): Promise<boolean> {
-        let parsedKey = parseStorageKey(key)
-        const queueKey = parsedKey == null ? "__GLOBAL__" : parsedKey[0];
-        const doWrite = async () => {
-            if (parsedKey == null) {
-                return await browser.storage.sync.set(value).catch(err => {
+            let parsedKey = parseStorageKey(key)
+            const queueKey = parsedKey == null ? "__GLOBAL__" : parsedKey[0];
+            const doWrite = async () => {
+                if (parsedKey == null) {
+                    return await browser.storage.sync.set(value).catch(err => {
+                        console.error(`Error writing setting ${key}: ${err}`)
+                        throw err
+                    }).then(() => true)
+                }
+
+                if (parsedKey.length === 0)
+                    return false
+
+                const topKey = parsedKey[0]
+                const res = await browser.storage.sync.get(topKey)
+                let root = (res as any)[topKey]
+
+                if (parsedKey.length === 1) {
+                    return await browser.storage.sync.set({[topKey]: value}).catch(err => {
+                        console.error(`Error writing setting ${key}: ${err}`)
+                        throw err
+                    }).then(() => true)
+                }
+
+                if (root === undefined || root === null)
+                    root = {}
+
+                let current: any = root
+                for (let i = 1; i < parsedKey.length - 1; i++) {
+                    const seg = parsedKey[i]
+                    if (current[seg] === undefined || current[seg] === null)
+                        current[seg] = {}
+                    current = current[seg]
+                }
+
+                current[parsedKey[parsedKey.length - 1]] = value
+                return await browser.storage.sync.set({[topKey]: root}).catch(err => {
                     console.error(`Error writing setting ${key}: ${err}`)
                     throw err
                 }).then(() => true)
             }
 
-            if (parsedKey.length === 0)
-                return false
-
-            const topKey = parsedKey[0]
-            const res = await browser.storage.sync.get(topKey)
-            let root = (res as any)[topKey]
-
-            if (parsedKey.length === 1) {
-                return await browser.storage.sync.set({[topKey]: value}).catch(err => {
-                    console.error(`Error writing setting ${key}: ${err}`)
-                    throw err
-                }).then(() => true)
-            }
-
-            if (root === undefined || root === null)
-                root = {}
-
-            let current: any = root
-            for (let i = 1; i < parsedKey.length - 1; i++) {
-                const seg = parsedKey[i]
-                if (current[seg] === undefined || current[seg] === null)
-                    current[seg] = {}
-                current = current[seg]
-            }
-
-            current[parsedKey[parsedKey.length - 1]] = value
-            return await browser.storage.sync.set({[topKey]: root}).catch(err => {
-                console.error(`Error writing setting ${key}: ${err}`)
-                throw err
-            }).then(() => true)
+            // Chaîner la nouvelle écriture après la précédente pour la même queueKey
+            const prev = this.pendingWrites.get(queueKey) ?? Promise.resolve(true);
+            const next = prev.then(() => doWrite()).catch(() => doWrite());
+            // stocker la promesse courante (ne pas await ici)
+            this.pendingWrites.set(queueKey, next);
+            // quand la promesse est terminée, si c'était la dernière, on peut la retirer (optionnel)
+            next.finally(() => {
+                // si la promesse stockée est bien la même, la supprimer
+                if (this.pendingWrites.get(queueKey) === next) this.pendingWrites.delete(queueKey);
+            });
+            return next;
         }
-
-        // Chaîner la nouvelle écriture après la précédente pour la même queueKey
-        const prev = this.pendingWrites.get(queueKey) ?? Promise.resolve(true);
-        const next = prev.then(() => doWrite()).catch(() => doWrite());
-        // stocker la promesse courante (ne pas await ici)
-        this.pendingWrites.set(queueKey, next);
-        // quand la promesse est terminée, si c'était la dernière, on peut la retirer (optionnel)
-        next.finally(() => {
-            // si la promesse stockée est bien la même, la supprimer
-            if (this.pendingWrites.get(queueKey) === next) this.pendingWrites.delete(queueKey);
-        });
-        return next;
-    }
 
     async initializeStorage() {
         if(!(await this._readData("settings")))
@@ -264,6 +267,11 @@ export default class DataManager {
             await this.writeData("emojiUsage", this._emojiUsage.value)
         else {
             this.emojiUsage = await this._readData(this._emojiUsage.key) as typeof this._emojiUsage.value;
+        }
+        if(!(await this._readData("favoriteEmojis")))
+            await this.writeData("favoriteEmojis", this._favoriteEmojis.value)
+        else {
+            this.favoriteEmojis = await this._readData(this._favoriteEmojis.key) as unknown as typeof this._favoriteEmojis.value;
         }
         console.log("Storage initialized")
     }
@@ -326,14 +334,19 @@ export default class DataManager {
         }
     }
 
+    async removeFavoriteEmoji(emoji: string) {
+        const previousValue = this._favoriteEmojis.value
+        this.favoriteEmojis = this.favoriteEmojis.filter(e => e !== emoji)
+        await this.writeData(this._favoriteEmojis.key, this._favoriteEmojis.value)
+        this.onDataChange(this._favoriteEmojis.key, this._favoriteEmojis.value, previousValue)
+    }
+
     get settings():typeof this._settings.value {
         return this.getProxy(this._settings.value, this._settings.key);
     }
-
     get readonlySettings(): typeof this._settings.value {
         return JSON.parse(JSON.stringify(this._settings.value)) as typeof this._settings.value;
     }
-
     protected set settings(value: typeof this._settings.value) {
         this._settings.value = value;
         this.getProxy(this._settings.value, this._settings.key, true);
@@ -342,14 +355,23 @@ export default class DataManager {
     get emojiUsage():typeof this._emojiUsage.value {
         return this.getProxy(this._emojiUsage.value, this._emojiUsage.key);
     }
-
     get readonlyEmojiUsage(): typeof this._emojiUsage.value {
         return JSON.parse(JSON.stringify(this._emojiUsage.value)) as typeof this._emojiUsage.value;
     }
-
     protected set emojiUsage(value: typeof this._emojiUsage.value) {
         this._emojiUsage.value = value;
         this.getProxy(this._emojiUsage.value, this._emojiUsage.key, true);
+    }
+
+    get favoriteEmojis():typeof this._favoriteEmojis.value {
+        return this.getProxy(this._favoriteEmojis.value, this._favoriteEmojis.key);
+    }
+    get readonlyFavoriteEmojis(): typeof this._favoriteEmojis.value {
+        return JSON.parse(JSON.stringify(this._favoriteEmojis.value)) as typeof this._favoriteEmojis.value;
+    }
+    protected set favoriteEmojis(value: typeof this._favoriteEmojis.value) {
+        this._favoriteEmojis.value = value;
+        this.getProxy(this._favoriteEmojis.value, this._favoriteEmojis.key, true);
     }
 
     deleteEmojiUsage() {

@@ -31,6 +31,7 @@ export default class EmojiSelector {
     private reactRoot: Root;
     private popupBackground: HTMLDivElement;
     private _searchResults: Emoji[] = [];
+    private _favoriteEmojis: string[] = [];
     private _display = false;
     private _focusedEmojiIndex = 0; // The index of the currently focused emoji in selector
     private _position = {x: 0, y: 0}; // the absolute position of the selector on the page
@@ -42,6 +43,7 @@ export default class EmojiSelector {
 
     public onEmojiSelected: (emoji: Emoji) => void = () => {};
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
+    public onToggleEmojiFavorite: (emoji: Emoji) => void = () => {};
     public onBlur: () => void = () => {};
     public onClose: () => void = () => {};
 
@@ -58,7 +60,7 @@ export default class EmojiSelector {
         this.root.addEventListener('blur', () => {this.onBlur()});
 
         this.reactRoot = createRoot(this.root);
-        this.reactRoot.render(React.createElement(this.component));
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
 
     addToDom() {
@@ -109,25 +111,27 @@ export default class EmojiSelector {
                 positionMode={this._mode}
                 shape={this._shape}
                 searchResults={this._searchResults}
+                favorites={this._favoriteEmojis}
                 selectedEmojiIndex={this._focusedEmojiIndex}
                 debugText={this._debugText}
                 onEmojiSelected={this.onEmojiSelected}
                 onResize={this.onResize}
-                onToggleEmojiFavorite={() => {}}
+                onToggleEmojiFavorite={this.onToggleEmojiFavorite}
             />
         );
     }
+    private boundComponent = this.component.bind(this);
 
     set searchResults(value: Emoji[]) {
         this._searchResults = value;
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
     get searchResults() {return this._searchResults;}
 
     set display(value: boolean) {
         this._display = value;
         this.root.style.display = this._display ? 'block' : 'none';
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
     get display() {return this._display;}
 
@@ -136,13 +140,15 @@ export default class EmojiSelector {
         this._position = value.position;
         this._placement = value.placement;
         this._mode = value.mode || "absolute";
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
-    get position() {return {
-        position: this._position,
-        placement: this._placement,
-        mode: this._mode
-    };}
+    get position() {
+        return {
+            position: this._position,
+            placement: this._placement,
+            mode: this._mode
+        };
+    }
 
     get geometry(): EmojiSelectorGeometry {
         return {
@@ -161,13 +167,18 @@ export default class EmojiSelector {
             this._mode = value.positionMode;
         if(value.shape)
             this._shape = value.shape;
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.boundComponent));
+    }
+
+    set favoriteEmojis(value: string[]) {
+        this._favoriteEmojis = value;
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
 
     /** set a text that will be shown in the selector for debugging purposes */
     set debugText(value: string) {
         this._debugText = value;
-        this.reactRoot.render(this.component());
+        this.reactRoot.render(React.createElement(this.boundComponent));
     }
 
     get hasFocus(): boolean {
