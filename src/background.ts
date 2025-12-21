@@ -8,6 +8,33 @@ import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
 
 console.log("background.ts");
 
+browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
+    .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
+    .catch(err => console.error("Error while setting uninstall URL:", err))
+
+browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
+    if(temporary) return;
+    switch (reason) {
+        case "install": {
+            console.log("Installing extension")
+            fetch("https://emojeezer-website.vercel.app/api/onboard", {
+                method: "POST",
+            }).catch(err => console.error("Error while sending onboard request:", err))
+        }
+        break;
+        case "update": {
+            console.log("Updating extension")
+            fetch("https://emojeezer-website.vercel.app/api/update", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
+            }).catch(err => console.error("Error while sending update request:", err))
+        }
+    }
+})
+
 const dm = new DataManager();
 console.log("Initializing storage")
 dm.initializeStorage();
