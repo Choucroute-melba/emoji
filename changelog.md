@@ -1,3 +1,8 @@
+# Version 4.3.1
+*21/12/2025*
+
+- Fixed a styling issue that caused glitches in websites
+
 # Version 4.3.0
 *21/12/2025*
 
