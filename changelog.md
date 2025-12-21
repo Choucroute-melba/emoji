@@ -1,3 +1,8 @@
+# Version 4.3.0
+*21/12/2025*
+
+This version brings the favorite emojis features and styling improvements.
+
 # Version 4.2.1
 *14/12/2025*
 
