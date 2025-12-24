@@ -109,7 +109,7 @@ export type AddSiteSettingsListenerMessage = {
 export type ReadDataMessage = {
     action: "readData",
     data: {
-        key: string,
+        key: string | string[],
     }
 }
 

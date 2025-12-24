@@ -4,7 +4,8 @@ import {getDomainName, getMostUsedEmoji} from "./background/utils";
 import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
-import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
+import {getEmojiFromUnicode} from "./emoji/emoji";
+import {Emoji} from "emojibase";
 
 console.log("background.ts");
 
@@ -19,6 +20,12 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
             console.log("Installing extension")
             fetch("https://emojeezer-website.vercel.app/api/onboard", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    version: browser.runtime.getManifest().version
+                })
             }).catch(err => console.error("Error while sending onboard request:", err))
         }
         break;
@@ -55,7 +62,16 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
 
         switch (m.action) {
             case "readData":
-                resolve(await dm.readData(m.data.key));
+                if(typeof m.data.key === "string")
+                    resolve(await dm.readData(m.data.key));
+                else if(Array.isArray(m.data.key)) {
+                    const result: {[key: string]: any} = {};
+                    for(const key of m.data.key) {
+                        result[key] = await dm.readData(key);
+                    }
+                    resolve(result);
+                }
+                resolve(undefined);
                 break;
             case "getSettings":
                 resolve(dm.readonlySettings)
