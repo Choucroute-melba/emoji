@@ -1,0 +1,63 @@
+{
+  "colors": {
+    "accentcolor": null,
+    "bookmark_text": null,
+    "button_background_active": null,
+    "button_background_hover": null,
+    "frame": "rgb(69, 153, 204)",
+    "frame_inactive": null,
+    "icons": null,
+    "icons_attention": null,
+    "ntp_background": null,
+    "ntp_card_background": null,
+    "ntp_text": null,
+    "popup": "rgb(138, 209, 225)",
+    "popup_border": null,
+    "popup_highlight": null,
+    "popup_highlight_text": null,
+    "popup_text": "rgb(0, 0, 0)",
+    "sidebar": null,
+    "sidebar_border": null,
+    "sidebar_highlight": null,
+    "sidebar_highlight_text": null,
+    "sidebar_text": null,
+    "tab_background_separator": null,
+    "tab_background_text": "rgb(255, 255, 255)",
+    "tab_line": "rgb(69, 153, 204)",
+    "tab_loading": "rgb(69, 153, 204)",
+    "tab_selected": null,
+    "tab_text": null,
+    "textcolor": null,
+    "toolbar": "rgba(156, 220, 233, 0.59)",
+    "toolbar_bottom_separator": null,
+    "toolbar_field": "rgba(255, 255, 255, 0.63)",
+    "toolbar_field_border": null,
+    "toolbar_field_border_focus": null,
+    "toolbar_field_focus": null,
+    "toolbar_field_highlight": null,
+    "toolbar_field_highlight_text": null,
+    "toolbar_field_separator": null,
+    "toolbar_field_text": "rgb(0, 0, 0)",
+    "toolbar_field_text_focus": null,
+    "toolbar_text": "rgb(0, 0, 0)",
+    "toolbar_top_separator": null,
+    "toolbar_vertical_separator": null
+  },
+  "images": {
+    "additional_backgrounds": [
+      "moz-extension://260f5c7a-da0e-465b-b0f4-e4b1843812d0/images/0.png"
+    ],
+    "headerURL": null,
+    "theme_frame": null
+  },
+  "properties": {
+    "additional_backgrounds_alignment": [
+      "right top"
+    ],
+    "additional_backgrounds_tiling": [
+      "repeat"
+    ],
+    "color_scheme": null,
+    "content_color_scheme": null
+  }
+}

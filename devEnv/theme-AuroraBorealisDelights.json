@@ -1,0 +1,63 @@
+{
+  "colors": {
+    "accentcolor": null,
+    "bookmark_text": null,
+    "button_background_active": null,
+    "button_background_hover": null,
+    "frame": "rgb(36, 4, 39)",
+    "frame_inactive": "rgb(143, 96, 137)",
+    "icons": "rgb(203, 155, 206)",
+    "icons_attention": "rgb(231, 219, 229)",
+    "ntp_background": "rgb(36, 4, 39)",
+    "ntp_card_background": null,
+    "ntp_text": "rgb(203, 155, 206)",
+    "popup": "rgba(56, 50, 63, 0.8)",
+    "popup_border": "rgb(211, 144, 231)",
+    "popup_highlight": null,
+    "popup_highlight_text": null,
+    "popup_text": "rgb(231, 219, 229)",
+    "sidebar": "rgb(34, 25, 77)",
+    "sidebar_border": "rgb(36, 4, 39)",
+    "sidebar_highlight": "rgba(203, 155, 206, 0.3)",
+    "sidebar_highlight_text": "rgb(203, 155, 206)",
+    "sidebar_text": "rgb(181, 176, 205)",
+    "tab_background_separator": "rgba(34, 25, 77, 0)",
+    "tab_background_text": "rgb(250, 247, 252)",
+    "tab_line": "rgba(211, 144, 231, 0.5)",
+    "tab_loading": "rgb(211, 144, 231)",
+    "tab_selected": null,
+    "tab_text": null,
+    "textcolor": null,
+    "toolbar": "rgba(26, 10, 10, 0.4)",
+    "toolbar_bottom_separator": "rgba(34, 25, 77, 0)",
+    "toolbar_field": "rgba(24, 28, 43, 0.3)",
+    "toolbar_field_border": null,
+    "toolbar_field_border_focus": "rgb(211, 144, 231)",
+    "toolbar_field_focus": null,
+    "toolbar_field_highlight": null,
+    "toolbar_field_highlight_text": null,
+    "toolbar_field_separator": null,
+    "toolbar_field_text": "rgb(211, 144, 231)",
+    "toolbar_field_text_focus": null,
+    "toolbar_text": "rgb(216, 189, 215)",
+    "toolbar_top_separator": "rgba(34, 25, 77, 0)",
+    "toolbar_vertical_separator": null
+  },
+  "images": {
+    "additional_backgrounds": [
+      "moz-extension://26646031-d576-4fd8-90ff-ae01e96c2648/images/0.png"
+    ],
+    "headerURL": null,
+    "theme_frame": null
+  },
+  "properties": {
+    "additional_backgrounds_alignment": [
+      "center top"
+    ],
+    "additional_backgrounds_tiling": [
+      "repeat"
+    ],
+    "color_scheme": null,
+    "content_color_scheme": null
+  }
+}
