@@ -18,7 +18,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     readonly sites: string[] = AriaDivHandler.sites;
     readonly targets: string[] = AriaDivHandler.targets;
-    private boundAriaHandleSelectionChange: (e: Event) => void = () => {};
+    private boundAriaHandleSelectionChange!: (e: Event) => void;
 
     protected get window() {
         return window;
@@ -91,7 +91,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
             if(selection.focusNode.nodeValue) {
                 const nodeValue = selection.focusNode.nodeValue, caret = selection.focusOffset
                 for(let i = caret; i > 0; i--) {
-                    if(nodeValue[caret] == ":") {
+                    if(nodeValue[i] == ":") {
                         newSearchPosition = {
                             begin: i - 1,
                             end: caret,
