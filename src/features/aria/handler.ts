@@ -18,7 +18,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     readonly sites: string[] = AriaDivHandler.sites;
     readonly targets: string[] = AriaDivHandler.targets;
-    private boundAriaHandleSelectionChange: (e: Event) => void;
+    private boundAriaHandleSelectionChange: (e: Event) => void = () => {};
 
     protected get window() {
         return window;
@@ -32,6 +32,14 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
         super(es, target, onExit);
+        
+        // Early validation: ensure selection is still valid
+        const selection = this.window.getSelection();
+        if (!selection || !selection.focusNode || selection.focusNode.nodeValue === null) {
+            this.destroy();
+            return;
+        }
+        
         this.log(this.focusedChild, "focusedChild")
         this.boundAriaHandleSelectionChange = this.handleSelectionChange.bind(this);
         target.addEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
