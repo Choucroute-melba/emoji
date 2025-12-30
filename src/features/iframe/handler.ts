@@ -9,7 +9,28 @@ export default class HTMLIFrameHandler extends AriaDivHandler {
     targets: string[] = ["*"];
     HandlerName: string = "HTMLIFrame";
     static canHandleTarget(target: HTMLElement): boolean {
-        // return target.isContentEditable;
+        // Only handle contentEditable elements within iframes
+        if (!target.isContentEditable) {
+            return false;
+        }
+        
+        // Ensure we're in an iframe context
+        const isInIframe = target.ownerDocument !== window.document;
+        if (!isInIframe) {
+            return false;
+        }
+        
+        // Validate that the selection and focus node exist and have a valid nodeValue
+        const win = target.ownerDocument?.defaultView;
+        if (!win) {
+            return false;
+        }
+        
+        const selection = win.getSelection();
+        if (!selection || !selection.focusNode || selection.focusNode.nodeValue === null) {
+            return false;
+        }
+        
         return true;
     }
     canHandleTarget = HTMLIFrameHandler.canHandleTarget
@@ -25,7 +46,10 @@ export default class HTMLIFrameHandler extends AriaDivHandler {
 
 
     protected getFieldValue(): string {
-        // this.log(window.getSelection()!.focusNode, "field value : '" + window.getSelection()!.focusNode!.nodeValue! + "'", true)
-        return this.window.getSelection()!.focusNode!.nodeValue!;
+        const selection = this.window.getSelection();
+        if (!selection || !selection.focusNode || selection.focusNode.nodeValue === null) {
+            return "";
+        }
+        return selection.focusNode.nodeValue;
     }
 }

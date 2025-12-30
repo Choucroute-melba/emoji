@@ -58,18 +58,30 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     protected getFieldValue(): string {
-        // this.log(this.window.getSelection()!.focusNode, "field value : '" + this.window.getSelection()!.focusNode!.nodeValue! + "'", true)
-        return this.window.getSelection()!.focusNode!.nodeValue!;
+        const selection = this.window.getSelection();
+        if (!selection || !selection.focusNode || selection.focusNode.nodeValue === null) {
+            return "";
+        }
+        return selection.focusNode.nodeValue;
     }
 
     protected getSearchPosition(): { begin: number; end: number; caret: number } {
         const newSelection = this.getSelectionPosition();
         let newSearchPosition = this.searchPosition;
 
-        if(!this.window.getSelection()!.focusNode!.isEqualNode(this.focusedChild)) {
+        const selection = this.window.getSelection();
+        if (!selection || !selection.focusNode) {
+            return {
+                begin: newSelection.start,
+                end: newSelection.end,
+                caret: newSelection.start
+            };
+        }
+
+        if(!selection.focusNode.isEqualNode(this.focusedChild)) {
             //this.warn([this.window.getSelection()!.focusNode, this.focusedChild], "Focus node changed", true)
-            if(this.window.getSelection()!.focusNode!.nodeValue) {
-                const nodeValue = this.window.getSelection()!.focusNode!.nodeValue!, caret = this.window.getSelection()!.focusOffset
+            if(selection.focusNode.nodeValue) {
+                const nodeValue = selection.focusNode.nodeValue, caret = selection.focusOffset
                 for(let i = caret; i > 0; i--) {
                     if(nodeValue[caret] == ":") {
                         newSearchPosition = {
@@ -84,8 +96,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
             else {
                 newSearchPosition = {
                     begin: 0,
-                    end: this.window.getSelection()!.focusOffset,
-                    caret: this.window.getSelection()!.focusOffset
+                    end: selection.focusOffset,
+                    caret: selection.focusOffset
                 }
             }
         }
@@ -111,11 +123,11 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     protected async insertEmoji(emoji: Emoji) {
         const selection = this.window.getSelection();
-        if(!selection) return;
+        if(!selection || !selection.focusNode || selection.focusNode.nodeValue === null) return;
         // this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
         // this.log(null, selection.focusNode!.nodeValue?.toString())
 
-        selection.focusNode!.nodeValue = selection.focusNode!.nodeValue!.slice(0, this.searchPosition.begin) + emoji.unicode + selection.focusNode!.nodeValue!.slice(this.searchPosition.end)
+        selection.focusNode.nodeValue = selection.focusNode.nodeValue.slice(0, this.searchPosition.begin) + emoji.unicode + selection.focusNode.nodeValue.slice(this.searchPosition.end)
         //this.log(null, selection.focusNode!.nodeValue?.toString())
         try {
             //this.log(selection.focusNode, "setting position : " + (this.searchPosition.begin + emoji.unicode.length).toString())
