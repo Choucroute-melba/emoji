@@ -1,8 +1,7 @@
-import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry} from "../selector/emojiselector";
 import {Emoji, getEmojiFromShortCode, searchEmoji} from "../emoji/emoji";
-import {Message, ReportEmojiUsageMessage} from "../background/messsaging";
+import {Message} from "../background/messsaging";
 import browser from "webextension-polyfill";
-import {GlobalSettings} from "../background/dataManager";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
     '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
@@ -78,6 +77,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private _search = ""
     protected searchResults: Emoji[] = []
     private mostUsedEmojis: Emoji[] = []
+    private favoriteEmojis: Emoji[] = []
+    private mixedEmojiData: Emoji[] = []
     private _active = false
     private allowEmojiSuggestions = true
     private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
@@ -99,21 +100,11 @@ export default abstract class Handler<EltType extends HTMLElement> {
         }
         this.target.addEventListener('focusout', this.boundFocusLost)
 
-        this.sendMessageToBackground({action: "readData", data: {key: "settings.allowEmojiSuggestions"}}).then((allow: boolean) => {
-            this.allowEmojiSuggestions = allow
-            if(allow)
-                this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: 10}}).then((emojis: Emoji[]) => {
-                    this.mostUsedEmojis = emojis
-                    this.searchResults = this.mostUsedEmojis.slice(0, 10)
-                    this.onSearchUpdated()
-                    console.log("most used emojis : ", emojis)
-                })
-            else {
-                this.searchResults = []
-                this.onSearchUpdated()
-            }
+        this.mixEmojiData().then(emojis => {
+            this.searchResults = emojis.slice(0, 10)
+            this.onSearchUpdated()
+            this.mixedEmojiData = emojis
         })
-
 
         this.log("new handler", "\t\t\t---")
     }
@@ -199,6 +190,45 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
     protected sendMessageToBackground(message: Message): Promise<any> {
         return browser.runtime.sendMessage(message)
+    }
+
+    protected async mixEmojiData() {
+        this.allowEmojiSuggestions = await this.sendMessageToBackground({
+            action: "readData",
+            data: {key: "settings.allowEmojiSuggestions"}
+        });
+        if (!this.allowEmojiSuggestions) return [];
+
+        const mostUsed: Emoji[] = await this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: -1}});
+        const favorites: Emoji[] = await this.sendMessageToBackground({action: "getFavoriteEmojis", data: {count: -1}});
+
+        // Use a Map to track unique emojis by their Unicode string
+        // This handles the "different object instance" problem
+        const mixedMap = new Map<string, Emoji>();
+
+        // 1. Add favorites that are also in most used (High priority)
+        const favoriteUnicodes = new Set(favorites.map(e => e.unicode));
+        mostUsed.forEach(em => {
+            if (favoriteUnicodes.has(em.unicode)) {
+                mixedMap.set(em.unicode, em);
+            }
+        });
+
+        // 2. Add remaining favorites
+        favorites.forEach(em => {
+            if (!mixedMap.has(em.unicode)) {
+                mixedMap.set(em.unicode, em);
+            }
+        });
+
+        // 3. Add remaining most used
+        mostUsed.forEach(em => {
+            if (!mixedMap.has(em.unicode)) {
+                mixedMap.set(em.unicode, em);
+            }
+        });
+
+        return Array.from(mixedMap.values());
     }
 
     // TODO : implement logging levels for production
@@ -320,15 +350,20 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
     /** Getters and setters */
 
-    /** changing search value will automatically update search results.
+    /** changing the search value will automatically update search results.
      * shortcodes are automatically detected by default, override onSearchUpdated to change this */
     protected set search(value: string) {
         this._search = value;
-        if((this._search.length == 0 || this._search === ":") && this.allowEmojiSuggestions)
-            this.searchResults = this.mostUsedEmojis.slice(0, 10)
+        console.log("mixed results : ", this.mixedEmojiData)
+        if((this._search.length == 0 || this._search === ":") && this.allowEmojiSuggestions) {
+            this.searchResults = this.mixedEmojiData.slice(0, 10)
+        }
         else
-            this.searchResults = searchEmoji(this._search, this.allowEmojiSuggestions ? this.mostUsedEmojis : []);
+            this.searchResults = searchEmoji(this._search, this.allowEmojiSuggestions ? this.mixedEmojiData : []);
         this.onSearchUpdated()
+        this.mixEmojiData().then(emojis => {
+            this.mixedEmojiData = emojis
+        })
     }
     protected get search() { return this._search }
 

@@ -19,3 +19,21 @@
     font-family: monospace;
     font-size: 1em;
 }
+
+.hint {
+    color: gray;
+    font-style: italic;
+}
+
+.favoriteEmojisList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-top: 10px;
+    width: 100%;
+}
+.favoriteEmojisList > * {
+    margin: 3px;
+}

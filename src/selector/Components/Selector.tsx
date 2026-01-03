@@ -6,28 +6,30 @@ import React from 'react';
 import {EmojiSelectorGeometry} from "../emojiselector";
 
 export default function Selector({
-                                     position,
-                                     displayAbove,
-                                     positionMode,
-                                     shape,
-                                     searchResults,
-                                     selectedEmojiIndex,
-                                     debugText,
-                                     onEmojiSelected,
-                                     onResize,
-                                        onToggleEmojiFavorite,
-                                 }:
-                                     {position: {x: number, y: number},
-                                        displayAbove: boolean,
-                                         positionMode: string,
-                                         shape: { w: number, h: number },
-                                         searchResults: Emoji[],
-                                         selectedEmojiIndex: number,
-                                         debugText: string,
-                                         onEmojiSelected: (emoji: Emoji) => void,
-                                         onResize: (geometry: EmojiSelectorGeometry) => void,
-                                         onToggleEmojiFavorite: (emoji: Emoji) => void,
-                                     }) {
+    position,
+    displayAbove,
+    positionMode,
+    shape,
+    searchResults,
+    favorites,
+    selectedEmojiIndex,
+    debugText,
+    onEmojiSelected,
+    onResize,
+    onToggleEmojiFavorite,
+ }: {
+    position: {x: number, y: number},
+    displayAbove: boolean,
+    positionMode: string,
+    shape: { w: number, h: number },
+    searchResults: Emoji[],
+    favorites: string[]
+    selectedEmojiIndex: number,
+    debugText: string,
+    onEmojiSelected: (emoji: Emoji) => void,
+    onResize: (geometry: EmojiSelectorGeometry) => void,
+    onToggleEmojiFavorite: (emoji: Emoji) => void,
+ }) {
 
     const selectorRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +69,6 @@ export default function Selector({
     }
 
     let emojiList;
-
     if(searchResults === null || searchResults.length === 0) {
         emojiList = (
                 <p>Start typing to see suggestions</p>
@@ -78,14 +79,22 @@ export default function Selector({
             i++;
             if (i > 10) return null;
             if (i === selectedEmojiIndex) return (
-                <EmojiCard emoji={emoji} selected={true} onClick={() => {
+                <EmojiCard
+                    emoji={emoji}
+                    selected={true}
+                    isFavorite={favorites.includes(emoji.unicode)}
+                    onClick={() => {
                         dispatchEmojiClick(emoji);
                     }} cardStyle={"full"} key={emoji.unicode}
                     onFavoriteToggle={onToggleEmojiFavorite}
                 />
             )
             else return (
-                <EmojiCard emoji={emoji} selected={false} onClick={() => {
+                <EmojiCard
+                    emoji={emoji}
+                    selected={false}
+                    isFavorite={favorites.includes(emoji.unicode)}
+                    onClick={() => {
                         dispatchEmojiClick(emoji);
                     }} cardStyle={"full"} key={emoji.unicode}
                     onFavoriteToggle={onToggleEmojiFavorite}

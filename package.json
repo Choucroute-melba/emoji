@@ -10,7 +10,7 @@
     "build": "webpack --config webpack.config.js",
     "pre-release": "webpack --config webpack-pre-release.config.js",
     "build-package": "webpack --config webpack-package.config.js",
-    "build-extension": "webpack --config webpack-extension.config.js",
+    "build-extension": "webpack --config webpack-extensions.config.js",
     "watch-extension": "webpack --watch --config webpack-extensions.config.js",
     "start-ui": "webpack serve --config webpack-dev-ui.config.js",
     "release": "webpack --config webpack-release.config.js"
@@ -32,6 +32,7 @@
   "private": true,
   "dependencies": {
     "@types/webextension-polyfill": "^0.12.3",
+    "colord": "^2.9.3",
     "emojibase-data": "^15.3.2",
     "fuse.js": "^7.0.0",
     "react": "^18.3.1",

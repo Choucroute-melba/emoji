@@ -12,12 +12,9 @@ import browser, {Tabs} from "webextension-polyfill";
 import {SiteSettings} from "./background/dataManager";
 import {
     AddDataChangeListenerMessage,
-    AddSiteSettingsListenerMessage,
     EventMessage,
-    Message
 } from "./background/messsaging";
 import {getDomainName} from "./background/utils";
-import Tab = Tabs.Tab;
 
 console.log('Emoji on the go ✨')
 
@@ -80,7 +77,12 @@ function isHandlerEnabled(handlerName: string) {
     return availableHandlers.findIndex(h => h.name === handlerName) !== -1
 }
 
-let es = new EmojiSelector()
+const es = new EmojiSelector()
+es.onToggleEmojiFavorite = async (emoji) => {
+    await browser.runtime.sendMessage({ action: "toggleFavoriteEmoji", data: { emoji: emoji.unicode } });
+    es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
+}
+es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
 let currentHandler: Handler<any> | null = null
 let listening = false
 

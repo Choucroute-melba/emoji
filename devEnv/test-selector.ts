@@ -1,5 +1,5 @@
 import EmojiSelector from "../src/selector/emojiselector";
-import {searchEmoji} from "../src/emoji/emoji";
+import {Emoji, searchEmoji} from "../src/emoji/emoji";
 import {createRoot} from "react-dom/client";
 import React from "react";
 import EmojiCard from "../src/selector/Components/EmojiCard";
@@ -14,6 +14,7 @@ es.onClose = () => console.log("closed")
 es.onEmojiSelected = (emoji) => console.log(emoji)
 es.onBlur = () => console.log("blurred")
 es.onResize = () => console.log("resized")
+es.onToggleEmojiFavorite = (emoji: Emoji) => console.log("toggle favorite for ", emoji.unicode)
 
 console.log(es)
 
@@ -71,28 +72,36 @@ const renderPreviews = (focused: boolean) => {
         emoji: es.getFocusedEmoji(),
         cardStyle: "square",
         selected: false,
-        onClick: () => console.log("clicked")
+        isFavorite: true,
+        onClick: () => console.log("clicked"),
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
     }))
 
     rootFull.render(React.createElement(EmojiCard, {
         emoji: es.getFocusedEmoji(),
         cardStyle: "full",
         selected: false,
-        onClick: () => console.log("clicked")
+        isFavorite: true,
+        onClick: () => console.log("clicked"),
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
     }))
 
     rootFullSelected.render(React.createElement(EmojiCard, {
         emoji: es.getFocusedEmoji(),
         cardStyle: "full",
         selected: true,
-        onClick: () => console.log("clicked")
+        isFavorite: false,
+        onClick: () => console.log("clicked"),
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
     }))
 
     rootSquareSelected.render(React.createElement(EmojiCard, {
         emoji: es.getFocusedEmoji(),
         cardStyle: "square",
         selected: true,
-        onClick: () => console.log("clicked")
+        isFavorite: false,
+        onClick: () => console.log("clicked"),
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
     }))
 
     rootStar.render(React.createElement(Star, {filled: false, width:60, height:60}))

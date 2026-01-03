@@ -1,11 +1,39 @@
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {callOnActiveTab, getActiveTab, getActiveTabUrl, getDomainName, getMostUsedEmoji} from "./background/utils";
+import {getDomainName, getMostUsedEmoji} from "./background/utils";
+import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
 import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
 
 console.log("background.ts");
+
+browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
+    .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
+    .catch(err => console.error("Error while setting uninstall URL:", err))
+
+browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
+    if(temporary) return;
+    switch (reason) {
+        case "install": {
+            console.log("Installing extension")
+            fetch("https://emojeezer-website.vercel.app/api/onboard", {
+                method: "POST",
+            }).catch(err => console.error("Error while sending onboard request:", err))
+        }
+        break;
+        case "update": {
+            console.log("Updating extension")
+            fetch("https://emojeezer-website.vercel.app/api/update", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
+            }).catch(err => console.error("Error while sending update request:", err))
+        }
+    }
+})
 
 const dm = new DataManager();
 console.log("Initializing storage")
@@ -141,6 +169,28 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.deleteEmojiUsage();
                 resolve(true);
                 break;
+            case "toggleFavoriteEmoji": {
+                const index = dm.favoriteEmojis.indexOf(m.data.emoji)
+                if(index == -1)
+                    dm.favoriteEmojis.push(m.data.emoji);
+                else {
+                    await dm.removeFavoriteEmoji(m.data.emoji);
+                }
+                resolve(true);
+            }
+            break
+            case "getFavoriteEmojis": {
+                const unicodes = dm.favoriteEmojis;
+                const emojis: Emoji[] = []
+                for(const e of unicodes) {
+                    const emojiData = getEmojiFromUnicode(e)
+                    if(!emojiData)
+                        throw new Error(`non existent emoji: ${e}`)
+                    emojis.push(emojiData);
+                }
+                resolve(emojis);
+            }
+            break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

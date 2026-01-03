@@ -6,7 +6,8 @@ const __dirname = path.dirname(__filename);
 
 export default {
     entry: {
-        'test-selector': './devEnv/test-selector.ts'
+        'test-selector': './devEnv/test-selector.ts',
+        'test-settings': './devEnv/test-settings.ts'
     },
     module: {
         rules: [

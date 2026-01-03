@@ -4,6 +4,7 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
+    ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -119,6 +120,19 @@ export type SetAllowEmojiSuggestionsMessage = {
     }
 }
 
+export type ToggleFavoriteEmojiMessage = {
+    action: "toggleFavoriteEmoji",
+    data: {
+        emoji: string,
+    }
+}
+
+export type GetFavoriteEmojisMessage = {
+    action: "getFavoriteEmojis",
+    data?: {
+        count?: number,
+    }
+}
 /**
  * to Add a new data change listener, send this through the port you opened with the background. The listener will be
  * called whenever one of the specified keys changes.

@@ -1,74 +1,72 @@
 import {createRoot} from "react-dom/client";
-import SettingsPage from "./settings/SettingsPage";
-import browser from "webextension-polyfill";
-import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
-import {GlobalSettings} from "./background/dataManager";
-import {calculateEmojiScore, calculateEmojiSignals, parseStorageKey} from "./background/utils";
-import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
 import React from "react";
+import SettingsPage from "../src/settings/SettingsPage";
+import {EventMessage, Message} from "../src/background/messsaging";
+import {GlobalSettings} from "../src/background/types";
+import {calculateEmojiScore, calculateEmojiSignals, getMostUsedEmoji, parseStorageKey} from "../src/background/utils";
+import {Emoji, getEmojiFromUnicode} from "../src/emoji/emoji";
+
+export type EmojiUsageEntry = {
+    count: number;
+    firstUsed: number; // timestamp ms
+    lastUsed: number;  // timestamp ms
+};
+
+export type EmojiUsage = { [emoji: string]: EmojiUsageEntry };
+
+export type SiteSettings = {
+    url: string;
+    enabled: boolean;
+    freeSelector: boolean;
+};
+
+export type SitesMap = Record<string, SiteSettings>;
+
+export type Settings = {
+    enabled: boolean;
+    freeSelector: boolean;
+    keepFreeSelectorEnabled: boolean;
+    actionIcon: string;
+    allowEmojiSuggestions: boolean;
+    sites: SitesMap;
+};
+
+export type SampleData = {
+    emojiUsage: EmojiUsage;
+    favoriteEmojis: string[];
+    settings: Settings;
+};
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
-    browser.runtime.sendMessage({
-        action: "setKeepFreeSelectorEnabled",
-        data: {
-            enabled: enable,
-        }
-    } as SetKeepFreeSelectorEnabledMessage)
+    console.log("toggleKeepFreeSelectorEnabled", enable);
 }
 
 function toggleGloballyEnabled(enable: boolean) {
-    browser.runtime.sendMessage({
-        action: "enable",
-        data: {
-            enabled: enable,
-        }
-    } as Message)
+    console.log("toggleGloballyEnabled", enable);
 }
 
 function toggleFreeSelectorGloballyEnabled(enable: boolean) {
-    browser.runtime.sendMessage({
-        action: "enableFreeSelector",
-        data: {
-            enabled: enable,
-        }
-    })
+    console.log("toggleFreeSelectorGloballyEnabled", enable);
 }
 
 function toggleSiteEnabled(url: string, enable: boolean) {
-    browser.runtime.sendMessage({
-        action: "enableForSite",
-        data: {
-            enabled: enable,
-            url: url,
-        }
-    })
+    console.log("toggleSiteEnabled", url, enable);
 }
 
 function toggleAllowEmojiSuggestions(allow: boolean) {
-    browser.runtime.sendMessage({
-        action: "setAllowEmojiSuggestions",
-        data: {
-            allow: allow,
-        }
-    })
+    console.log("toggleAllowEmojiSuggestions", allow);
 }
 
 async function deleteUsageData() {
-    await browser.runtime.sendMessage({action: "deleteUsageData"})
+    console.log("deleteUsageData");
     window.location.reload();
 }
 
 function toggleFavoriteEmoji(emoji: Emoji | string) {
-    browser.runtime.sendMessage({
-        action: "toggleFavoriteEmoji",
-        data: {
-            emoji: typeof emoji === "string" ? emoji : emoji.unicode
-        }
-    } as Message)
+    console.log("toggleFavoriteEmoji", emoji);
     const index = favoriteEmojis.findIndex((e) => e.unicode === (typeof emoji === "string" ? emoji : emoji.unicode));
     if(index >= 0) favoriteEmojis.splice(index, 1);
     else favoriteEmojis.push(typeof emoji === "string" ? getEmojiFromUnicode(emoji)! : emoji);
-    renderSettings();
 }
 
 function renderSettings() {
@@ -84,12 +82,10 @@ function renderSettings() {
         deleteUsageData,
         toggleFavoriteEmoji
     }))
+
 }
 
-let settings = (await browser.runtime.sendMessage({action: "getSettings"})) as GlobalSettings;
-const port = browser.runtime.connect({name: "settings-page"});
-
-port.onMessage.addListener((message: any) => {
+const messageListener = (message: any) => {
     console.log("Message received:", message);
     const m = message as EventMessage;
     if(m.event !== "dataChanged") return
@@ -115,26 +111,32 @@ port.onMessage.addListener((message: any) => {
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {
                     const changedSite = parseStorageKey(m.data.key)![2] as string;
-                    browser.runtime.sendMessage({action: "getSiteSettings", data: {url: changedSite}})
-                        .then((siteSettings: any) => {
-                            settings.sites[changedSite] = siteSettings
-                            renderSettings();
-                        })
+
                 }
             }
         }
     }
     renderSettings();
-})
+}
 
-port.postMessage({action: "addDataChangeListener", data: {keys: [
-    "settings.**"
-]}})
+const res = await fetch("sample-data.json")
+const ejData = await res.json() as SampleData;
 
-const mostUsedEmojis = (await browser.runtime.sendMessage({action: "getMostUsedEmoji", data: {limit: -1}})) as Emoji[];
+let settings = ejData.settings;
+
+const ejUsageData = ejData.emojiUsage
+const scores = getMostUsedEmoji(ejUsageData, -1)
+const mostUsedEmojis: Emoji[] = []
+for(const e of scores) {
+    const emojiData = getEmojiFromUnicode(e.e)
+    if(!emojiData)
+        throw new Error(`non existent emoji: ${e.e}`)
+    mostUsedEmojis.push(emojiData);
+}
+
 const usageData = new Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>();
 for (const emoji of mostUsedEmojis) {
-    const usage = await browser.runtime.sendMessage({action: "readData", data: {key: "emojiUsage[" + emoji.unicode + "]"}} as Message) as {count: number, firstUsed: number, lastUsed: number}
+    const usage = ejUsageData[emoji.unicode];
     const signals = calculateEmojiSignals(usage)
     const score = calculateEmojiScore(usage)
     usageData.set(emoji, {
@@ -147,7 +149,12 @@ for (const emoji of mostUsedEmojis) {
     });
 }
 
-const favoriteEmojis = (await browser.runtime.sendMessage({action: "getFavoriteEmojis"})) as Emoji[];
+const favoriteEmojisUnicodes = ejData.favoriteEmojis;
+const favoriteEmojis: Emoji[] = [];
+for(const u of favoriteEmojisUnicodes) {
+    const emojiData = getEmojiFromUnicode(u)
+    favoriteEmojis.push(emojiData!);
+}
 
 const rootElt = document.getElementById('react-root')!;
 const root = createRoot(rootElt)

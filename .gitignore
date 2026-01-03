@@ -16,3 +16,5 @@ yarn-error.log*
 /.idea/discord.xml
 /release-process.md
 /dist/
+
+package-lock.json

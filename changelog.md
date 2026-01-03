@@ -1,3 +1,18 @@
+# Version 4.3.1
+*21/12/2025*
+
+- Fixed a styling issue that caused glitches in websites
+
+# Version 4.3.0
+*21/12/2025*
+
+This version brings the favorite emojis features and styling improvements.
+
+# Version 4.2.1
+*14/12/2025*
+
+- Added a survey to fill when the addon is uninstalled
+
 # Version 4.2.0
 *14/12/2025*
 
