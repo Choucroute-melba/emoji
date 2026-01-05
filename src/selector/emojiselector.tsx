@@ -50,7 +50,7 @@ export default class EmojiSelector {
     constructor() {
         this.root = document.createElement('div');
         this.root.id = 'emoji-selector';
-        this.root.classList.add('emoji-selector');
+        this.root.classList.add('emoji-selector', 'emojeezer');
         this.root.style.display = 'none';
 
         this.popupBackground = document.createElement('div');

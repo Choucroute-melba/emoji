@@ -6,7 +6,7 @@
     font-size: 15px;
 }
 
-.popup {
+.emojeezer .popup, .emojeezer.popup {
     position: absolute;
     z-index: 1000;
     background: white;
@@ -24,18 +24,18 @@
     font-family: inherit;
 }
 
-.popup:hover {
+.emojeezer .popup:hover, .emojeezer.popup:hover {
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
-.emoji-list {
+.emojeezer .emoji-list, .emojeezer.emoji-list {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
 }
 
-.searchText {
+.emojeezer .searchText, .emojeezer.searchText {
     font-size: x-small;
     font-family: Arial, sans-serif;
 }
