@@ -1,3 +1,8 @@
+# Version 4.3.2
+*05/01/2026*
+
+- avoid conflicts between emojeezer styling and other website styles
+
 # Version 4.3.1
 *21/12/2025*
 
