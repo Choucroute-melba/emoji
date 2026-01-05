@@ -1,5 +1,5 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
 import {getPositionFromElement} from "../../selector/selector-utils";
 
 export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputElement> {

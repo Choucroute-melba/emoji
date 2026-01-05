@@ -1,7 +1,5 @@
-import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, { EmojiSelectorGeometry } from "../../selector/emojiselector";
+import EmojiSelector from "../../selector/emojiselector";
 import AriaDivHandler from "../aria/handler";
-import {Emoji} from "../../emoji/emoji";
 
 
 export default class HTMLIFrameHandler extends AriaDivHandler {
