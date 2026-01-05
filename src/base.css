@@ -27,25 +27,25 @@ body.emojeezer {
     background-color: #e0e0e0;
 }
 
-.dangerButton {
+.emojeezer .dangerButton, .emojeezer.dangerButton {
     background-color: #ffe9e9;
     color: red;
     border: 1px solid #ff5151;
 }
 
-.dangerButton:hover {
+.emojeezer .dangerButton:hover, .emojeezer.dangerButton:hover {
     background-color: #ffd9d9;
 }
 
-.dangerButton:focus {
+.emojeezer .dangerButton:focus, .emojeezer.dangerButton:focus {
     background-color: #ffb9b9;
 }
 
-.outlined {
+.emojeezer .outlined, .emojeezer.outlined {
     border: 1px solid #ccc;
 }
 
-.confirmationPopup {
+.emojeezer .confirmationPopup, .emojeezer.confirmationPopup {
     position: absolute;
     top: calc( 50% - 100px );
     left: calc( 50% - 150px );
@@ -61,7 +61,7 @@ body.emojeezer {
     padding: 10px;
 }
 
-.popupBackground {
+.emojeezer .popupBackground, .emojeezer.popupBackground {
     position: fixed;
     top: 0;
     left: 0;
