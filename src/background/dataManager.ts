@@ -2,6 +2,7 @@ import browser, {Runtime} from "webextension-polyfill";
 import Port = Runtime.Port;
 import {getStorageKey, parseStorageKey} from "./utils";
 import {DataChangedEvent} from "./messsaging";
+import {Locale} from "emojibase"
 
 /**
  * Represents the configuration settings for a site.
@@ -22,6 +23,7 @@ export type GlobalSettings = {
     actionIcon: string,
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
+    emojiLocale: Locale,
     sites: { [url: string]: SiteSettings },
 }
 
@@ -37,6 +39,7 @@ export default class DataManager {
             keepFreeSelectorEnabled: true,
             actionIcon: "😉",
             allowEmojiSuggestions: true,
+            emojiLocale: "en",
             sites: {} as {[url: string]: SiteSettings},
         }
     };
