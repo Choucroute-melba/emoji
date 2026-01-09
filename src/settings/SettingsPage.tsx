@@ -3,8 +3,7 @@ import './SettingsPage.css'
 import React from 'react'
 import {useState} from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
-import {Emoji} from "../emoji/emoji";
-//import browser from "webextension-polyfill";
+import {Emoji} from "emojibase";
 import EmojiCard from "../selector/Components/EmojiCard";
 
 export default function SettingsPage({settings, usageData, favoriteEmojis,
@@ -85,9 +84,9 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                     usageData.size === 0 ? <p>No usage data yet</p> : Array.from(usageData.entries()).map(([emoji, data]) => {
                         return <EmojiUsageItem emoji={emoji}
                                                data={data}
-                                               key={emoji.unicode}
-                                               isFavorite={favoriteEmojis.findIndex((e) => e.unicode === emoji.unicode) !== -1}
-                                               onFavoriteToggle={toggleFavoriteEmoji.bind(null, emoji.unicode) as (emoji: Emoji) => void}
+                                               key={emoji.emoji}
+                                               isFavorite={favoriteEmojis.findIndex((e) => e.emoji === emoji.emoji) !== -1}
+                                               onFavoriteToggle={toggleFavoriteEmoji.bind(null, emoji.emoji) as (emoji: Emoji) => void}
                         />
                     })
                 }
@@ -106,7 +105,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                                 toggleFavoriteEmoji(emoji)
                             }}
                             cardStyle={"full"}
-                            key={emoji.unicode}
+                            key={emoji.emoji}
                         />
                     })
                 }
@@ -167,8 +166,8 @@ function EmojiUsageDetails({emoji, data}: {
 }) {
     return (
         <div className={"emojiUsageDetails"}>
-            <p style={{fontSize: "16px", color: "white", fontWeight: "bold", marginBottom: "3px"}}>{emoji.name}</p>
-            <p style={{fontSize: "14px", color: "lightgrey", marginTop: "0px"}}>{emoji.shortcodes.join(", ")}</p>
+            <p style={{fontSize: "16px", color: "white", fontWeight: "bold", marginBottom: "3px"}}>{emoji.label}</p>
+            <p style={{fontSize: "14px", color: "lightgrey", marginTop: "0px"}}>{emoji.shortcodes ? emoji.shortcodes.join(", ") : ""}</p>
             <div style={{marginTop: "7px", fontSize: "12px", color: "white"}}>
                 <p>Used {data.count} times</p>
                 <p>First used: {new Date(data.firstUsed).toLocaleDateString()}</p>

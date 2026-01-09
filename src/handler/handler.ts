@@ -1,7 +1,9 @@
 import EmojiSelector, {EmojiSelectorGeometry} from "../selector/emojiselector";
-import {Emoji, getEmojiFromShortCode, searchEmoji} from "../emoji/emoji";
+import { searchEmoji} from "../emoji/emoji-content";
+import {Emoji} from "emojibase"
 import {Message} from "../background/messsaging";
 import browser from "webextension-polyfill";
+import {getEmojiFromShortCode} from "../emoji/emoji";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
     '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
@@ -76,8 +78,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
     protected color = colors[Math.floor(Math.random() * colors.length)]
     private _search = ""
     protected searchResults: Emoji[] = []
-    private mostUsedEmojis: Emoji[] = []
-    private favoriteEmojis: Emoji[] = []
     private mixedEmojiData: Emoji[] = []
     private _active = false
     private allowEmojiSuggestions = true
@@ -100,10 +100,9 @@ export default abstract class Handler<EltType extends HTMLElement> {
         }
         this.target.addEventListener('focusout', this.boundFocusLost)
 
-        this.mixEmojiData().then(emojis => {
-            this.searchResults = emojis.slice(0, 10)
+        searchEmoji("").then((results) => {
+            this.searchResults = results
             this.onSearchUpdated()
-            this.mixedEmojiData = emojis
         })
 
         this.log("new handler", "\t\t\t---")
@@ -183,7 +182,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.sendMessageToBackground({
             action: "reportEmojiUsage",
             data: {
-                emoji: typeof emoji === "string" ? emoji : emoji.unicode,
+                emoji: typeof emoji === "string" ? emoji : emoji.emoji,
             }
         })
     }
@@ -192,44 +191,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
         return browser.runtime.sendMessage(message)
     }
 
-    protected async mixEmojiData() {
-        this.allowEmojiSuggestions = await this.sendMessageToBackground({
-            action: "readData",
-            data: {key: "settings.allowEmojiSuggestions"}
-        });
-        if (!this.allowEmojiSuggestions) return [];
-
-        const mostUsed: Emoji[] = await this.sendMessageToBackground({action: "getMostUsedEmoji", data: {count: -1}});
-        const favorites: Emoji[] = await this.sendMessageToBackground({action: "getFavoriteEmojis", data: {count: -1}});
-
-        // Use a Map to track unique emojis by their Unicode string
-        // This handles the "different object instance" problem
-        const mixedMap = new Map<string, Emoji>();
-
-        // 1. Add favorites that are also in most used (High priority)
-        const favoriteUnicodes = new Set(favorites.map(e => e.unicode));
-        mostUsed.forEach(em => {
-            if (favoriteUnicodes.has(em.unicode)) {
-                mixedMap.set(em.unicode, em);
-            }
-        });
-
-        // 2. Add remaining favorites
-        favorites.forEach(em => {
-            if (!mixedMap.has(em.unicode)) {
-                mixedMap.set(em.unicode, em);
-            }
-        });
-
-        // 3. Add remaining most used
-        mostUsed.forEach(em => {
-            if (!mixedMap.has(em.unicode)) {
-                mixedMap.set(em.unicode, em);
-            }
-        });
-
-        return Array.from(mixedMap.values());
-    }
 
     // TODO : implement logging levels for production
     protected log(message: any, title: string = "", collapsed = false, f = false) {
@@ -354,15 +315,9 @@ export default abstract class Handler<EltType extends HTMLElement> {
      * shortcodes are automatically detected by default, override onSearchUpdated to change this */
     protected set search(value: string) {
         this._search = value;
-        console.log("mixed results : ", this.mixedEmojiData)
-        if((this._search.length == 0 || this._search === ":") && this.allowEmojiSuggestions) {
-            this.searchResults = this.mixedEmojiData.slice(0, 10)
-        }
-        else
-            this.searchResults = searchEmoji(this._search, this.allowEmojiSuggestions ? this.mixedEmojiData : []);
-        this.onSearchUpdated()
-        this.mixEmojiData().then(emojis => {
-            this.mixedEmojiData = emojis
+        searchEmoji(this._search).then(emojis => {
+            this.searchResults = emojis
+            this.onSearchUpdated()
         })
     }
     protected get search() { return this._search }

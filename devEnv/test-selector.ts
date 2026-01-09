@@ -1,5 +1,5 @@
 import EmojiSelector from "../src/selector/emojiselector";
-import {searchEmoji} from "../src/emoji/emoji";
+import {searchEmoji} from "../src/emoji/emoji-content";
 import {Emoji} from "emojibase";
 import {createRoot} from "react-dom/client";
 import React from "react";
@@ -37,9 +37,11 @@ es.geometry = {
 };
 input.addEventListener('input', (e) => {
     const value = (e.target as HTMLInputElement).value;
-    const results = searchEmoji(value, [], 40)
-    es.searchResults = results;
-    renderPreviews(false);
+    searchEmoji(value, {limit: 40})
+        .then((results) => {
+        es.searchResults = results;
+        renderPreviews(false);
+    })
 })
 input.addEventListener('keydown', (e) => {
     if(e.key === "Enter") {
@@ -58,7 +60,7 @@ input.addEventListener('keydown', (e) => {
     }
 })
 
-es.searchResults = searchEmoji(input.value, [], 40)
+es.searchResults = await searchEmoji(input.value, {limit: 40});
 
 const previewSquare = document.getElementById("previewSquare") as HTMLDivElement;
 const previewFull = document.getElementById("previewFull") as HTMLDivElement;

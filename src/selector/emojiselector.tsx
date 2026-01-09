@@ -3,7 +3,7 @@ import React from 'react';
 import './Components/Selector.css';
 import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
-import {Emoji} from "../emoji/emoji";
+import {Emoji} from "emojibase";
 
 export type EmojiSelectorPosition = {
     position: {

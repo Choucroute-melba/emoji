@@ -1,6 +1,6 @@
 import Handler from "./handler";
 import EmojiSelector from "../selector/emojiselector";
-import {Emoji} from "../emoji/emoji";
+import {Emoji} from "emojibase";
 import {setNativeValue, setValueFromSafeOrigin, verifyEmojiInsertion} from "./utils";
 
 type EditableElement = HTMLInputElement | HTMLTextAreaElement
@@ -56,13 +56,13 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     protected async insertEmoji(emoji: Emoji) {
         const newValue =
             this.target.value.slice(0, this.searchPosition.begin) +
-            emoji.unicode +
+            emoji.emoji +
             this.target.value.slice(this.searchPosition.end);
 
         const setCursor = () => {
             this.target.setSelectionRange(
-                this.searchPosition.begin + emoji.unicode.length,
-                this.searchPosition.begin + emoji.unicode.length
+                this.searchPosition.begin + emoji.emoji.length,
+                this.searchPosition.begin + emoji.emoji.length
             );
         };
 
