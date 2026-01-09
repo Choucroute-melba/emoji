@@ -199,7 +199,7 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 const unicodes = dm.favoriteEmojis;
                 const emojis: Emoji[] = []
                 for(const e of unicodes) {
-                    const emojiData = getEmojiFromUnicode(e)
+                    const emojiData = getEmojiFromUnicode(e, dm.settings.emojiLocale)
                     if(!emojiData)
                         throw new Error(`non existent emoji: ${e}`)
                     emojis.push(emojiData);
@@ -214,10 +214,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
             }
             break;
             case "getEmojiFromShortCode":
-                resolve(getEmojiFromShortCode(m.data.sc))
+                resolve(getEmojiFromShortCode(m.data.sc, dm.settings.emojiLocale))
                 break;
             case "getEmojiFromUnicode":
-                resolve(getEmojiFromUnicode(m.data.u))
+                resolve(getEmojiFromUnicode(m.data.u, dm.settings.emojiLocale))
                 break;
             case "getTabId":
                 resolve(sender.tab?.id);

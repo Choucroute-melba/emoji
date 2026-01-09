@@ -144,9 +144,9 @@ export function searchEmoji(searchValue: string, dm: DataManager, options?: Sear
 
     const maxResults = options.limit;
 
-    const favorites = options.useFavorites ? dm.favoriteEmojis.map(e => getEmojiFromUnicode(e)!).map(emojibaseToFuse) : [];
+    const favorites = options.useFavorites ? dm.favoriteEmojis.map(e => getEmojiFromUnicode(e, dm.settings.emojiLocale)!).map(emojibaseToFuse) : [];
     const mostUsed = options.useMostUsed ? getMostUsedEmoji(dm, maxResults).emojis.map(emojibaseToFuse) : [];
-    const emojis = getEmojiDataset("en"); // TODO: use user locale
+    const emojis = getEmojiDataset(dm.settings.emojiLocale);
     if(!emojis) throw new Error("Emoji dataset not loaded yet");
 
     let favResults: FuseEmoji[] = [];
@@ -196,7 +196,7 @@ export function searchEmoji(searchValue: string, dm: DataManager, options?: Sear
     }
     if(searchValue !== "") {
         // last, the search results from the full dataset
-        const emojiIndex = cachedIndex.get("en")!; // TODO: Locale
+        const emojiIndex = cachedIndex.get(dm.settings.emojiLocale)!;
         const fuse = createFuseSearch(emojis.map(emojibaseToFuse), emojiIndex)
         let result = fuse.search(searchValue, {limit: maxResults});
         const otherEmojis = result.map((r: any) => r.item)
@@ -212,8 +212,8 @@ export function searchEmoji(searchValue: string, dm: DataManager, options?: Sear
     }
 }
 
-export function getEmojiFromShortCode(shortcode: string): Emoji | undefined {
-    const emojis = getEmojiDataset("en"); // TODO: use user locale
+export function getEmojiFromShortCode(shortcode: string, locale: Locale): Emoji | undefined {
+    const emojis = getEmojiDataset(locale);
     if(!emojis) throw new Error("Emoji dataset not loaded yet");
     return emojis.find((e) => {
         if(!e.shortcodes) return false;
@@ -221,8 +221,8 @@ export function getEmojiFromShortCode(shortcode: string): Emoji | undefined {
     });
 }
 
-export function getEmojiFromUnicode(unicode: string): Emoji | undefined {
-    const emojis = getEmojiDataset("en") // TODO: use user locale
+export function getEmojiFromUnicode(unicode: string, locale: Locale): Emoji | undefined {
+    const emojis = getEmojiDataset(locale)
     if(!emojis) throw new Error("Emoji dataset not loaded yet");
     return emojis.find((e) => e.emoji === unicode);
 }
@@ -249,7 +249,7 @@ export function getMostUsedEmoji(dm: DataManager, items: number = 10): { emojis:
         mostUsedEmojis = mostUsedEmojis.slice(0, items)
 
     for(const e of mostUsedEmojis) {
-        const emojiData = getEmojiFromUnicode(e[0])!
+        const emojiData = getEmojiFromUnicode(e[0], dm.settings.emojiLocale)!
         results.push(emojiData);
     }
     return {emojis: results, scores};
