@@ -1,10 +1,17 @@
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {getDomainName, getMostUsedEmoji} from "./background/utils";
+import {getDomainName} from "./background/utils";
 import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
-import {getEmojiFromUnicode} from "./emoji/emoji";
+import {
+    getEmojiDataset,
+    getEmojiFromShortCode,
+    getEmojiFromUnicode,
+    getMostUsedEmoji,
+    loadEmojiDataset,
+    searchEmoji
+} from "./emoji/emoji";
 import {Emoji} from "emojibase";
 
 console.log("background.ts");
@@ -166,15 +173,8 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(true);
                 break;
             case "getMostUsedEmoji": {
-                const scores = getMostUsedEmoji(dm.readonlyEmojiUsage, m.data?.count)
-                const emojis: Emoji[] = []
-                for(const e of scores) {
-                    const emojiData = getEmojiFromUnicode(e.e)
-                    if(!emojiData)
-                        throw new Error(`non existent emoji: ${e.e}`)
-                    emojis.push(emojiData);
-                }
-                resolve(emojis);
+                const data = getMostUsedEmoji(dm, m.data?.count)
+                resolve(data);
             }
             break;
             case "setAllowEmojiSuggestions":
@@ -207,6 +207,18 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(emojis);
             }
             break;
+            case "searchEmojis": {
+                if(!getEmojiDataset("en"))
+                    await loadEmojiDataset("en")
+                resolve(searchEmoji(m.data.query, dm, m.data.options))
+            }
+            break;
+            case "getEmojiFromShortCode":
+                resolve(getEmojiFromShortCode(m.data.sc))
+                break;
+            case "getEmojiFromUnicode":
+                resolve(getEmojiFromUnicode(m.data.u))
+                break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

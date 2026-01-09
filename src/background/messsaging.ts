@@ -1,10 +1,11 @@
 import {GlobalSettings, SiteSettings} from "./dataManager";
+import {SearchOption} from "../emoji/types";
 
 export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
-    ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage |
+    ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -154,6 +155,28 @@ export type RemoveDataChangeListenerMessage = {
     action: "removeDataChangeListener",
     data: {
         keys: string | string[],
+    }
+}
+
+export type SearchEmojisMessage = {
+    action: "searchEmojis",
+    data: {
+        query: string,
+        options?: SearchOption
+    }
+}
+
+export type GetEmojiFromShortCodeMessage = {
+    action: "getEmojiFromShortCode",
+    data: {
+        sc: string,
+    }
+}
+
+export type GetEmojiFromUnicodeMessage = {
+    action: "getEmojiFromUnicode",
+    data: {
+        u: string,
     }
 }
 
