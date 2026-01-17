@@ -11,11 +11,42 @@ export type SiteSettings = {
     freeSelector: boolean
 }
 
+type Locale =
+    | 'bn'
+    | 'da'
+    | 'de'
+    | 'en-gb'
+    | 'en'
+    | 'es-mx'
+    | 'es'
+    | 'et'
+    | 'fi'
+    | 'fr'
+    | 'hi'
+    | 'hu'
+    | 'it'
+    | 'ja'
+    | 'ko'
+    | 'lt'
+    | 'ms'
+    | 'nb'
+    | 'nl'
+    | 'pl'
+    | 'pt'
+    | 'ru'
+    | 'sv'
+    | 'th'
+    | 'uk'
+    | 'zh-hant'
+    | 'zh';
+
+
 export type GlobalSettings = {
     enabled: boolean,
     freeSelector: boolean,
     actionIcon: string,
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
+    emojiLocale: Locale,
     sites: { [url: string]: SiteSettings },
 }
