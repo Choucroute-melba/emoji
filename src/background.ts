@@ -16,7 +16,8 @@ import {Emoji} from "emojibase";
 
 console.log("background.ts");
 
-browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
+const build = browser.runtime.getManifest().name.includes("Dev") ? "beta" : "stable"
+browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/?b=" + build)
     .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
     .catch(err => console.error("Error while setting uninstall URL:", err))
 
@@ -31,7 +32,8 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    version: browser.runtime.getManifest().version
+                    version: browser.runtime.getManifest().version,
+                    build: build
                 })
             }).catch(err => console.error("Error while sending onboard request:", err))
         }
@@ -43,7 +45,10 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
+                body: JSON.stringify({
+                    toVersion: browser.runtime.getManifest().version,
+                    build: build
+                })
             }).catch(err => console.error("Error while sending update request:", err))
         }
     }
