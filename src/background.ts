@@ -219,6 +219,12 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
             case "getEmojiFromUnicode":
                 resolve(getEmojiFromUnicode(m.data.u, dm.settings.emojiLocale))
                 break;
+            case "setEmojiLocale":
+                loadEmojiDataset(m.data.locale).then(() => {
+                    dm.settings.emojiLocale = m.data.locale;
+                    resolve(true);
+                });
+                break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

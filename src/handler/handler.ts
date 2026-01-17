@@ -3,7 +3,7 @@ import { searchEmoji} from "../emoji/emoji-content";
 import {Emoji} from "emojibase"
 import {Message} from "../background/messsaging";
 import browser from "webextension-polyfill";
-import {getEmojiFromShortCode} from "../emoji/emoji";
+import {getEmojiFromShortCode} from "../emoji/emoji-content";
 
 const colors = ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
     '#E6B333', '#3366E6', '#999966', '#99FF99', '#B34D4D',
@@ -148,11 +148,12 @@ export default abstract class Handler<EltType extends HTMLElement> {
      * default behavior: will trigger onEmojiSelected if a corresponding emoji is found
      *  */
     protected onShortcodeDetected(sc: string) {
-        const em = getEmojiFromShortCode(sc)
-        if(em)
-            this.selectEmoji(em)
-        else
-            this.dismissSearch("INVALID_SHORTCODE")
+        const em = getEmojiFromShortCode(sc).then(em => {
+            if(em)
+                this.selectEmoji(em)
+            else
+                this.dismissSearch("INVALID_SHORTCODE")
+        })
     }
 
     protected onSearchUpdated() {

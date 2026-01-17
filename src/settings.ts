@@ -5,7 +5,7 @@ import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./backgr
 import {GlobalSettings} from "./background/dataManager";
 import {parseStorageKey} from "./background/utils";
 import {getEmojiFromUnicode, getMostUsedEmoji} from "./emoji/emoji-content";
-import {Emoji} from "emojibase"
+import {Emoji, Locale} from "emojibase"
 import React from "react";
 import {calculateEmojiScore, calculateEmojiSignals} from "./emoji/emoji";
 
@@ -60,6 +60,10 @@ async function deleteUsageData() {
     window.location.reload();
 }
 
+function setEmojiLocale(locale: Locale): Promise<true> {
+    return browser.runtime.sendMessage({action: "setEmojiLocale", data: {locale}})
+}
+
 function toggleFavoriteEmoji(emoji: Emoji | string) {
     browser.runtime.sendMessage({
         action: "toggleFavoriteEmoji",
@@ -90,7 +94,8 @@ function renderSettings() {
         toggleSiteEnabled,
         toggleAllowEmojiSuggestions,
         deleteUsageData,
-        toggleFavoriteEmoji
+        toggleFavoriteEmoji,
+        setEmojiLocale
     }))
 }
 
@@ -119,6 +124,9 @@ port.onMessage.addListener((message: any) => {
                 break;
             case "settings.allowEmojiSuggestions":
                 settings.allowEmojiSuggestions = m.data.value;
+                break;
+            case "settings.emojiLocale":
+                settings.emojiLocale = m.data.value;
                 break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {

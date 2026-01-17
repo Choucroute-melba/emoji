@@ -111,6 +111,7 @@ export function getEmojiDataset(locale: Locale) : Emoji[] | null {
  * @param locale
  */
 export async function loadEmojiDataset(locale: Locale) {
+    console.log("Fetching emoji dataset for locale " + locale + "...");
     return fetchEmojis(locale, {
         compact: false,
         flat: false,
@@ -123,7 +124,8 @@ export async function loadEmojiDataset(locale: Locale) {
         browser.storage.local.set({["emojiDataset." + locale]: data})
             .catch(e => console.error(e))
             .then(() => {
-                browser.storage.local.set({["emojiDataset." + locale + ".timestamp"]: Date.now()});
+                browser.storage.local.set({["emojiDataset." + locale + ".timestamp"]: Date.now()})
+                    .then(() => console.log("Emoji dataset for locale " + locale + " stored in cache."));
             });
         return data;
     })

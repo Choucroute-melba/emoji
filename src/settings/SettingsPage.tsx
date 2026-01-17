@@ -3,8 +3,9 @@ import './SettingsPage.css'
 import React from 'react'
 import {useState} from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
-import {Emoji} from "emojibase";
+import {Emoji, Locale} from "emojibase";
 import EmojiCard from "../selector/Components/EmojiCard";
+import {LOCALES} from "../emoji/types";
 
 export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleKeepFreeSelectorEnabled,
@@ -13,7 +14,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleSiteEnabled,
     toggleAllowEmojiSuggestions,
     deleteUsageData,
-    toggleFavoriteEmoji
+    toggleFavoriteEmoji,
+    setEmojiLocale
 } : {
     settings: GlobalSettings
     usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
@@ -24,7 +26,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
     toggleAllowEmojiSuggestions: (enable: boolean) => void
     deleteUsageData: () => void,
-    toggleFavoriteEmoji: (emoji: Emoji | string) => void
+    toggleFavoriteEmoji: (emoji: Emoji | string) => void,
+    setEmojiLocale: (locale: Locale) => Promise<true>
 }) {
     const disabledSites: SiteSettings[] = [];
     for (let sitesKey in settings.sites) {
@@ -67,6 +70,9 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                         target={"_blank"}
                     >Mozilla documentation</a> for more information. </p>
             </div>
+            <label>Select language for emojis :
+                <LocaleSelect current={settings.emojiLocale} onSelect={setEmojiLocale}/>
+            </label>
             <h3>Usage data and favorites</h3>
             <div>
                 <label>
@@ -190,5 +196,18 @@ function ConfirmUsageDataDeletion({onConfirm, onCancel}: {onConfirm: () => void,
                 <button className={"dangerButton"} style={{alignSelf: "end"}} onClick={() => {onConfirm()}}>Confirm</button>
             </div>
         </div>
+    )
+}
+
+
+function LocaleSelect({current, onSelect}: {current: Locale, onSelect: (locale: Locale) => Promise<true>} ) {
+    return (
+        <select name={"emojiLocale"} value={current}>
+            {
+                LOCALES.map((locale) => {
+                    return <option key={locale.locale} value={locale.locale} onClick={() => {onSelect(locale.locale).then(() => console.log("Locale changed."))}}>{locale.emoji} {locale.displayName}</option>
+                })
+            }
+        </select>
     )
 }
