@@ -37,7 +37,7 @@ export type Settings = {
 export type SampleData = {
     emojiUsage: EmojiUsage;
     favoriteEmojis: string[];
-    settings: Settings;
+    settings: GlobalSettings;
 };
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
@@ -78,8 +78,15 @@ function toggleFavoriteEmoji(emoji: Emoji | string) {
     }
 }
 
+function setEmojiLocale(locale: string) {
+    console.log("setEmojiLocale", locale);
+    // @ts-expect-error
+    settings.emojiLocale = locale
+    renderSettings()
+}
+
 function renderSettings() {
-    root.render(React.createElement(SettingsPage, {
+/*    root.render(React.createElement(SettingsPage, {
         settings,
         usageData,
         favoriteEmojis,
@@ -89,8 +96,9 @@ function renderSettings() {
         toggleSiteEnabled,
         toggleAllowEmojiSuggestions,
         deleteUsageData,
-        toggleFavoriteEmoji
-    }))
+        toggleFavoriteEmoji,
+        setEmojiLocale
+    }))*/
 
 }
 
