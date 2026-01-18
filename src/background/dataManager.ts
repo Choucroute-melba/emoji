@@ -264,7 +264,16 @@ export default class DataManager {
         if(!(await this._readData("settings")))
             await this.writeData("settings", this._settings.value)
         else {
-            this.settings = await this._readData(this._settings.key) as typeof this._settings.value;
+            const storedSettings = await this._readData(this._settings.key) as typeof this._settings.value;
+            const defaultKeys = Object.keys(this._settings.value)
+            const storedKeys = Object.keys(storedSettings)
+            for(let key of defaultKeys) {
+                if(!storedKeys.includes(key))
+                { // @ts-ignore
+                    storedSettings[key] = this._settings.value[key] as any
+                }
+            }
+            this.settings = storedSettings;
         }
         if(!(await this._readData("emojiUsage")))
             await this.writeData("emojiUsage", this._emojiUsage.value)
