@@ -62,6 +62,7 @@ for(const key in storedDatasets) {
             const locale = key.replace("emojiDataset.", "") as Locale;
             const data = storedDatasets[key] as Emoji[];
             cachedDataStets.set(locale, data);
+            console.log(`locale ${locale} loaded from storage`);
             const timestampKey = "emojiDataset." + locale + ".timestamp";
             const timestamp = storedDatasets[timestampKey] as number | undefined;
             if(timestamp)
@@ -216,7 +217,7 @@ export function searchEmoji(searchValue: string, dm: DataManager, options?: Sear
 
 export function getEmojiFromShortCode(shortcode: string, locale: Locale): Emoji | undefined {
     const emojis = getEmojiDataset(locale);
-    if(!emojis) throw new Error("Emoji dataset not loaded yet");
+    if(!emojis) throw new Error("Emoji dataset for " + locale + " not loaded yet");
     return emojis.find((e) => {
         if(!e.shortcodes) return false;
         return e.shortcodes.includes(shortcode)
@@ -225,7 +226,7 @@ export function getEmojiFromShortCode(shortcode: string, locale: Locale): Emoji 
 
 export function getEmojiFromUnicode(unicode: string, locale: Locale): Emoji | undefined {
     const emojis = getEmojiDataset(locale)
-    if(!emojis) throw new Error("Emoji dataset not loaded yet");
+    if(!emojis) throw new Error("Emoji dataset for " + locale + " not loaded yet");
     return emojis.find((e) => e.emoji === unicode);
 }
 
