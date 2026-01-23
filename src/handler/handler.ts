@@ -269,7 +269,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
                 case "Enter":
                     e.stopPropagation()
                     e.preventDefault()
-                    this.selectEmoji(this.es.getFocusedEmoji())
+                    if(e.ctrlKey)
+                        this.es.onToggleEmojiFavorite(this.es.getFocusedEmoji())
+                    else
+                        this.selectEmoji(this.es.getFocusedEmoji())
                     break;
                 case "Escape":
                     e.preventDefault()

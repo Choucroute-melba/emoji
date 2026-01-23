@@ -182,7 +182,10 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         if(e.key == "Enter") {
             e.stopPropagation()
             e.preventDefault()
-            this.selectEmoji(this.es.getFocusedEmoji())
+            if(e.ctrlKey)
+                this.es.onToggleEmojiFavorite(this.es.getFocusedEmoji())
+            else
+                this.selectEmoji(this.es.getFocusedEmoji())
         }
     }
 
