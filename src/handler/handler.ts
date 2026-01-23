@@ -297,7 +297,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.log(null, "destroying...")
         this.active = false
         this.onDestroy()
-        document.removeEventListener('keydown', this.boundHandleDocumentKeydown)
+        document.removeEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         if(this.target.ownerDocument !== document) {
             this.target.ownerDocument.removeEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         }
