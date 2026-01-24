@@ -6,6 +6,7 @@ import {GlobalSettings, SiteSettings} from "../background/dataManager";
 import {Emoji, Locale} from "emojibase";
 import EmojiCard from "../selector/Components/EmojiCard";
 import {LOCALES} from "../emoji/types";
+import browser from "webextension-polyfill";
 
 export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleKeepFreeSelectorEnabled,
@@ -39,6 +40,13 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
         e.preventDefault();
         browser.commands.openShortcutSettings()
     }
+    const [freeSelectorCommand, setFreeSelectorCommand] = useState("null");
+    browser.commands.getAll().then((commands) => {
+        const cmd = commands.find((command) => command.name === "show-free-selector");
+        if(cmd) {
+            setFreeSelectorCommand(cmd.shortcut || "null");
+        }
+    })
 
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -55,7 +63,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                     <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
                         toggleFreeSelectorGloballyEnabled(e.target.checked)
                     }} />
-                    Enable the <code>Ctrl + ,</code> shortcut for easy copy-paste emoji
+                    Enable the <code>{freeSelectorCommand}</code> shortcut for easy copy-paste emoji
                     <br/>
                     <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
                         <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
