@@ -1,3 +1,13 @@
+# Version 4.4.0
+*24/01/2026*
+
+You can now change the emoji's name and shortcode language in the extension's settings.
+
+- Added a keystroke to add a favorite emoji
+- Allow changing the language used to search emojis
+- Better emoji search
+- UX improvements and bug fixes
+
 # Version 4.3.2
 *05/01/2026*
 
