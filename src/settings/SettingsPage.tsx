@@ -209,11 +209,15 @@ function ConfirmUsageDataDeletion({onConfirm, onCancel}: {onConfirm: () => void,
 
 
 function LocaleSelect({current, onSelect}: {current: Locale, onSelect: (locale: Locale) => Promise<true>} ) {
+    const [requestedLocale, setRequestedLocale] = useState(current);
     return (
-        <select name={"emojiLocale"} value={current}>
+        <select name={"emojiLocale"} value={current} disabled={requestedLocale !== current} onChange={(e) => {
+            setRequestedLocale(e.target.value as Locale)
+            onSelect(e.target.value as Locale).then(() => console.log("Locale changed."))
+        }}>
             {
                 LOCALES.map((locale) => {
-                    return <option key={locale.locale} value={locale.locale} onClick={() => {onSelect(locale.locale).then(() => console.log("Locale changed."))}}>{locale.emoji} {locale.displayName}</option>
+                    return <option key={locale.locale} value={locale.locale}>{locale.emoji} {locale.displayName}</option>
                 })
             }
         </select>
