@@ -1,5 +1,6 @@
 import EmojiSelector from "../src/selector/emojiselector";
-import {Emoji, searchEmoji} from "../src/emoji/emoji";
+import {searchEmoji} from "../src/emoji/emoji-content";
+import {Emoji} from "emojibase";
 import {createRoot} from "react-dom/client";
 import React from "react";
 import EmojiCard from "../src/selector/Components/EmojiCard";
@@ -7,14 +8,19 @@ import Star from "../src/selector/Components/Star";
 
 console.log('test');
 
+const headlineDiv = document.getElementById("headLine") as HTMLDivElement;
+
 const es = new EmojiSelector();
 es.addToDom()
 es.display = true;
 es.onClose = () => console.log("closed")
 es.onEmojiSelected = (emoji) => console.log(emoji)
 es.onBlur = () => console.log("blurred")
-es.onResize = () => console.log("resized")
-es.onToggleEmojiFavorite = (emoji: Emoji) => console.log("toggle favorite for ", emoji.unicode)
+es.onResize = (g) => {
+    console.log("resized")
+    headlineDiv.style.height = (g.shape!.h + 30) + "px";
+}
+es.onToggleEmojiFavorite = (emoji: Emoji) => console.log("toggle favorite for ", emoji.emoji)
 
 console.log(es)
 
@@ -31,9 +37,11 @@ es.geometry = {
 };
 input.addEventListener('input', (e) => {
     const value = (e.target as HTMLInputElement).value;
-    const results = searchEmoji(value, [], 40)
-    es.searchResults = results;
-    renderPreviews(false);
+    searchEmoji(value, {limit: 40})
+        .then((results) => {
+        es.searchResults = results;
+        renderPreviews(false);
+    })
 })
 input.addEventListener('keydown', (e) => {
     if(e.key === "Enter") {
@@ -52,7 +60,7 @@ input.addEventListener('keydown', (e) => {
     }
 })
 
-es.searchResults = searchEmoji(input.value, [], 40)
+es.searchResults = await searchEmoji(input.value, {limit: 40});
 
 const previewSquare = document.getElementById("previewSquare") as HTMLDivElement;
 const previewFull = document.getElementById("previewFull") as HTMLDivElement;
@@ -74,7 +82,7 @@ const renderPreviews = (focused: boolean) => {
         selected: false,
         isFavorite: true,
         onClick: () => console.log("clicked"),
-        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.emoji)}
     }))
 
     rootFull.render(React.createElement(EmojiCard, {
@@ -83,7 +91,7 @@ const renderPreviews = (focused: boolean) => {
         selected: false,
         isFavorite: true,
         onClick: () => console.log("clicked"),
-        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.emoji)}
     }))
 
     rootFullSelected.render(React.createElement(EmojiCard, {
@@ -92,7 +100,7 @@ const renderPreviews = (focused: boolean) => {
         selected: true,
         isFavorite: false,
         onClick: () => console.log("clicked"),
-        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.emoji)}
     }))
 
     rootSquareSelected.render(React.createElement(EmojiCard, {
@@ -101,7 +109,7 @@ const renderPreviews = (focused: boolean) => {
         selected: true,
         isFavorite: false,
         onClick: () => console.log("clicked"),
-        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.unicode)}
+        onFavoriteToggle: (emoji: Emoji) => {console.log("favorite toggled for ", emoji.emoji)}
     }))
 
     rootStar.render(React.createElement(Star, {filled: false, width:60, height:60}))

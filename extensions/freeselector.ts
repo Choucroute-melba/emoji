@@ -1,4 +1,4 @@
-import { Emoji } from "../src/emoji/emoji";
+import { Emoji } from "emojibase";
 import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
 import * as s from "./freeselector.module.css";
@@ -109,8 +109,8 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     }
 
     protected async insertEmoji(emoji: Emoji) {
-        navigator.clipboard.writeText(emoji.unicode).then(() => {
-            this.log(null, "Emoji copied to clipboard: " + emoji.unicode);
+        navigator.clipboard.writeText(emoji.emoji).then(() => {
+            this.log(null, "Emoji copied to clipboard: " + emoji.emoji);
         }, (err) => {
             this.error(null, "Could not copy emoji: ", err);
         });

@@ -1,7 +1,6 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
 import {getPositionFromTextareaCaret} from "../../selector/selector-utils";
-import {Emoji} from "../../emoji/emoji";
 
 
 export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaElement> {

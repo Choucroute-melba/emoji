@@ -1,7 +1,7 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../../selector/emojiselector";
-import {getPositionFromEditableDivCaret, getPositionFromElement} from "../../selector/selector-utils";
-import {Emoji} from "../../emoji/emoji";
+import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
+import {getPositionFromEditableDivCaret} from "../../selector/selector-utils";
+import {Emoji} from "emojibase";
 
 
 export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
@@ -115,11 +115,11 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         // this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
         // this.log(null, selection.focusNode!.nodeValue?.toString())
 
-        selection.focusNode!.nodeValue = selection.focusNode!.nodeValue!.slice(0, this.searchPosition.begin) + emoji.unicode + selection.focusNode!.nodeValue!.slice(this.searchPosition.end)
+        selection.focusNode!.nodeValue = selection.focusNode!.nodeValue!.slice(0, this.searchPosition.begin) + emoji.emoji + selection.focusNode!.nodeValue!.slice(this.searchPosition.end)
         //this.log(null, selection.focusNode!.nodeValue?.toString())
         try {
             //this.log(selection.focusNode, "setting position : " + (this.searchPosition.begin + emoji.unicode.length).toString())
-            selection.setPosition(selection.focusNode, this.searchPosition.begin + emoji.unicode.length)
+            selection.setPosition(selection.focusNode, this.searchPosition.begin + emoji.emoji.length)
         }
         catch (e) {
             this.error(e, "Error setting position")

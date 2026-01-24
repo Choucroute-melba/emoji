@@ -1,10 +1,13 @@
 import {GlobalSettings, SiteSettings} from "./dataManager";
+import {SearchOption} from "../emoji/types";
+import {Locale} from "emojibase"
 
 export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | EnableForSiteMessage |
     EnableMessage | EnableFreeSelectorMessage | EnableFreeSelectorForSiteMessage | AddSiteSettingsListenerMessage |
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
-    ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage |
+    ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
+    SetEmojiLocaleMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -109,7 +112,7 @@ export type AddSiteSettingsListenerMessage = {
 export type ReadDataMessage = {
     action: "readData",
     data: {
-        key: string,
+        key: string | string[],
     }
 }
 
@@ -154,6 +157,35 @@ export type RemoveDataChangeListenerMessage = {
     action: "removeDataChangeListener",
     data: {
         keys: string | string[],
+    }
+}
+
+export type SearchEmojisMessage = {
+    action: "searchEmojis",
+    data: {
+        query: string,
+        options?: SearchOption
+    }
+}
+
+export type GetEmojiFromShortCodeMessage = {
+    action: "getEmojiFromShortCode",
+    data: {
+        sc: string,
+    }
+}
+
+export type GetEmojiFromUnicodeMessage = {
+    action: "getEmojiFromUnicode",
+    data: {
+        u: string,
+    }
+}
+
+export type SetEmojiLocaleMessage = {
+    action: "setEmojiLocale",
+    data: {
+        locale: Locale,
     }
 }
 

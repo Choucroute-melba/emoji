@@ -1,14 +1,23 @@
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
-import {getDomainName, getMostUsedEmoji} from "./background/utils";
+import {getDomainName} from "./background/utils";
 import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager, {SiteSettings} from "./background/dataManager";
 import MessageSender = Runtime.MessageSender;
-import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
+import {
+    getEmojiDataset,
+    getEmojiFromShortCode,
+    getEmojiFromUnicode,
+    getMostUsedEmoji,
+    loadEmojiDataset,
+    searchEmoji
+} from "./emoji/emoji";
+import {Emoji} from "emojibase";
 
 console.log("background.ts");
 
-browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/")
+const build = browser.runtime.getManifest().name.includes("Dev") ? "beta" : "stable"
+browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/?b=" + build)
     .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
     .catch(err => console.error("Error while setting uninstall URL:", err))
 
@@ -19,6 +28,13 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
             console.log("Installing extension")
             fetch("https://emojeezer-website.vercel.app/api/onboard", {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    version: browser.runtime.getManifest().version,
+                    build: build
+                })
             }).catch(err => console.error("Error while sending onboard request:", err))
         }
         break;
@@ -29,7 +45,10 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({toVersion: browser.runtime.getManifest().version})
+                body: JSON.stringify({
+                    toVersion: browser.runtime.getManifest().version,
+                    build: build
+                })
             }).catch(err => console.error("Error while sending update request:", err))
         }
     }
@@ -55,7 +74,16 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
 
         switch (m.action) {
             case "readData":
-                resolve(await dm.readData(m.data.key));
+                if(typeof m.data.key === "string")
+                    resolve(await dm.readData(m.data.key));
+                else if(Array.isArray(m.data.key)) {
+                    const result: {[key: string]: any} = {};
+                    for(const key of m.data.key) {
+                        result[key] = await dm.readData(key);
+                    }
+                    resolve(result);
+                }
+                resolve(undefined);
                 break;
             case "getSettings":
                 resolve(dm.readonlySettings)
@@ -140,6 +168,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(true);
                 break
             case "reportEmojiUsage":
+                if(!dm.settings.allowEmojiSuggestions) {
+                    resolve(true)
+                    break;
+                }
                 if(!dm.emojiUsage[m.data.emoji]) {
                     dm.emojiUsage[m.data.emoji] = {count: 1, firstUsed: Date.now(), lastUsed: Date.now()}
                 }
@@ -150,15 +182,8 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(true);
                 break;
             case "getMostUsedEmoji": {
-                const scores = getMostUsedEmoji(dm.readonlyEmojiUsage, m.data?.count)
-                const emojis: Emoji[] = []
-                for(const e of scores) {
-                    const emojiData = getEmojiFromUnicode(e.e)
-                    if(!emojiData)
-                        throw new Error(`non existent emoji: ${e.e}`)
-                    emojis.push(emojiData);
-                }
-                resolve(emojis);
+                const data = getMostUsedEmoji(dm, m.data?.count)
+                resolve(data);
             }
             break;
             case "setAllowEmojiSuggestions":
@@ -183,7 +208,7 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 const unicodes = dm.favoriteEmojis;
                 const emojis: Emoji[] = []
                 for(const e of unicodes) {
-                    const emojiData = getEmojiFromUnicode(e)
+                    const emojiData = getEmojiFromUnicode(e, dm.settings.emojiLocale)
                     if(!emojiData)
                         throw new Error(`non existent emoji: ${e}`)
                     emojis.push(emojiData);
@@ -191,6 +216,24 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(emojis);
             }
             break;
+            case "searchEmojis": {
+                if(!getEmojiDataset("en"))
+                    await loadEmojiDataset("en")
+                resolve(searchEmoji(m.data.query, dm, m.data.options))
+            }
+            break;
+            case "getEmojiFromShortCode":
+                resolve(getEmojiFromShortCode(m.data.sc, dm.settings.emojiLocale))
+                break;
+            case "getEmojiFromUnicode":
+                resolve(getEmojiFromUnicode(m.data.u, dm.settings.emojiLocale))
+                break;
+            case "setEmojiLocale":
+                loadEmojiDataset(m.data.locale).then(() => {
+                    dm.settings.emojiLocale = m.data.locale;
+                    resolve(true);
+                });
+                break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

@@ -3,9 +3,11 @@ import SettingsPage from "./settings/SettingsPage";
 import browser from "webextension-polyfill";
 import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
 import {GlobalSettings} from "./background/dataManager";
-import {calculateEmojiScore, calculateEmojiSignals, parseStorageKey} from "./background/utils";
-import {Emoji, getEmojiFromUnicode} from "./emoji/emoji";
+import {parseStorageKey} from "./background/utils";
+import {getEmojiFromUnicode, getMostUsedEmoji} from "./emoji/emoji-content";
+import {Emoji, Locale} from "emojibase"
 import React from "react";
+import {calculateEmojiScore, calculateEmojiSignals} from "./emoji/emoji";
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
     browser.runtime.sendMessage({
@@ -58,23 +60,33 @@ async function deleteUsageData() {
     window.location.reload();
 }
 
+function setEmojiLocale(locale: Locale): Promise<true> {
+    return browser.runtime.sendMessage({action: "setEmojiLocale", data: {locale}})
+}
+
 function toggleFavoriteEmoji(emoji: Emoji | string) {
     browser.runtime.sendMessage({
         action: "toggleFavoriteEmoji",
         data: {
-            emoji: typeof emoji === "string" ? emoji : emoji.unicode
+            emoji: typeof emoji === "string" ? emoji : emoji.emoji
         }
     } as Message)
-    const index = favoriteEmojis.findIndex((e) => e.unicode === (typeof emoji === "string" ? emoji : emoji.unicode));
+    const index = favoriteEmojis.findIndex((e) => e.emoji === (typeof emoji === "string" ? emoji : emoji.emoji));
     if(index >= 0) favoriteEmojis.splice(index, 1);
-    else favoriteEmojis.push(typeof emoji === "string" ? getEmojiFromUnicode(emoji)! : emoji);
+    else {
+        if(typeof emoji === "string")
+            getEmojiFromUnicode(emoji).then(emoji =>
+                emoji && favoriteEmojis.push(emoji))
+        else
+            favoriteEmojis.push(emoji);
+    }
     renderSettings();
 }
 
 function renderSettings() {
     root.render(React.createElement(SettingsPage, {
         settings,
-        usageData,
+        usageData: usageInfos,
         favoriteEmojis,
         toggleKeepFreeSelectorEnabled,
         toggleGloballyEnabled,
@@ -82,7 +94,8 @@ function renderSettings() {
         toggleSiteEnabled,
         toggleAllowEmojiSuggestions,
         deleteUsageData,
-        toggleFavoriteEmoji
+        toggleFavoriteEmoji,
+        setEmojiLocale
     }))
 }
 
@@ -112,6 +125,9 @@ port.onMessage.addListener((message: any) => {
             case "settings.allowEmojiSuggestions":
                 settings.allowEmojiSuggestions = m.data.value;
                 break;
+            case "settings.emojiLocale":
+                settings.emojiLocale = m.data.value;
+                break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {
                     const changedSite = parseStorageKey(m.data.key)![2] as string;
@@ -131,13 +147,19 @@ port.postMessage({action: "addDataChangeListener", data: {keys: [
     "settings.**"
 ]}})
 
-const mostUsedEmojis = (await browser.runtime.sendMessage({action: "getMostUsedEmoji", data: {limit: -1}})) as Emoji[];
-const usageData = new Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>();
-for (const emoji of mostUsedEmojis) {
-    const usage = await browser.runtime.sendMessage({action: "readData", data: {key: "emojiUsage[" + emoji.unicode + "]"}} as Message) as {count: number, firstUsed: number, lastUsed: number}
+const mostUsed = (await getMostUsedEmoji()).emojis;
+const usageData = await browser.runtime.sendMessage<Message>({
+    action: "readData",
+    data: {
+        key: mostUsed.map(emoji => `emojiUsage[${emoji.emoji}]`)
+    }
+}) as {[key: string]: any}
+const usageInfos = new Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>();
+for (const emoji of mostUsed) {
+    const usage = usageData[`emojiUsage[${emoji.emoji}]`] as {count: number, firstUsed: number, lastUsed: number}
     const signals = calculateEmojiSignals(usage)
     const score = calculateEmojiScore(usage)
-    usageData.set(emoji, {
+    usageInfos.set(emoji, {
         count: usage.count,
         firstUsed: usage.firstUsed,
         lastUsed: usage.lastUsed,

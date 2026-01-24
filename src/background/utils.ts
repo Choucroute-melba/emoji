@@ -63,29 +63,3 @@ export function getStorageKey(prefix: string, prop: symbol | string): string {
     }
     return key
 }
-
-export function getMostUsedEmoji(emojis: typeof DataManager.prototype.emojiUsage, items: number = 10): { e: string, score: number }[] {
-    let map = new Map<string, number>()
-    const emojisList = Object.keys(emojis)
-    for (const emojiName of emojisList) {
-        const emoji = emojis[emojiName]
-        const score = calculateEmojiScore(emoji)
-        map.set(emojiName, score)
-    }
-    let mostUsedEmojis = Array.from(map.entries()).sort((a, b) => b[1] - a[1])
-    if(items != -1)
-        mostUsedEmojis = mostUsedEmojis.slice(0, items)
-    return mostUsedEmojis.map(([e, score]) => ({e, score}))
-}
-
-export function calculateEmojiSignals({count, firstUsed, lastUsed}: { count: number, firstUsed: number, lastUsed: number}) {
-    let frequency = ((lastUsed - firstUsed)) / count
-    let recency = 1 / ((Date.now() - lastUsed) / (1000 * 60 * 60 * 24))
-    console.log(`Count: ${count}, DeltaTime: ${lastUsed - firstUsed}\nFrequency: ${frequency}, Recency: ${recency}`)
-    return {frequency, recency}
-}
-
-export function calculateEmojiScore({count, firstUsed, lastUsed}: { count: number, firstUsed: number, lastUsed: number}): number {
-    const {frequency, recency} = calculateEmojiSignals({count, firstUsed, lastUsed})
-    return frequency * recency
-}

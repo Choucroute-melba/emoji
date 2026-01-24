@@ -1,7 +1,7 @@
 import './Selector.css';
 import {useRef, useEffect, useState} from "react";
 import EmojiCard from "./EmojiCard";
-import {Emoji} from "../../emoji/emoji";
+import {Emoji} from "emojibase";
 import React from 'react';
 import {EmojiSelectorGeometry} from "../emojiselector";
 
@@ -82,10 +82,10 @@ export default function Selector({
                 <EmojiCard
                     emoji={emoji}
                     selected={true}
-                    isFavorite={favorites.includes(emoji.unicode)}
+                    isFavorite={favorites.includes(emoji.emoji)}
                     onClick={() => {
                         dispatchEmojiClick(emoji);
-                    }} cardStyle={"full"} key={emoji.unicode}
+                    }} cardStyle={"full"} key={emoji.emoji}
                     onFavoriteToggle={onToggleEmojiFavorite}
                 />
             )
@@ -93,10 +93,10 @@ export default function Selector({
                 <EmojiCard
                     emoji={emoji}
                     selected={false}
-                    isFavorite={favorites.includes(emoji.unicode)}
+                    isFavorite={favorites.includes(emoji.emoji)}
                     onClick={() => {
                         dispatchEmojiClick(emoji);
-                    }} cardStyle={"full"} key={emoji.unicode}
+                    }} cardStyle={"full"} key={emoji.emoji}
                     onFavoriteToggle={onToggleEmojiFavorite}
                 />
             )

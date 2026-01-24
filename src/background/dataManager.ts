@@ -2,6 +2,7 @@ import browser, {Runtime} from "webextension-polyfill";
 import Port = Runtime.Port;
 import {getStorageKey, parseStorageKey} from "./utils";
 import {DataChangedEvent} from "./messsaging";
+import {Locale} from "emojibase"
 
 /**
  * Represents the configuration settings for a site.
@@ -22,6 +23,7 @@ export type GlobalSettings = {
     actionIcon: string,
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
+    emojiLocale: Locale,
     sites: { [url: string]: SiteSettings },
 }
 
@@ -37,6 +39,7 @@ export default class DataManager {
             keepFreeSelectorEnabled: true,
             actionIcon: "😉",
             allowEmojiSuggestions: true,
+            emojiLocale: "en",
             sites: {} as {[url: string]: SiteSettings},
         }
     };
@@ -261,7 +264,16 @@ export default class DataManager {
         if(!(await this._readData("settings")))
             await this.writeData("settings", this._settings.value)
         else {
-            this.settings = await this._readData(this._settings.key) as typeof this._settings.value;
+            const storedSettings = await this._readData(this._settings.key) as typeof this._settings.value;
+            const defaultKeys = Object.keys(this._settings.value)
+            const storedKeys = Object.keys(storedSettings)
+            for(let key of defaultKeys) {
+                if(!storedKeys.includes(key))
+                { // @ts-ignore
+                    storedSettings[key] = this._settings.value[key] as any
+                }
+            }
+            this.settings = storedSettings;
         }
         if(!(await this._readData("emojiUsage")))
             await this.writeData("emojiUsage", this._emojiUsage.value)

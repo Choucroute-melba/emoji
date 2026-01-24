@@ -1,5 +1,5 @@
 import './EmojiCard.css';
-import {Emoji} from "../../emoji/emoji";
+import {Emoji} from "emojibase"
 import {useState, useRef, useEffect} from "react";
 import React from 'react';
 import Star from "./Star";
@@ -29,9 +29,9 @@ export default function EmojiCard(props: {
              }}
         >
             <div className={"emoji-card_left"}>
-                <p className={""}>{props.emoji.unicode} {props.cardStyle === "full" && props.emoji.name}</p>
+                <p className={""}>{props.emoji.emoji} {props.cardStyle === "full" && props.emoji.label}</p>
                 {(props.selected && props.cardStyle === "full") &&
-                    <p className={"shortcode"}>{props.emoji.shortcodes.join(", ")}</p>
+                    <p className={"shortcode"}>{props.emoji.shortcodes && props.emoji.shortcodes.join(", ")}</p>
                 }
             </div>
             <div className={"emoji-card_right"} style={{display: displayStar || ((props.selected || props.isFavorite) && props.cardStyle !== "square") ? "flex" : "none"}}
@@ -49,7 +49,7 @@ export default function EmojiCard(props: {
 export function EmojiTooltip(props: {emoji: Emoji, position: {x: number, y: number}}) {
     return (
         <div className={"emoji-tooltip"} style={{top: props.position.y + "px", left: props.position.x + "px"}}>
-            <p className={"emoji-tooltip__p"}>{props.emoji.shortcodes.join(", ")}</p>
+            <p className={"emoji-tooltip__p"}>{props.emoji.shortcodes && props.emoji.shortcodes.join(", ")}</p>
         </div>
     )
 }

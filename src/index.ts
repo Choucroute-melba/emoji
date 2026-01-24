@@ -79,7 +79,7 @@ function isHandlerEnabled(handlerName: string) {
 
 const es = new EmojiSelector()
 es.onToggleEmojiFavorite = async (emoji) => {
-    await browser.runtime.sendMessage({ action: "toggleFavoriteEmoji", data: { emoji: emoji.unicode } });
+    await browser.runtime.sendMessage({ action: "toggleFavoriteEmoji", data: { emoji: emoji.emoji } });
     es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
 }
 es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]

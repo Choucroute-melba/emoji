@@ -3,9 +3,10 @@ import './SettingsPage.css'
 import React from 'react'
 import {useState} from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
-import {Emoji} from "../emoji/emoji";
-//import browser from "webextension-polyfill";
+import {Emoji, Locale} from "emojibase";
 import EmojiCard from "../selector/Components/EmojiCard";
+import {LOCALES} from "../emoji/types";
+import browser from "webextension-polyfill";
 
 export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleKeepFreeSelectorEnabled,
@@ -14,7 +15,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleSiteEnabled,
     toggleAllowEmojiSuggestions,
     deleteUsageData,
-    toggleFavoriteEmoji
+    toggleFavoriteEmoji,
+    setEmojiLocale
 } : {
     settings: GlobalSettings
     usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
@@ -25,7 +27,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleSiteEnabled: (url: string, enable: boolean) => void,
     toggleAllowEmojiSuggestions: (enable: boolean) => void
     deleteUsageData: () => void,
-    toggleFavoriteEmoji: (emoji: Emoji | string) => void
+    toggleFavoriteEmoji: (emoji: Emoji | string) => void,
+    setEmojiLocale: (locale: Locale) => Promise<true>
 }) {
     const disabledSites: SiteSettings[] = [];
     for (let sitesKey in settings.sites) {
@@ -35,8 +38,15 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     }
     const openShortcutManagementPage = (e: any) => {
         e.preventDefault();
-        //browser.commands.openShortcutSettings()
+        browser.commands.openShortcutSettings()
     }
+    const [freeSelectorCommand, setFreeSelectorCommand] = useState("null");
+    browser.commands.getAll().then((commands) => {
+        const cmd = commands.find((command) => command.name === "show-free-selector");
+        if(cmd) {
+            setFreeSelectorCommand(cmd.shortcut || "null");
+        }
+    })
 
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
 
@@ -53,7 +63,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                     <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
                         toggleFreeSelectorGloballyEnabled(e.target.checked)
                     }} />
-                    Enable the <code>Ctrl + ,</code> shortcut for easy copy-paste emoji
+                    Enable the <code>{freeSelectorCommand}</code> shortcut for easy copy-paste emoji
                     <br/>
                     <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
                         <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
@@ -68,6 +78,9 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                         target={"_blank"}
                     >Mozilla documentation</a> for more information. </p>
             </div>
+            <label>Select language for emojis :
+                <LocaleSelect current={settings.emojiLocale} onSelect={setEmojiLocale}/>
+            </label>
             <h3>Usage data and favorites</h3>
             <div>
                 <label>
@@ -85,9 +98,9 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                     usageData.size === 0 ? <p>No usage data yet</p> : Array.from(usageData.entries()).map(([emoji, data]) => {
                         return <EmojiUsageItem emoji={emoji}
                                                data={data}
-                                               key={emoji.unicode}
-                                               isFavorite={favoriteEmojis.findIndex((e) => e.unicode === emoji.unicode) !== -1}
-                                               onFavoriteToggle={toggleFavoriteEmoji.bind(null, emoji.unicode) as (emoji: Emoji) => void}
+                                               key={emoji.emoji}
+                                               isFavorite={favoriteEmojis.findIndex((e) => e.emoji === emoji.emoji) !== -1}
+                                               onFavoriteToggle={toggleFavoriteEmoji.bind(null, emoji.emoji) as (emoji: Emoji) => void}
                         />
                     })
                 }
@@ -106,7 +119,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                                 toggleFavoriteEmoji(emoji)
                             }}
                             cardStyle={"full"}
-                            key={emoji.unicode}
+                            key={emoji.emoji}
                         />
                     })
                 }
@@ -167,8 +180,8 @@ function EmojiUsageDetails({emoji, data}: {
 }) {
     return (
         <div className={"emojiUsageDetails"}>
-            <p style={{fontSize: "16px", color: "white", fontWeight: "bold", marginBottom: "3px"}}>{emoji.name}</p>
-            <p style={{fontSize: "14px", color: "lightgrey", marginTop: "0px"}}>{emoji.shortcodes.join(", ")}</p>
+            <p style={{fontSize: "16px", color: "white", fontWeight: "bold", marginBottom: "3px"}}>{emoji.label}</p>
+            <p style={{fontSize: "14px", color: "lightgrey", marginTop: "0px"}}>{emoji.shortcodes ? emoji.shortcodes.join(", ") : ""}</p>
             <div style={{marginTop: "7px", fontSize: "12px", color: "white"}}>
                 <p>Used {data.count} times</p>
                 <p>First used: {new Date(data.firstUsed).toLocaleDateString()}</p>
@@ -191,5 +204,22 @@ function ConfirmUsageDataDeletion({onConfirm, onCancel}: {onConfirm: () => void,
                 <button className={"dangerButton"} style={{alignSelf: "end"}} onClick={() => {onConfirm()}}>Confirm</button>
             </div>
         </div>
+    )
+}
+
+
+function LocaleSelect({current, onSelect}: {current: Locale, onSelect: (locale: Locale) => Promise<true>} ) {
+    const [requestedLocale, setRequestedLocale] = useState(current);
+    return (
+        <select name={"emojiLocale"} value={current} disabled={requestedLocale !== current} onChange={(e) => {
+            setRequestedLocale(e.target.value as Locale)
+            onSelect(e.target.value as Locale).then(() => console.log("Locale changed."))
+        }}>
+            {
+                LOCALES.map((locale) => {
+                    return <option key={locale.locale} value={locale.locale}>{locale.emoji} {locale.displayName}</option>
+                })
+            }
+        </select>
     )
 }

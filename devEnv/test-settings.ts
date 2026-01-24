@@ -3,8 +3,11 @@ import React from "react";
 import SettingsPage from "../src/settings/SettingsPage";
 import {EventMessage, Message} from "../src/background/messsaging";
 import {GlobalSettings} from "../src/background/types";
-import {calculateEmojiScore, calculateEmojiSignals, getMostUsedEmoji, parseStorageKey} from "../src/background/utils";
-import {Emoji, getEmojiFromUnicode} from "../src/emoji/emoji";
+import {parseStorageKey} from "../src/background/utils";
+import {getEmojiFromUnicode} from "../src/emoji/emoji-content";
+import {Emoji} from "emojibase"
+import {getMostUsedEmoji} from "../src/emoji/emoji-content";
+import {calculateEmojiScore, calculateEmojiSignals} from "../src/emoji/emoji";
 
 export type EmojiUsageEntry = {
     count: number;
@@ -34,7 +37,7 @@ export type Settings = {
 export type SampleData = {
     emojiUsage: EmojiUsage;
     favoriteEmojis: string[];
-    settings: Settings;
+    settings: GlobalSettings;
 };
 
 function toggleKeepFreeSelectorEnabled(enable: boolean) {
@@ -64,13 +67,26 @@ async function deleteUsageData() {
 
 function toggleFavoriteEmoji(emoji: Emoji | string) {
     console.log("toggleFavoriteEmoji", emoji);
-    const index = favoriteEmojis.findIndex((e) => e.unicode === (typeof emoji === "string" ? emoji : emoji.unicode));
+    const index = favoriteEmojis.findIndex((e) => e.emoji === (typeof emoji === "string" ? emoji : emoji.emoji));
     if(index >= 0) favoriteEmojis.splice(index, 1);
-    else favoriteEmojis.push(typeof emoji === "string" ? getEmojiFromUnicode(emoji)! : emoji);
+    else {
+        if(typeof emoji === "string")
+            getEmojiFromUnicode(emoji)!.then(emoji =>
+                emoji && favoriteEmojis.push(emoji))
+        else
+            favoriteEmojis.push(emoji);
+    }
+}
+
+function setEmojiLocale(locale: string) {
+    console.log("setEmojiLocale", locale);
+    // @ts-expect-error
+    settings.emojiLocale = locale
+    renderSettings()
 }
 
 function renderSettings() {
-    root.render(React.createElement(SettingsPage, {
+/*    root.render(React.createElement(SettingsPage, {
         settings,
         usageData,
         favoriteEmojis,
@@ -80,8 +96,9 @@ function renderSettings() {
         toggleSiteEnabled,
         toggleAllowEmojiSuggestions,
         deleteUsageData,
-        toggleFavoriteEmoji
-    }))
+        toggleFavoriteEmoji,
+        setEmojiLocale
+    }))*/
 
 }
 
@@ -125,18 +142,13 @@ const ejData = await res.json() as SampleData;
 let settings = ejData.settings;
 
 const ejUsageData = ejData.emojiUsage
-const scores = getMostUsedEmoji(ejUsageData, -1)
-const mostUsedEmojis: Emoji[] = []
-for(const e of scores) {
-    const emojiData = getEmojiFromUnicode(e.e)
-    if(!emojiData)
-        throw new Error(`non existent emoji: ${e.e}`)
-    mostUsedEmojis.push(emojiData);
-}
+const data = await getMostUsedEmoji()
+const scores = data.scores
+const mostUsedEmojis = data.emojis
 
 const usageData = new Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>();
 for (const emoji of mostUsedEmojis) {
-    const usage = ejUsageData[emoji.unicode];
+    const usage = ejUsageData[emoji.emoji];
     const signals = calculateEmojiSignals(usage)
     const score = calculateEmojiScore(usage)
     usageData.set(emoji, {
@@ -152,7 +164,7 @@ for (const emoji of mostUsedEmojis) {
 const favoriteEmojisUnicodes = ejData.favoriteEmojis;
 const favoriteEmojis: Emoji[] = [];
 for(const u of favoriteEmojisUnicodes) {
-    const emojiData = getEmojiFromUnicode(u)
+    const emojiData = await getEmojiFromUnicode(u) // TODO: avoid repeated calls to this function
     favoriteEmojis.push(emojiData!);
 }
 

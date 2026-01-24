@@ -8,6 +8,7 @@
     "start": "webpack serve --config webpack.config.js",
     "watch": "webpack --watch --config webpack.config.js",
     "build": "webpack --config webpack.config.js",
+    "clean": "rm dev/* -R",
     "pre-release": "webpack --config webpack-pre-release.config.js",
     "build-package": "webpack --config webpack-package.config.js",
     "build-extension": "webpack --config webpack-extensions.config.js",
