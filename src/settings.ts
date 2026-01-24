@@ -75,8 +75,10 @@ function toggleFavoriteEmoji(emoji: Emoji | string) {
     if(index >= 0) favoriteEmojis.splice(index, 1);
     else {
         if(typeof emoji === "string")
-            getEmojiFromUnicode(emoji).then(emoji =>
-                emoji && favoriteEmojis.push(emoji))
+            getEmojiFromUnicode(emoji).then(emoji => {
+                emoji && favoriteEmojis.push(emoji)
+                renderSettings();
+            })
         else
             favoriteEmojis.push(emoji);
     }
