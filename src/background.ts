@@ -168,6 +168,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 resolve(true);
                 break
             case "reportEmojiUsage":
+                if(!dm.settings.allowEmojiSuggestions) {
+                    resolve(true)
+                    break;
+                }
                 if(!dm.emojiUsage[m.data.emoji]) {
                     dm.emojiUsage[m.data.emoji] = {count: 1, firstUsed: Date.now(), lastUsed: Date.now()}
                 }
