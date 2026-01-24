@@ -37,7 +37,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     }
     const openShortcutManagementPage = (e: any) => {
         e.preventDefault();
-        //browser.commands.openShortcutSettings()
+        browser.commands.openShortcutSettings()
     }
 
     const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
