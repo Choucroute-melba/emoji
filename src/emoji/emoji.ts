@@ -4,7 +4,7 @@
 import Fuse, {FuseIndex} from "fuse.js";
 import {Emoji, Locale, fetchEmojis} from "emojibase"
 import browser from "webextension-polyfill";
-import {SearchOption} from "./types";
+import {LOCALES, SearchOption} from "./types";
 import DataManager from "../background/dataManager";
 
 type FuseEmoji = {
@@ -53,6 +53,22 @@ function createFuseSearch(dataset: FuseEmoji[], index: FuseIndex<FuseEmoji>) {
 const cachedDataStets = new Map<Locale, Emoji[]>();
 const cachedIndex = new Map<Locale, FuseIndex<FuseEmoji>>();
 const cachedDataStetsTimeStamps = new Map<Locale, number>();
+let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
+// @ts-ignore
+if(LOCALES.findIndex(loc => loc.locale === defaultLocale) === -1) {     // check if the default language exists
+    const lang = defaultLocale.split("-")[0];
+    const langLocale = LOCALES.find(loc => loc.locale.startsWith(lang + "-"));
+    if(langLocale) {
+        defaultLocale = langLocale.locale;
+        console.log(`Using locale "${defaultLocale}" for default emojiLocale setting.`)
+    } else {
+        defaultLocale = "en" // use "en" as fallback if the browser's locale is not supported
+        console.warn(`Default locale "${defaultLocale}" is not supported. Using "en" instead.`)
+    }
+}
+else {
+    console.log(`Default locale "${defaultLocale}" is supported.`)
+}
 
 // Load cached datasets from browser storage
 const storedDatasets = await browser.storage.local.get(null);
@@ -74,14 +90,14 @@ for(const key in storedDatasets) {
         }
     }
 }
-// If there is no English dataset cached, fetch it immediately
-if(!cachedDataStets.has("en")) {
+// If there is no default dataset cached, fetch it immediately
+if(!cachedDataStets.has(defaultLocale)) {
     console.log("loading default emoji dataset...");
-    const emojis = await loadEmojiDataset("en");
+    const emojis = await loadEmojiDataset(defaultLocale);
     console.log("creating index...")
     const emojiIndex = createFuseIndex(emojis);
-    cachedIndex.set("en", emojiIndex);
-    console.log("default emoji dataset (en) loaded.");
+    cachedIndex.set(defaultLocale, emojiIndex);
+    console.log("default emoji dataset (" + defaultLocale + ") loaded.");
 }
 
 /**

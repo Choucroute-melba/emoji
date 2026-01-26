@@ -3,6 +3,7 @@ import Port = Runtime.Port;
 import {getStorageKey, parseStorageKey} from "./utils";
 import {DataChangedEvent} from "./messsaging";
 import {Locale} from "emojibase"
+import {LOCALES} from "../emoji/types";
 
 /**
  * Represents the configuration settings for a site.
@@ -39,7 +40,7 @@ export default class DataManager {
             keepFreeSelectorEnabled: true,
             actionIcon: "😉",
             allowEmojiSuggestions: true,
-            emojiLocale: "en",
+            emojiLocale: browser.i18n.getUILanguage() as Locale,
             sites: {} as {[url: string]: SiteSettings},
         }
     };
@@ -56,6 +57,22 @@ export default class DataManager {
     private pendingWrites: Map<string, Promise<boolean>> = new Map<string, Promise<boolean>>();
 
     constructor() {
+        let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
+        console.log(`browser's locale: ${defaultLocale}`)
+        // check if the default locale exists
+        if(LOCALES.findIndex(loc => loc.locale === defaultLocale) === -1) {
+            // check if the default language exists
+            const lang = defaultLocale.split("-")[0];
+            const langLocale = LOCALES.find(loc => loc.locale.startsWith(lang + "-"));
+            if(langLocale) {
+                defaultLocale = langLocale.locale;
+                this._settings.value.emojiLocale = defaultLocale;
+                console.log(`Using locale "${defaultLocale}" for default emojiLocale setting.`)
+            } else {
+                this._settings.value.emojiLocale = "en" // use "en" as fallback if the browser's locale is not supported
+                console.warn(`Default locale "${defaultLocale}" is not supported. Using "en" instead.`)
+            }
+        }
         browser.runtime.onConnect.addListener(this.onConnect.bind(this));
     }
 
