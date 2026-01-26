@@ -41,6 +41,7 @@ export default {
         extensions: ['.tsx', '.ts', '.js'],
         alias: {
             '@src': path.resolve(__dirname, 'src'),
+            '@theme': path.resolve(__dirname, 'src/theme'),
         }
     },
     output: {

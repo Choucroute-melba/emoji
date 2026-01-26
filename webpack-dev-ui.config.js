@@ -39,6 +39,7 @@ export default {
         alias: {
             '@src': path.resolve(__dirname, 'src'),
             '@devEnv': path.resolve(__dirname, 'devEnv'),
+            '@theme': path.resolve(__dirname, 'src/theme'),
         }
     },
     output: {

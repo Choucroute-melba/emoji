@@ -52,7 +52,11 @@ export default {
         ],
     },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: ['.tsx', '.ts', '.js'],
+        alias: {
+            '@src': path.resolve(__dirname, 'src'),
+            '@theme': path.resolve(__dirname, 'src/theme'),
+        }
     },
     output: {
         filename: '[name].bundle.mjs',
