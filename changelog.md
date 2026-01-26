@@ -1,3 +1,8 @@
+# Version 4.4.1
+*26/01/2026*
+
+- Uses the browser's language as the default language for emoji search
+
 # Version 4.4.0
 *24/01/2026*
 
