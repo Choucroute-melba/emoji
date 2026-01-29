@@ -1,0 +1,108 @@
+/*!*lol*!{
+    all: initial;
+    display: block;
+    box-sizing: border-box;
+}*/
+
+/*lol*/* {
+    all: initial;
+    box-sizing: border-box;
+}
+
+
+/* blocks */
+
+/*lol*/article,
+/*lol*/aside,
+/*lol*/details,
+/*lol*/div,
+/*lol*/dt,
+/*lol*/figcaption,
+/*lol*/footer,
+/*lol*/form,
+/*lol*/header,
+/*lol*/hgroup,
+/*lol*/html,
+/*lol*/main,
+/*lol*/nav,
+/*lol*/search,
+/*lol*/section,
+/*lol*/summary {
+    display: block;
+}
+
+/*lol*/body {
+    display: block;
+    margin: 8px;
+}
+
+/*lol*/p,
+/*lol*/dl {
+    display: block;
+    margin-block-start: 1em;
+    margin-block-end: 1em;
+}
+
+/*lol*/dd {
+    display: block;
+    margin-inline-start: 40px;
+}
+
+/*lol*/blockquote,
+/*lol*/figure {
+    display: block;
+    margin-block: 1em;
+    margin-inline: 40px;
+}
+
+/*lol*/address {
+    display: block;
+    font-style: italic;
+}
+
+/*lol*/center {
+    display: block;
+    text-align: -moz-center;
+}
+
+/*lol*/h1 {
+    display: block;
+    font-size: 2em;
+    font-weight: bold;
+    margin-block: 0.67em;
+}
+
+/*lol*/h2 {
+    display: block;
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-block: 0.83em;
+}
+
+/*lol*/h3 {
+    display: block;
+    font-size: 1.17em;
+    font-weight: bold;
+    margin-block: 1em;
+}
+
+/*lol*/h4 {
+    display: block;
+    font-size: 1em;
+    font-weight: bold;
+    margin-block: 1.33em;
+}
+
+/*lol*/h5 {
+    display: block;
+    font-size: 0.83em;
+    font-weight: bold;
+    margin-block: 1.67em;
+}
+
+/*lol*/h6 {
+    display: block;
+    font-size: 0.67em;
+    font-weight: bold;
+    margin-block: 2.33em;
+}

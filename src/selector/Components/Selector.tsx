@@ -13,7 +13,7 @@ export default function Selector({
     searchResults,
     favorites,
     selectedEmojiIndex,
-    debugText,
+    children,
     onEmojiSelected,
     onResize,
     onToggleEmojiFavorite,
@@ -25,7 +25,7 @@ export default function Selector({
     searchResults: Emoji[],
     favorites: string[]
     selectedEmojiIndex: number,
-    debugText: string,
+    children: React.ReactNode,
     onEmojiSelected: (emoji: Emoji) => void,
     onResize: (geometry: EmojiSelectorGeometry) => void,
     onToggleEmojiFavorite: (emoji: Emoji) => void,
@@ -112,8 +112,8 @@ export default function Selector({
     }
 
     return (
-        <div ref={selectorRef} className={"browser-style popup"} style={getStyle()} >
-            {<p className={"searchText"}>{debugText}</p>}
+        <div ref={selectorRef} className={"emojeezer " + (positionMode!=="static" ? "popup" : "")} style={getStyle()}>
+            {children}
             <div className={"emoji-list"}>
                 {emojiList}
             </div>

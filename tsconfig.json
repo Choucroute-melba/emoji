@@ -9,6 +9,11 @@
     "outDir": "dist",
     "sourceMap": true,
     "moduleResolution": "node",
-    "jsx": "react"
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@theme/*": ["src/theme/*"],
+      "@src/*": ["src/*"]
+    }
   }
 }

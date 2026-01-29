@@ -18,23 +18,25 @@ export default function EmojiCard(props: {
 
 
     return (
-        <div ref={cardRef} className={(props.cardStyle === "square" ? "emoji-card-square" : "emoji-card") + (props.selected ? ("_focus") : (""))}
+        <div ref={cardRef} className={(props.cardStyle === "square" ? "emoji-card square" : "emoji-card") + (props.selected ? (" focus") : (""))}
+             data-stop-propagation="true"
              onClick={(e) => {
+                 e.stopPropagation();
                  props.onClick(props.emoji)
              }}
              onMouseEnter={() => {setDisplayStar(true)}}
              onMouseLeave={() => {setDisplayStar(false)}}
-             onMouseDown={(e) => {
-                 e.preventDefault()
-             }}
         >
-            <div className={"emoji-card_left"}>
-                <p className={""}>{props.emoji.emoji} {props.cardStyle === "full" && props.emoji.label}</p>
-                {(props.selected && props.cardStyle === "full") &&
+            <div className={"left"}>
+                <p className={"emojiDisplay"}>{props.emoji.emoji}</p>
+            </div>
+            <div className={"middle"} style={{display: props.cardStyle === "full" ? "block" : "none"}}>
+                <p className={""}>{props.emoji.label}</p>
+                {(props.selected) &&
                     <p className={"shortcode"}>{props.emoji.shortcodes && props.emoji.shortcodes.join(", ")}</p>
                 }
             </div>
-            <div className={"emoji-card_right"} style={{display: displayStar || ((props.selected || props.isFavorite) && props.cardStyle !== "square") ? "flex" : "none"}}
+            <div className={"right"} style={{display: displayStar || ((props.selected || props.isFavorite) && props.cardStyle !== "square") ? "flex" : "none"}}
                  onClick={(e) => {
                      e.stopPropagation()
                      props.onFavoriteToggle(props.emoji);

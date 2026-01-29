@@ -1,52 +1,50 @@
-/* TODO: add emojeezer identifier */
 .emoji-card {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: space-between;
-    height: 25px;
-    padding: 7px;
+    justify-content: flex-start;
+    height: 30px;
+    padding: 2px;
+    margin: 2px;
     border-radius: 5px;
-    width: 260px;
+    width: 100%;
     cursor: pointer;
 }
 
-.emoji-card:hover, .emoji-card-square:hover {
-    background-color: #c9c9c9;
+.emoji-card:hover, .emoji-card.square:hover {
+    background-color: rgba(255, 255, 255, 0.34);
 }
 
-.emoji-card:focus, .emoji-card-square:focus {
-    background-color: #d9d9d9;
-    box-shadow: 0px 0px 0px 8px #000000
+.emoji-card.focus {
+    background-color: rgba(255, 255, 255, 0.44);
+    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.63);
+    height: 45px;
 }
 
-.emoji-card_focus {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px;
-    border-radius: 5px;
-    width: 260px;
-    background-color: #ededed;
-    box-shadow: 0px 0px 0px 1px #636363;
-    cursor: pointer;
-}
-
-.emoji-card_left {
+.emoji-card .left{
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
+    justify-content: center;
     align-items: flex-start;
-    width: 85%;
+    width: 30px;
+    height: 100%;
 }
 
-.emoji-card_right {
+.emoji-card .middle {
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.emojiDisplay {
+    font-size: 1.3em;
+}
+
+.emoji-card .right {
     padding: 6px;
     border-radius: 5px;
 }
 
-.emoji-card-square {
+.emoji-card.square {
     height: 45px;
     width: 45px;
     min-width: 45px;
@@ -58,22 +56,11 @@
     position: relative;
 }
 
-.emoji-card-square_focus {
-    height: 45px;
-    width: 45px;
-    min-width: 45px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    position: relative;
-
-    background-color: #ededed;
-    box-shadow: 0px 0px 0px 1px #636363;
+.emoji-card.square.focus {
     border-radius: 5px;
 }
 
-.emoji-card-square_focus .emoji-card_right, .emoji-card-square .emoji-card_right {
+.emoji-card.square.focus .right, .emoji-card.square .right {
     position: absolute;
     right: -3px;
     bottom: -3px;
@@ -84,17 +71,18 @@
     border-radius: 100%;
 }
 
-.emoji-card p, .emoji-card_focus p {
+.emoji-card p {
     font-weight: 600;
     padding: 0 4px;
     margin: 0px;
 
+    cursor: pointer;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 100%;
 }
-.emoji-card-square p, .emoji-card-square_focus p {
+.emoji-card.square p{
     font-weight: 600;
     margin: auto;
     font-size: 1.2em;

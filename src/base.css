@@ -1,14 +1,14 @@
-body.emojeezer {
+* {
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
 
-.emojeezer a {
+a {
     color: #204895;
     text-decoration: none;
 }
 
-.emojeezer button {
+button {
     margin: 5px;
     padding: 5px;
     border-radius: 5px;
@@ -19,33 +19,33 @@ body.emojeezer {
     font-weight: 600;
 }
 
-.emojeezer button:hover {
+button:hover {
     background-color: #f0f0f0;
 }
 
-.emojeezer button:focus {
+button:focus {
     background-color: #e0e0e0;
 }
 
-.emojeezer .dangerButton, .emojeezer.dangerButton {
+button.danger {
     background-color: #ffe9e9;
     color: red;
     border: 1px solid #ff5151;
 }
 
-.emojeezer .dangerButton:hover, .emojeezer.dangerButton:hover {
+button.danger:hover {
     background-color: #ffd9d9;
 }
 
-.emojeezer .dangerButton:focus, .emojeezer.dangerButton:focus {
+button.danger:focus {
     background-color: #ffb9b9;
 }
 
-.emojeezer .outlined, .emojeezer.outlined {
+.outlined {
     border: 1px solid #ccc;
 }
 
-.emojeezer .confirmationPopup, .emojeezer.confirmationPopup {
+.confirmationPopup, .emojeezer.confirmationPopup {
     position: absolute;
     top: calc( 50% - 100px );
     left: calc( 50% - 150px );
@@ -61,7 +61,7 @@ body.emojeezer {
     padding: 10px;
 }
 
-.emojeezer .popupBackground, .emojeezer.popupBackground {
+.popupBackground, .emojeezer.popupBackground {
     position: fixed;
     top: 0;
     left: 0;
