@@ -1,4 +1,4 @@
-import EmojiSelector from "./selector/emojiselector";
+import EmojiSelector, {EmojiSelectorOption, SelectorHeadingComponent} from "./selector/emojiselector";
 import TextAreaHandler from "./features/textarea/handler";
 import Handler from "./handler/handler";
 import HTMLInputHandler from "./features/input/handler";
@@ -77,12 +77,42 @@ function isHandlerEnabled(handlerName: string) {
     return availableHandlers.findIndex(h => h.name === handlerName) !== -1
 }
 
-const es = new EmojiSelector()
+/** waiting for support in content scripts **/
+/*
+console.log("defining custom elements")
+try {
+    customElements.define('emoji-selector', EmojiSelector);
+} catch (e) {console.error("Error defining emoji-selector custom element", e)}
+try {
+    customElements.define('emoji-option', EmojiSelectorOptionElement)
+} catch (e) {console.error("Error defining emoji-option custom element", e)}
+try {
+    customElements.define('selector-heading', SelectorHeadingComponent)
+} catch (e) {console.error("Error defining selector-heading custom element", e)}
+// @ts-ignore
+window.wrappedJSObject.EmojiSelector = cloneInto(EmojiSelector, window, {cloneFunctions: true});
+// @ts-ignore
+window.wrappedJSObject.peekaboo = "yoloo";
+
+console.log("waiting...")
+await browser.runtime.sendMessage({action: "declareCustomElement", data: { tagName: "emoji-selector"}})
+// @ts-ignore
+console.log(customElements.get('emoji-selector'))
+
+console.log("EmojiSelector custom element defined")
+
+const es = document.createElement('emoji-selector') as EmojiSelector;*/
+
+const esRoot = document.createElement('div')
+const es = new EmojiSelector(esRoot);
+es.mode = "absolute"
+es.display = false
 es.onToggleEmojiFavorite = async (emoji) => {
     await browser.runtime.sendMessage({ action: "toggleFavoriteEmoji", data: { emoji: emoji.emoji } });
     es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
 }
 es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
+
 let currentHandler: Handler<any> | null = null
 let listening = false
 
@@ -215,7 +245,7 @@ async function applySettings(settings: SiteSettings) {
             observer.observe(document.body, {childList: true, subtree: true});
             DOMChangesListenerLoaded = true
         }
-        es.addToDom()
+        es.place(document.body)
     }
     else {
         window.removeEventListener('keydown', mainListener, true)
@@ -225,7 +255,7 @@ async function applySettings(settings: SiteSettings) {
         DOMChangesListenerLoaded = false
         observer.disconnect();
         await removeIframeListeners();
-        es.removeFromDom()
+        es.remove()
     }
 
     if(settings.enabled && settings.freeSelector) {

@@ -69,7 +69,7 @@ export default function Selector({
     }
 
     let emojiList;
-    if(searchResults === null || searchResults.length === 0) {
+    if(!searchResults || searchResults.length === 0) {
         emojiList = (
                 <p>Start typing to see suggestions</p>
         )

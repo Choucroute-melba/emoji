@@ -7,7 +7,7 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
-    SetEmojiLocaleMessage |
+    SetEmojiLocaleMessage | DeclareCustomElementMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
     };
@@ -194,4 +194,11 @@ export type SetEmojiLocaleMessage = {
  */
 export type DeleteUsageDataMessage = {
     action: "deleteUsageData"
+}
+
+export type DeclareCustomElementMessage = {
+    action: "declareCustomElement",
+    data: {
+        tagName: "emoji-selector" | "selector-option",
+    }
 }

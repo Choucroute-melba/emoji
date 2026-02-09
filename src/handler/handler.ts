@@ -83,6 +83,9 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private allowEmojiSuggestions = true
     private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
     private readonly boundFocusLost: (e: FocusEvent) => void;
+    private readonly esChangeEvent: (e: Event) => void = (e) => {
+        this.onEmojiSelected(this.es.getFocusedEmoji())
+    }
 
     onExit: (() => void) = () => {console.warn("onExit not provided.")}
 
@@ -90,7 +93,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.es = es
         this._target = target
         this.onExit = onExit
-        this.es.onEmojiSelected = this.onEmojiSelected.bind(this)
+        this.es.addEventListener("change", this.esChangeEvent)
         this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
         this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
@@ -98,7 +101,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         if(target.ownerDocument !== document) {
             target.ownerDocument.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         }
-        this.target.addEventListener('focusout', this.boundFocusLost)
+        //this.target.addEventListener('focusout', this.boundFocusLost)
 
         searchEmoji("").then((results) => {
             this.searchResults = results
@@ -167,7 +170,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
             this.dismissSearch("INVALID_SEARCH")
         }
         else {
-            this.es.searchResults = this.searchResults
+            this.es.options = this.searchResults
             this.es.setFocusedEmoji(0)
         }
     }
@@ -306,7 +309,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
         }
         this.target.removeEventListener('focusout', this.boundFocusLost)
         this.es.display = false
-        this.es.onEmojiSelected = () => {}
+        this.es.removeEventListener("change", this.esChangeEvent)
         this.es = null as any
         this.target = null as any
         this.onExit()

@@ -44,29 +44,53 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
  * it offers a simple API to control the selector's interface and properties
  * @property {function} onEmojiSelected - a callback function that will be executed when an emoji is selected (for example when the user click on the interface)
  */
-export default class EmojiSelector extends HTMLElement {
+export default class EmojiSelector {
     static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w"]
 
     private reactRoot: Root | null = null;
     private popupBackground: HTMLDivElement | null = null;
+    private sr: ShadowRoot | null = null;
     private _display = false;
     private _focusedEmojiIndex = 0; // The index of the currently focused emoji in selector
-    private _debugText: string = ""
+    private _debugText = ""
     private _inDocument = false;
+    private _elt: HTMLElement;
+    private _favoriteEmojis: string[] = [];
+    // private readonly boundComponent = () => this.component();
 
     private observer: MutationObserver | null = null;
+    private attributesObserver: MutationObserver | null = null;
+    private readonly boundKeydownListener = (evt: KeyboardEvent | Event) => this.onKeyDown(evt)
 
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
-    public onToggleEmojiFavorite: (emoji: Emoji) => void = (e) => {this.toggleFavorite(e.emoji)};
-    public onBlur: () => void = () => {console.log("blur")};
-    public onClose: () => void = () => {console.log("close")};
-    private boundKeydownListener: (e: KeyboardEvent) => void = this.onKeyDown.bind(this);
+    public onToggleEmojiFavorite: (emoji: Emoji) => void = (e) => {};
+    public onBlur: () => void = () => {};
+    public onClose: () => void = () => {};
 
-    constructor() {
-        super()
+    constructor(elt?: HTMLElement) {
+        if(elt)
+            this._elt = elt;
+        else
+            this._elt = document.createElement('div');
+        this.elt.id = "emojeezer";
     }
 
     connectedCallback() {
+        this.sr = this.elt.attachShadow({mode: 'open'});
+        this.sr.addEventListener('keydown', this.boundKeydownListener, {capture: true});
+        this.elt.addEventListener('blur', () => {this.onBlur()});
+
+        this.elt.classList.add('emojeezer');
+        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
+        const styleSheet = new CSSStyleSheet();
+        styleSheet.replaceSync(mergedCss);
+        const sheets = [styleSheet, emojiCardSheet, componentSheet]
+        // @ts-ignore
+        const unwrappedSr = this.sr.wrappedJSObject
+        sheets.forEach((s) => {
+            unwrappedSr.adoptedStyleSheets.push(s)
+        })
+
         this.popupBackground = document.createElement('div');
         if(this.mode !== "static")
             this.popupBackground.classList.add('popupBackground');
@@ -81,38 +105,29 @@ export default class EmojiSelector extends HTMLElement {
             this.onClose();
         });
 
-
-        this.attachShadow({mode: 'open'});
-        // @ts-ignore
-        this.shadowRoot!.addEventListener('keydown', this.boundKeydownListener, {capture: true});
-        this.addEventListener('blur', () => {this.onBlur()});
-
-        this.classList.add('emojeezer');
-        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
-        const styleSheet = new CSSStyleSheet();
-        styleSheet.replaceSync(mergedCss);
-
-        this.shadowRoot!.adoptedStyleSheets = [styleSheet, componentSheet, emojiCardSheet];
-
         this.reactRoot = createRoot(this.popupBackground);
-        this.reactRoot.render(this.boundComponent());
-        this.shadowRoot!.appendChild(this.popupBackground);
+        this.sr.appendChild(this.popupBackground);
         this._inDocument = true;
-        this.observer = new MutationObserver(this.onMutation.bind(this));
-        this.observer.observe(this, {childList: true, subtree: true, characterData: true, characterDataOldValue: true});
+        this.observer = new MutationObserver((mutations) => this.onMutation(mutations));
+        this.observer.observe(this.elt, {childList: true, subtree: true, characterData: true, characterDataOldValue: true});
+        this.attributesObserver = new MutationObserver((mutations) => this.onAttributeMutation(mutations));
+        this.attributesObserver.observe(this.elt, {attributes: true, subtree: false, attributeOldValue: true});
+        this.renderReact();
     }
 
     disconnectedCallback() {
         this.reactRoot?.unmount();
         this.reactRoot = null;
+        this.sr = null;
         this.popupBackground?.remove();
         this.popupBackground = null;
+        this.options = [];
         this._inDocument = false;
     }
 
     connectedMoveCallback() {
         if(this._inDocument) {
-            this.reactRoot?.render(this.boundComponent());
+            this.renderReact()
         }
     }
 
@@ -143,21 +158,49 @@ export default class EmojiSelector extends HTMLElement {
                 break;
         }
         if(this._inDocument)
-            this.reactRoot!.render(this.component());
+            this.renderReact()
     }
 
-    private onMutation(mutations: MutationRecord[]) {
+    private onAttributeMutation = (mutations: MutationRecord[])=> {
+        for(const mutation of mutations) {
+            if(mutation.type === "attributes" && mutation.attributeName) {
+                this.attributeChangedCallback(mutation.attributeName, mutation.oldValue || "", this.elt.getAttribute(mutation.attributeName) || "")
+            }
+        }
+    }
+
+    private onMutation = (mutations: MutationRecord[])=> {
         this.validateChildList();
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact();
     }
 
     private validateChildList() {
-        for(let i = this.children.length - 1; i >= 0; i--) {
-            const child = this.children[i];
-            if(child.tagName.toLowerCase() !== "emoji-option" && child.tagName.toLowerCase() !== "selector-heading") {
+        const foundEmojiOptions: string[] = []
+        for(let i = this.elt.children.length - 1; i >= 0; i--) {
+            const child = this.elt.children[i];
+            if(!child.className.toLowerCase().includes("emoji-option") && child.id.toLowerCase() !== "selector-heading") {
                 console.warn("EmojiSelector only accepts EmojiOption or SelectorHeading elements as children. Ignoring: ", child, " (index: ", i, ")");
-                this.removeChild(child);
+                this.elt.removeChild(child);
+            }
+            if(child.className.toLowerCase().includes("emoji-option")) {
+                const opt = new EmojiSelectorOption(child as HTMLElement);
+                if(opt.emoji && !foundEmojiOptions.includes(opt.emoji))
+                    foundEmojiOptions.push(opt.emoji);
+                else if(opt.emoji && foundEmojiOptions.includes(opt.emoji)) {
+                    console.warn("Duplicate emoji found in EmojiSelector children: ", opt.emoji, ". Ignoring: ", child, " (index: ", i, ")")
+                    console.groupCollapsed("trace : ")
+                    console.trace()
+                    console.groupEnd()
+                    this.elt.removeChild(child);
+                }
+                else {
+                    console.warn("EmojiSelector child does not contain an emoji: ", child, " (index: ", i, ")")
+                    console.groupCollapsed("trace : ")
+                    console.trace()
+                    console.groupEnd()
+                    this.elt.removeChild(child);
+                }
             }
         }
     }
@@ -170,7 +213,7 @@ export default class EmojiSelector extends HTMLElement {
             this._focusedEmojiIndex = this.options.length - 1;
         this.fireInputEvent()
         if(this._inDocument)
-            this.reactRoot!.render(this.component());
+            this.renderReact()
     }
     focusDown() {
         if(this._focusedEmojiIndex < this.options.length - 1) {
@@ -180,7 +223,7 @@ export default class EmojiSelector extends HTMLElement {
             this._focusedEmojiIndex = 0;
         this.fireInputEvent()
         if(this._inDocument)
-            this.reactRoot!.render(this.component());
+            this.renderReact()
     }
 
     getFocusedEmoji() {
@@ -190,25 +233,41 @@ export default class EmojiSelector extends HTMLElement {
         if(index < 0 || index >= this.options.length) return;
         this._focusedEmojiIndex = index;
         if(this._inDocument)
-            this.reactRoot!.render(this.component());
+            this.renderReact()
     }
 
     private fireInputEvent() {
         const evt = new Event('input', {bubbles: true});
-        this.dispatchEvent(evt);
+        this.elt.dispatchEvent(evt);
     }
 
     private fireChangeEvent() {
         const evt = new Event('change', {bubbles: true});
-        this.dispatchEvent(evt);
+        this.elt.dispatchEvent(evt);
     }
 
     addEventListener<K extends keyof EmojiSelectorEventMap>(type: K, listener: (this: HTMLElement, ev: EmojiSelectorEventMap[K]) => any, options?: boolean | AddEventListenerOptions) {
-        super.addEventListener(type, listener, options);
+        this.elt.addEventListener(type, listener, options);
     }
 
-    private component() {
-        const headingElt = this.getElementsByTagName("selector-heading")[0] as SelectorHeadingComponent | undefined;
+    removeEventListener<K extends keyof EmojiSelectorEventMap>(type: K, listener: (this: HTMLElement, ev: EmojiSelectorEventMap[K]) => any, options?: boolean | EventListenerOptions) {
+        this.elt.removeEventListener(type, listener, options);
+    }
+
+    place(parent: HTMLElement) {
+        parent.appendChild(this.elt);
+        this.connectedCallback();
+    }
+
+    remove() {
+        this.elt.remove();
+        this.disconnectedCallback();
+    }
+
+    private component = () => {
+        const result = this.elt.querySelector("#selector-heading") as HTMLElement | null;
+        let headingElt = result ? new SelectorHeadingComponent(result) : null;
+
         let heading: React.ReactNode = React.createElement("p", {}, "");
         if(headingElt && headingElt.render) {
             heading = headingElt.render()
@@ -222,12 +281,16 @@ export default class EmojiSelector extends HTMLElement {
             favorites : this.favoriteEmojis,
             selectedEmojiIndex : this._focusedEmojiIndex,
             children : heading,
-            onEmojiSelected : this.onEmojiSelected.bind(this),
+            onEmojiSelected : this.onEmojiSelected,
             onResize : this.onResize,
             onToggleEmojiFavorite : this.onToggleEmojiFavorite
         });
     }
-    private boundComponent = this.component.bind(this);
+
+    private renderReact = () => {
+        if(!this._inDocument) return;
+        this.reactRoot!.render(this.component());
+    }
 
     private onKeyDown(evt: KeyboardEvent | Event) {
         const e = evt as KeyboardEvent;
@@ -256,29 +319,32 @@ export default class EmojiSelector extends HTMLElement {
         }
     }
 
-    private onEmojiSelected(emoji: Emoji) {
+    private onEmojiSelected = (emoji: Emoji)=> {
         this.value = emoji.emoji;
         this.fireChangeEvent();
     }
 
     set options(value: Emoji[]) {
-        for(const child of this.children) {
-            if(child.tagName.toLowerCase() === "emoji-option")
-                this.removeChild(child);
+        for(let i = this.elt.children.length - 1; i >= 0; i--) {
+            const child = this.elt.children[i];
+            if(child.className.includes("emoji-option"))
+                this.elt.removeChild(child);
         }
         for(const emoji of value) {
-            const opt = document.createElement("emoji-option") as EmojiSelectorOptionElement;
+            const opt = new EmojiSelectorOption();
             opt.JSONData = emoji;
-            this.appendChild(opt);
+            if(this.favoriteEmojis.includes(emoji.emoji))
+                opt.favorite = true;
+            this.elt.appendChild(opt.element);
         }
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
     get options() {
         const list: Emoji[] = [];
-        for(const child of this.children) {
-            if(child.tagName.toLowerCase() === "emoji-option") {
-                const opt = child as EmojiSelectorOptionElement;
+        for(const child of this.elt.children) {
+            if(child.className.includes("emoji-option")) {
+                const opt = new EmojiSelectorOption(child as HTMLElement);
                 list.push(opt.JSONData as Emoji);
             }
         }
@@ -287,36 +353,36 @@ export default class EmojiSelector extends HTMLElement {
 
     set display(value: boolean) {
         this._display = value;
-        this.style.display = this._display ? 'block' : 'none';
-        if(this._inDocument && this._display) {}
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+        this.elt.style.display = this._display ? 'block' : 'none';
+        if(this._inDocument && this._display)
+            this.renderReact();
     }
     get display() {return this._display;}
 
     /** set the absolute position of the selector on the page */
     set position(value: Partial<{x: number, y: number}>) {
-        if(value.x !== undefined) this.setAttribute("x", value.x.toString());
-        if(value.y !== undefined) this.setAttribute("y", value.y.toString());
+        if(value.x !== undefined) this.elt.setAttribute("x", value.x.toString());
+        if(value.y !== undefined) this.elt.setAttribute("y", value.y.toString());
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
     get position(): {x: number, y: number} {
         return {
-            x: parseInt(this.getAttribute("x") || "0"),
-            y: parseInt(this.getAttribute("y") || "0")
+            x: parseInt(this.elt.getAttribute("x") || "0"),
+            y: parseInt(this.elt.getAttribute("y") || "0")
         };
     }
 
     set placement(value: "up" | "down") {
-        this.setAttribute("placement", value);
+        this.elt.setAttribute("placement", value);
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
     get placement() {
-        const attrValue = this.getAttribute("placement");
+        const attrValue = this.elt.getAttribute("placement");
         if(attrValue !== "up" && attrValue !== "down") {
             console.warn("Invalid placement attribute value: ", attrValue, ". Using 'down' instead.")
-            this.setAttribute("placement", "down");
+            this.elt.setAttribute("placement", "down");
             return "down";
         }
         return attrValue;
@@ -327,28 +393,28 @@ export default class EmojiSelector extends HTMLElement {
             this.popupBackground?.classList.remove("popupBackground")
         else
             this.popupBackground?.classList.add("popupBackground")
-        this.setAttribute("mode", value);
+        this.elt.setAttribute("mode", value);
     }
     get mode() {
-        const attrValue = this.getAttribute("mode");
+        const attrValue = this.elt.getAttribute("mode");
         if(attrValue !== "static" && attrValue !== "absolute" && attrValue !== "relative" && attrValue !== "fixed" && attrValue !== "sticky") {
             console.warn("Invalid mode attribute value: ", attrValue, ". Using 'static' instead.")
-            this.setAttribute("mode", "absolute");
+            this.elt.setAttribute("mode", "static");
             return "static";
         }
         return attrValue;
     }
 
     set shape(value: Partial<{w: number, h: number}>) {
-        if(value.w !== undefined) this.setAttribute("w", value.w.toString());
-        if(value.h !== undefined) this.setAttribute("h", value.h.toString());
+        if(value.w !== undefined) this.elt.setAttribute("w", value.w.toString());
+        if(value.h !== undefined) this.elt.setAttribute("h", value.h.toString());
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
     get shape(): {w: number, h: number} {
         return {
-            w: parseInt(this.getAttribute("w") || "0"),
-            h: parseInt(this.getAttribute("h") || "0")
+            w: parseInt(this.elt.getAttribute("w") || "0"),
+            h: parseInt(this.elt.getAttribute("h") || "0")
         };
     }
 
@@ -370,13 +436,14 @@ export default class EmojiSelector extends HTMLElement {
         if(value.shape)
             this.shape = value.shape;
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
 
     set favoriteEmojis(value: string[]) {
-        for(const child of this.children) {
-            if(child.tagName.toLowerCase() === "emoji-option") {
-                const opt = child as EmojiSelectorOptionElement
+        this._favoriteEmojis = value;
+        for(const child of this.elt.children) {
+            if(child.className.includes("emoji-option")) {
+                const opt = new EmojiSelectorOption(child as HTMLElement);
                 if(opt.emoji && value.includes(opt.emoji))
                     opt.favorite = true;
                 else
@@ -384,38 +451,49 @@ export default class EmojiSelector extends HTMLElement {
             }
         }
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
     toggleFavorite(emoji: string) {
-        for(const child of this.children) {
-            if(child.tagName.toLowerCase() === "emoji-option") {
-                const opt = child as EmojiSelectorOptionElement
-                if(opt.emoji && emoji === opt.emoji)
+        for(const child of this.elt.children) {
+            if(child.className.includes("emoji-option")) {
+                const opt = new EmojiSelectorOption(child as HTMLElement);
+                if(opt.emoji && emoji === opt.emoji) {
                     opt.favorite = !opt.favorite;
+                    const index = this.favoriteEmojis.indexOf(emoji);
+                    if(index !== -1) {
+                        if(!opt.favorite)
+                            this.favoriteEmojis.splice(index, 1);
+                    }
+                    else if(opt.favorite)
+                        this.favoriteEmojis.push(emoji);
+                }
             }
         }
+        if(this._inDocument)
+            this.renderReact()
     }
     get favoriteEmojis() {
-        const list: string[] = [];
-        for(const elt of this.children) {
-            if(elt.tagName.toLowerCase() === "emoji-option") {
-                const opt = elt as EmojiSelectorOptionElement;
+/*        const list: string[] = [];
+        for(const elt of this.elt.children) {
+            if(elt.className.includes("emoji-option")) {
+                const opt = new EmojiSelectorOption(elt as HTMLElement);
                 if(opt.favorite && opt.emoji !== undefined)
                     list.push(opt.emoji);
             }
         }
-        return list;
+        return list;*/
+        return this._favoriteEmojis
     }
 
     /** set a text that will be shown in the selector for debugging purposes */
     set debugText(value: string) {
         this._debugText = value;
         if(this._inDocument)
-            this.reactRoot!.render(React.createElement(this.boundComponent));
+            this.renderReact()
     }
 
     get hasFocus(): boolean {
-        return this.contains(document.activeElement);
+        return this.elt.contains(document.activeElement);
     }
 
     set value(name: string) {
@@ -430,29 +508,68 @@ export default class EmojiSelector extends HTMLElement {
         return this.getFocusedEmoji()?.emoji || "";
     }
 
+    get element() {return this.elt;}
+    set element(elt: HTMLElement) {
+        throw new Error("TODO: implement");
+    }
+
+    private get elt(): HTMLElement {
+        return this._elt!;
+    }
+    private set elt(elt: HTMLElement) {
+        this._elt = elt;
+    }
 }
 
-export class EmojiSelectorOptionElement extends HTMLElement {
+
+export class EmojiSelectorOption {
     static observedAttributes = ["emoji", "label", "shortcodes", "tags", "favorite"]
 
-    private observer: MutationObserver | null = null;
+    private _elt: HTMLElement;
+    private get elt() {
+        return this._elt;
+    }
+    private set elt(elt: HTMLElement) {
+        this._elt = elt;
+    }
 
-    constructor() {
-        super();
+    private attributesObserver: MutationObserver | null = null;
+
+    constructor(elt?: HTMLElement) {
+        if(elt) {
+            this._elt = elt;
+            if(!this._elt.classList.contains("emoji-option"))
+                this._elt.classList.add("emoji-option");
+        }
+        else {
+            this._elt = document.createElement("div");
+            this._elt.classList.add("emoji-option");
+        }
     }
 
     connectedCallback() {
-        this.textContent = JSON.stringify(this.attributesToObject());
+        this.elt.textContent = JSON.stringify(this.attributesToObject());
+        this.attributesObserver = new MutationObserver(mutations => this.onAttributeMutation(mutations))
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         if(oldValue == newValue) return;
-        this.textContent = JSON.stringify(this.attributesToObject());
+        this.elt.textContent = JSON.stringify(this.attributesToObject());
+    }
+
+    onAttributeMutation = (mutations: MutationRecord[])=> {
+        if(this._elt === undefined) return; // attribute change is handled by the custom element itself
+        for(const mutation of mutations) {
+            if(mutation.type === "attributes" && mutation.attributeName) {
+                if(mutation.oldValue === undefined) continue;
+                this.attributeChangedCallback(mutation.attributeName, mutation.oldValue || "", this.elt.getAttribute(mutation.attributeName) || "")
+            }
+        }
     }
 
     private attributesToObject() {
         const result: {[key: string]: any} = {};
-        const attributes = this.attributes;
+        const attributes = this.elt.attributes;
         for(let i = 0; i < attributes.length; i++) {
             switch (attributes[i].name) {
                 case "shortcodes":
@@ -470,75 +587,75 @@ export class EmojiSelectorOptionElement extends HTMLElement {
 
     set emoji(value: string | undefined) {
         if(value === undefined) {
-            if (this.hasAttribute("emoji"))
-                this.removeAttribute("emoji");
+            if (this.elt.hasAttribute("emoji"))
+                this.elt.removeAttribute("emoji");
             return;
         }
-        this.setAttribute("emoji", value);
+        this.elt.setAttribute("emoji", value);
     }
-    get emoji() {return this.getAttribute("emoji") || undefined}
+    get emoji() {return this.elt.getAttribute("emoji") || undefined}
 
     set label(value: string | undefined) {
         if(value === undefined) {
-            if (this.hasAttribute("label"))
-                this.removeAttribute("label");
+            if (this.elt.hasAttribute("label"))
+                this.elt.removeAttribute("label");
             return;
         }
-        this.setAttribute("label", value);
+        this.elt.setAttribute("label", value);
     }
-    get label() {return this.getAttribute("label") || undefined;}
+    get label() {return this.elt.getAttribute("label") || undefined;}
 
     set shortcodes(value: string[] | string | undefined) {
         if(value === undefined) {
-            if (this.hasAttribute("shortcodes"))
-                this.removeAttribute("shortcodes");
+            if (this.elt.hasAttribute("shortcodes"))
+                this.elt.removeAttribute("shortcodes");
             return;
         }
         if(typeof value === "string")
-            this.setAttribute("shortcodes", value);
+            this.elt.setAttribute("shortcodes", value);
         else
-            this.setAttribute("shortcodes", value.join(","));
+            this.elt.setAttribute("shortcodes", value.join(","));
     }
-    get shortcodes(): string[] {return (this.getAttribute("shortcodes") || "").split(",").map(s => s.trim());}
+    get shortcodes(): string[] {return (this.elt.getAttribute("shortcodes") || "").split(",").map(s => s.trim());}
 
     set tags(value: string[] | string | undefined) {
         if(value === undefined) {
-            if (this.hasAttribute("tags"))
-                this.removeAttribute("tags");
+            if (this.elt.hasAttribute("tags"))
+                this.elt.removeAttribute("tags");
             return;
         }
         if(typeof value === "string")
-            this.setAttribute("tags", value);
+            this.elt.setAttribute("tags", value);
         else
-            this.setAttribute("tags", value.join(","));
+            this.elt.setAttribute("tags", value.join(","));
     }
-    get tags(): string[] {return (this.getAttribute("tags") || "").split(",").map(s => s.trim());}
+    get tags(): string[] {return (this.elt.getAttribute("tags") || "").split(",").map(s => s.trim());}
 
     set favorite(value: boolean) {
         if(!value) {
-            if (this.hasAttribute("favorite"))
-                this.removeAttribute("favorite");
+            if (this.elt.hasAttribute("favorite"))
+                this.elt.removeAttribute("favorite");
             return;
         }
-        this.setAttribute("favorite", value ? "true" : "false");
+        this.elt.setAttribute("favorite", value ? "true" : "false");
     }
-    get favorite() {return this.hasAttribute("favorite") && this.getAttribute("favorite") === "true";}
+    get favorite() {return this.elt.hasAttribute("favorite") && this.elt.getAttribute("favorite") === "true";}
 
     set JSONData(value: Partial<Emoji>) {
-        this.textContent = JSON.stringify(value);
-        for(const attr of EmojiSelectorOptionElement.observedAttributes) {
+        this.elt.textContent = JSON.stringify(value);
+        for(const attr of EmojiSelectorOption.observedAttributes) {
             // @ts-ignore
             if(value[attr] !== undefined)
                 // @ts-ignore
-                this.setAttribute(attr, value[attr]);
+                this.elt.setAttribute(attr, value[attr]);
         }
     }
     get JSONData(): Partial<Emoji> {
-        if(this.textContent !== "") {
+        if(this.elt.textContent !== "") {
             try {
-                return JSON.parse(this.textContent || "{}") as Emoji;
+                return JSON.parse(this.elt.textContent || "{}") as Emoji;
             } catch (e) {
-                console.error("Error parsing emoji option: ", this.textContent);
+                console.error("Error parsing emoji option: ", this.elt.textContent);
             }
         }
         return {
@@ -547,6 +664,10 @@ export class EmojiSelectorOptionElement extends HTMLElement {
             tags: this.tags,
             shortcodes: this.shortcodes,
         }
+    }
+
+    get element() {return this.elt;}
+    set element(value: HTMLElement) {// TODO
     }
 }
 
@@ -578,9 +699,18 @@ function domNodeToReact(node: Node | null): React.ReactNode {
     return null;
 }
 
-export class SelectorHeadingComponent extends HTMLElement {
-    constructor() {
-        super();
+export class SelectorHeadingComponent {
+    private _elt: HTMLElement;
+    private get elt() {
+        return this._elt;
+    }
+    private set elt(elt: HTMLElement) {
+        this._elt = elt;
+    }
+
+    constructor(elt?: HTMLElement) {
+        this._elt = elt || document.createElement("div");
+        this._elt.id = "selector-heading";
     }
 
     connectedCallback() {
@@ -589,7 +719,7 @@ export class SelectorHeadingComponent extends HTMLElement {
 
     render() {
         if(!this.validateContent()) return;
-        const child = this.children[0];
+        const child = this.elt.children[0];
         if(!child) return;
         else {
             return domNodeToReact(child);
@@ -603,7 +733,7 @@ export class SelectorHeadingComponent extends HTMLElement {
      * @private
      */
     private validateContent(): boolean {
-        if(this.children.length > 1) {
+        if(this.elt.children.length > 1) {
             console.error("SelectorHeadingComponent should contain a single child element.")
             return false;
         }

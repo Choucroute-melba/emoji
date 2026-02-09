@@ -13,6 +13,7 @@ import {
     searchEmoji
 } from "./emoji/emoji";
 import {Emoji} from "emojibase";
+import EmojiSelector from "@src/selector/emojiselector";
 
 console.log("background.ts");
 
@@ -237,6 +238,23 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;
+            case "declareCustomElement": {
+                if(!sender.tab || !sender.tab.id) resolve(true)
+                browser.scripting.executeScript({
+                    target: {
+                        tabId: sender.tab!.id!
+                    },
+                    func: () => {
+                        console.log("Declaring custom element:")
+                        // @ts-ignore
+                        customElements.define("emoji-selector", window.EmojiSelector)
+                    }
+                }).then(() => {
+                    console.log("Custom element declared")
+                    resolve(true)
+                })
+            }
+            break;
             default:
                 reject(`Unknown action: ${m.action}`)
                 break;
