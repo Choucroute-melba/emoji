@@ -10,10 +10,10 @@
     "sourceMap": true,
     "moduleResolution": "node",
     "jsx": "react",
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@theme/*": ["src/theme/*"],
-      "@src/*": ["src/*"]
+      "@theme/*": ["theme/*"],
+      "@src/*": ["*"]
     }
   }
 }
