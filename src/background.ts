@@ -235,6 +235,9 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                     resolve(true);
                 });
                 break;
+            case "getCurrentTheme":
+                resolve(browser.theme.getCurrent())
+                break;
             case "getTabId":
                 resolve(sender.tab?.id);
                 break;

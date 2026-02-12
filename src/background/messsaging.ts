@@ -9,7 +9,7 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
     SetEmojiLocaleMessage | DeclareCustomElementMessage |
     {
-        action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId"
+        action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme"
     };
 
 export type EventMessage = SettingsUpdatedEvent | SiteSettingsUpdatedEvent | DataChangedEvent;
