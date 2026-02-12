@@ -56,7 +56,7 @@ function ActionPopup({
 
     console.log(`Re-Render : enabled=${enabled} , enabledForSite=${enabledForSite}\n\tParams : enabled=${siteSettings.enabled}, disabledGlobally=${!enabledGlobally}, url=${siteSettings.url}`);
     const statusText = enabled ? (enabledForSite ? "Active on " : "Disabled for ") + hostname : "Disabled globally"
-    const statusColor = enabled ? enabledForSite ? "green" : "orange" : "red"
+    const statusColor = enabled ? enabledForSite ? "var(--fx-success-text)" : "var(--fx-warning-text)" : "var(--fx-critical-text)"
 
     return (
         <>

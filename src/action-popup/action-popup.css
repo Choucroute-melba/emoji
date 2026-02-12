@@ -1,17 +1,25 @@
 body {
     width: 286px;
+    background-color: var(--ejz-surface);
 }
 
 a {
     font-size: 12px;
-    color: #204895;
+    color: var(--fx-primary);
     text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+    color: var(--fx-primary-hover);
+}
+a:active {
+    color: var(--fx-primary-active);
 }
 
 footer {
     margin-top: 10px;
     text-align: center;
-    color: #204895;
+    color: var(--ejz-onBackgroundVariant);
     margin-bottom: 7px;
 }
 

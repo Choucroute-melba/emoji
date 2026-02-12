@@ -9,15 +9,16 @@
     border-radius: 5px;
     width: 100%;
     cursor: pointer;
+    color: var(--ejz-onSurface);
 }
 
 .emoji-card:hover, .emoji-card.square:hover {
-    background-color: rgba(255, 255, 255, 0.34);
+    background-color: var(--ejz-surface);
 }
 
 .emoji-card.focus {
-    background-color: rgba(255, 255, 255, 0.44);
-    box-shadow: 0px 0px 0px 1px rgba(0, 0, 0, 0.63);
+    background-color: var(--ejz-surface);
+    box-shadow: 0px 0px 0px 1px var(--ejz-onSurfaceVariant) inset;
     height: 45px;
 }
 
@@ -108,7 +109,7 @@
 .shortcode {
     font-size: small;
     font-family: "JetBrains Mono", monospace;
-    color: #818181;
+    color: var(--ejz-onSurfaceVariant);
     padding: 0px;
     margin: 0px;
     overflow: hidden;

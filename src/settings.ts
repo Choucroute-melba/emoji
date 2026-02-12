@@ -101,6 +101,7 @@ function renderSettings() {
     }))
 }
 
+let theme = await browser.runtime.sendMessage({action: "getCurrentTheme"} as Message);
 let settings = (await browser.runtime.sendMessage({action: "getSettings"})) as GlobalSettings;
 const port = browser.runtime.connect({name: "settings-page"});
 

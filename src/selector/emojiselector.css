@@ -1,5 +1,5 @@
 emoji-selector {
     display: block;
     box-sizing: border-box;
-    background-color: lightblue;
+    background-color: var(--ejz-surface);
 }

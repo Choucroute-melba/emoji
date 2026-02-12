@@ -1,16 +1,13 @@
 .popup {
     z-index: 1000;
-    background: lightblue;
+    background: var(--ejz-surface);
+    color: var(--ejz-onSurface);
     border-radius: 5px;
     padding: 6px 15px;
     margin-top: 3px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     transition-property: box-shadow;
     transition-duration: 0.5s;
-}
-
-.popup:hover {
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
 }
 
 .emoji-list {

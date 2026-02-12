@@ -3,7 +3,7 @@ import "./emojiselector.css"
 import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
 import {Emoji} from "emojibase";
-import {mergeCss} from "@theme/theme-utils";
+import {getCssTheme, mergeCss} from "@theme/theme-utils";
 
 import resetCss from "@theme/reset.text.css"
 const resetSheet = new CSSStyleSheet();
@@ -39,6 +39,8 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
     'change': Event;
 }
 
+const initialTheme = await getCssTheme(":root, :host")
+
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
  * it offers a simple API to control the selector's interface and properties
@@ -56,6 +58,7 @@ export default class EmojiSelector {
     private _inDocument = false;
     private _elt: HTMLElement;
     private _favoriteEmojis: string[] = [];
+    private _theme = initialTheme;
     // private readonly boundComponent = () => this.component();
 
     private observer: MutationObserver | null = null;
@@ -81,15 +84,8 @@ export default class EmojiSelector {
         this.elt.addEventListener('blur', () => {this.onBlur()});
 
         this.elt.classList.add('emojeezer');
-        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
-        const styleSheet = new CSSStyleSheet();
-        styleSheet.replaceSync(mergedCss);
-        const sheets = [styleSheet, emojiCardSheet, componentSheet]
-        // @ts-ignore
-        const unwrappedSr = this.sr.wrappedJSObject
-        sheets.forEach((s) => {
-            unwrappedSr.adoptedStyleSheets.push(s)
-        })
+
+        this.updateTheme(this._theme)
 
         this.popupBackground = document.createElement('div');
         if(this.mode !== "static")
@@ -129,6 +125,21 @@ export default class EmojiSelector {
         if(this._inDocument) {
             this.renderReact()
         }
+    }
+
+    private updateTheme(themeVariables: string) {
+        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
+        const styleSheet = new CSSStyleSheet()
+        styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
+        const sheets = [styleSheet, emojiCardSheet, componentSheet]
+        // @ts-ignore
+        const unwrappedSr = this.sr.wrappedJSObject
+        for(let i = unwrappedSr.adoptedStyleSheets.length - 1; i >= 0; i--) {
+            unwrappedSr.adoptedStyleSheets.pop();
+        }
+        sheets.forEach((s) => {
+            unwrappedSr.adoptedStyleSheets.push(s)
+        })
     }
 
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
@@ -322,6 +333,14 @@ export default class EmojiSelector {
     private onEmojiSelected = (emoji: Emoji)=> {
         this.value = emoji.emoji;
         this.fireChangeEvent();
+    }
+
+    get theme() {
+        return this._theme
+    }
+    set theme(value: string) {
+        this._theme = value;
+        this.updateTheme(value);
     }
 
     set options(value: Emoji[]) {

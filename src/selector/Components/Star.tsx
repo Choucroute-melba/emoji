@@ -28,8 +28,8 @@ export default function Star(props: {
                 <defs>
                     <style>{`
                         .st${props.filled ? "0" : "1"} {
-                        fill: ${props.filled ? displayedColor : "none"};
-                        stroke: ${displayedColor};
+                        fill: ${props.filled ? "var(--ejz-accent)" : "none"};
+                        stroke: ${"var(--ejz-accent)"};
                         stroke-miterlimit: 10;
                         stroke-width: .5px;
                     }`}
@@ -38,8 +38,8 @@ export default function Star(props: {
                 {/*className={`st${props.filled ? "0" : "1"}`}*/}
                 <path
                     style={{
-                        fill: props.filled || hovered ? displayedColor : "none",
-                        stroke: displayedColor,
+                        fill: props.filled || hovered ? "var(--ejz-accent)" : "none",
+                        stroke: "var(--ejz-accent)",
                         strokeMiterlimit: 10,
                         strokeWidth: 0.5,
                     }}

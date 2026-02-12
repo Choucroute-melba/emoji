@@ -4,6 +4,7 @@ import browser from "webextension-polyfill";
 import {DataChangedEvent, EnableForSiteMessage, EnableMessage, Message, ReadDataMessage} from "./background/messsaging";
 import {SiteSettings} from "./background/dataManager";
 import {parseStorageKey} from "./background/utils";
+import {applyTheme} from "@theme/theme-utils";
 
 console.log("action.ts");
 console.log(window.location.href);
@@ -63,7 +64,7 @@ async function getSettingsForSite(): Promise<SiteSettings> {
     })) as SiteSettings;
 }
 
-
+await applyTheme()
 const root = createRoot(document.getElementById('react-root')!);
 
 console.log("calling getSettingsForSite()")
