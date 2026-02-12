@@ -4,11 +4,10 @@
     box-sizing: border-box;
 }*/
 
-/*lol*/* {
+/*lol*/:host {
     all: initial;
     box-sizing: border-box;
 }
-
 
 /* blocks */
 
