@@ -151,3 +151,108 @@ function findPropIndex(rule: CSSStyleRule, prop: string) {
     }
     return -1;
 }
+
+function pickColor(c: ThemeTypeColorsType | undefined, ...keys: (keyof ThemeTypeColorsType)[]): string | undefined {
+    if (!c) return undefined;
+    for (const key of keys) {
+        const value = c[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+            console.log(`${key}: %c${value} \t\t%c     %c`, ``, `background-color: ${value};`, "background-color: inherit; color: inherit;")
+            return value;
+        }
+    }
+    return undefined;
+}
+
+const colorTokens = [
+    "--ejz-accent",
+    "--ejz-background",
+    "--ejz-surface",
+    "--ejz-surfaceHover",
+    "--ejz-backgroundHover",
+    "--ejz-onSurface",
+    "--ejz-onBackground",
+    "--ejz-onBackgroundVariant",
+    "--ejz-onSurfaceVariant",
+    "--ejz-dangerSurface",
+    "--ejz-dangerOnSurface",
+]
+/**
+ * return CSS variables updated to the current theme.
+ * Defaults are defined in base.css
+ * @param selector - the scope of the variables.
+ */
+export async function getCssTheme(selector: string): Promise<string> {
+    const assignedColors = new Map<string, string | undefined>()
+    const theme = await browser.runtime.sendMessage({action: "getCurrentTheme"}) as ThemeType
+    const c = theme.colors
+    const preferredSheme = theme.properties?.color_scheme ||
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+    console.log(theme)
+    let ruleText = `@media (prefers-color-scheme: ${preferredSheme}) {\n${selector} {\n`
+    for (const token of colorTokens) {
+        let color: string | undefined = undefined;
+        switch (token) {
+            case "--ejz-accent":
+                color = pickColor(c, "icons_attention", "icons")
+                break;
+            case "--ejz-background":
+                color = pickColor(c, "frame", "frame_inactive")
+                break;
+            case "--ejz-surface":
+                color = pickColor(c, "popup")
+                break;
+            case "--ejz-surfaceHover":
+                color = pickColor(c, "popup")
+                if(color)
+                    color = colord(color).darken(0.1).toHex()
+                break;
+            case "--ejz-backgroundHover":
+                color = pickColor(c, "frame", "frame_inactive")
+                if(color)
+                    color = colord(color).darken(0.1).toHex()
+                break;
+            case "--ejz-onSurface":
+                color = pickColor(c, "popup_text")
+                break;
+            case "--ejz-onBackground":
+                color = pickColor(c, "bookmark_text", "icons")
+                break;
+            case "--ejz-onBackgroundVariant":
+                if(preferredSheme == "dark" && assignedColors.get(token)) {
+                    color = colord(assignedColors.get(token)!).darken(0.3).toHex()
+                }
+                else {// light
+                    color = colord(assignedColors.get(token)!).lighten(0.3).toHex()
+                }
+                break;
+            case "--ejz-onSurfaceVariant":
+                if(preferredSheme == "dark" && assignedColors.get(token)) {
+                    color = colord(assignedColors.get(token)!).darken(0.5).toHex()
+                }
+                else {
+                    color = colord(assignedColors.get(token)!).lighten(0.5).toHex()
+                }
+                break;
+
+        }
+        assignedColors.set(token, color)
+    }
+    console.log(ruleText)
+    assignedColors.forEach((value, key) => {
+        if(value) {
+            ruleText += `    ${key}: ${value};\n`
+            console.log(`${key}: %c${value} \t\t %c     %c`, ``, `background-color: ${value};`, "background-color: inherit; color: inherit;")
+        }
+    })
+    ruleText += "}\n}\n"
+    return ruleText;
+}
+
+export async function applyTheme() {
+    const css = await getCssTheme(":root")
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    console.log("apply theme", sheet)
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets, sheet];
+}
