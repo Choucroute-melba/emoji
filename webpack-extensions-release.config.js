@@ -35,8 +35,61 @@ export default {
                 exclude: /node_modules/,
             },
             {
+                test: /\.module\.css$/i,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            esModule: false,
+                            modules: {
+                                localIdentName: '[name]__[local]___[hash:base64:5]',
+                            },
+                            sourceMap: false,
+                        }
+                    },
+                ],
+            },
+            {
+                test: /\.text\.css$/i,
+                use: [
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            exportType: 'string',
+                            esModule: false,
+                            sourceMap: false,
+                        }
+                    },
+                ],
+            },
+            {
                 test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
+                resourceQuery: /inline/,
+                use: [
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            exportType: 'string',
+                            esModule: false,
+                            sourceMap: false,
+                        }
+                    },
+                ]
+            },
+            {
+                test: /\.css$/i,
+                exclude: [/\.module\.css$/i, /\.text\.css$/i],
+                resourceQuery: { not: [/inline/]},
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            sourceMap: false,
+                        }
+                    }
+                ],
             },
         ],
     },

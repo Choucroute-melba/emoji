@@ -42,6 +42,7 @@ export default {
                         loader: 'css-loader',
                         options: {
                             exportType: 'string',
+                            esModule: false,
                             sourceMap: true,
                         }
                     },
@@ -55,7 +56,7 @@ export default {
                         loader: 'css-loader',
                         options: {
                             exportType: 'string',
-                            esModule: true,
+                            esModule: false,
                             sourceMap: true,
                         }
                     },
