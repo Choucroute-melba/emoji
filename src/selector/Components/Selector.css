@@ -9,6 +9,11 @@
     transition-property: box-shadow;
     transition-duration: 0.5s;
 }
+@media (prefers-color-scheme: dark) {
+    .popup {
+        border: 1px solid var(--th-popup-border);
+    }
+}
 
 .emoji-list {
     display: flex;

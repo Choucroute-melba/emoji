@@ -1,5 +1,4 @@
 import React from 'react';
-import "./emojiselector.css"
 import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
 import {Emoji} from "emojibase";

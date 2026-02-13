@@ -297,7 +297,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
 
     protected onFocusLost() {
-        this.dismissSearch("FOCUS_LOST")
+        // this.dismissSearch("FOCUS_LOST")
     }
 
     destroy() {

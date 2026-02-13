@@ -1,8 +1,16 @@
 import { Emoji } from "emojibase";
-import EmojiSelector, {EmojiSelectorGeometry, EmojiSelectorPosition} from "../src/selector/emojiselector";
+import EmojiSelector, {EmojiSelectorGeometry} from "../src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
-import * as s from "./freeselector.module.css";
-import {applyInlineFromClasses} from "./freeselector-utils";
+
+import css from "./freeselector.css?inline";
+const sheet = new CSSStyleSheet();
+sheet.replaceSync(css);
+import resetCss from "@theme/reset.text.css"
+import {mergeCss} from "@theme/theme-utils";
+import baseCss from "@src/base.css?inline";
+const resetSheet = new CSSStyleSheet();
+resetSheet.replaceSync(resetCss);
+console.log(css, baseCss, resetCss)
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
     static sites: string[] = ["*"];
@@ -22,6 +30,8 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     searchBar: HTMLInputElement
     container: HTMLDivElement
     infoLine: HTMLParagraphElement
+    root: HTMLDivElement = document.createElement("div");
+    sr: ShadowRoot = this.root.attachShadow({mode: "open"});
 
     previousActiveElement: HTMLElement | null = null;
 
@@ -34,9 +44,12 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         container.appendChild(searchBar)
         info.textContent = "Press Enter to copy the selected emoji to clipboard";
         container.appendChild(info)
-        document.body.appendChild(container);
 
         super(es, searchBar, onExit);
+
+        this.sr.appendChild(container);
+        this.updateTheme();
+        document.body.appendChild(this.root);
 
         this.mode = "default";
 
@@ -44,11 +57,9 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container = container;
         this.infoLine = info;
 
-
-        // Inline the CSS declarations from these classes to prevent host overrides
-        applyInlineFromClasses(this.container, [s.reset, s.container]);
-        applyInlineFromClasses(this.searchBar, [s.reset, s.searchBar]);
-        applyInlineFromClasses(this.infoLine, [s.reset, s.info]);
+        this.container.className = "container"
+        this.searchBar.className = "searchBar"
+        this.infoLine.className = "info"
 
         this.searchBar.addEventListener("input", this.onSearchBarInput.bind(this));
         this.active = true;
@@ -63,6 +74,22 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         }
 
         this.searchBar.focus()
+    }
+
+    private updateTheme() {
+        const themeVariables = this.es.theme
+        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
+        const styleSheet = new CSSStyleSheet()
+        styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
+        const sheets = [styleSheet, sheet]
+        // @ts-ignore
+        const unwrappedSr = this.sr.wrappedJSObject
+        for(let i = unwrappedSr.adoptedStyleSheets.length - 1; i >= 0; i--) {
+            unwrappedSr.adoptedStyleSheets.pop();
+        }
+        sheets.forEach((s) => {
+            unwrappedSr.adoptedStyleSheets.push(s)
+        })
     }
 
 /*    protected onFocusLost() {
@@ -124,7 +151,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     }
 
     protected onDestroy(): void {
-        document.body.removeChild(this.container);
+        document.body.removeChild(this.root);
         this.searchBar.removeEventListener("input", this.onSearchBarInput.bind(this));
         if(this.previousActiveElement) {
             this.previousActiveElement.focus();

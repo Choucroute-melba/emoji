@@ -1,4 +1,4 @@
-import EmojiSelector, {EmojiSelectorOption, SelectorHeadingComponent} from "./selector/emojiselector";
+import EmojiSelector from "./selector/emojiselector";
 import TextAreaHandler from "./features/textarea/handler";
 import Handler from "./handler/handler";
 import HTMLInputHandler from "./features/input/handler";
@@ -8,7 +8,7 @@ import {
     chooseAndLoadHandler,
     getAvailableHandlers, HandlerManifest
 } from "./handler/handlersManager";
-import browser, {Tabs} from "webextension-polyfill";
+import browser from "webextension-polyfill";
 import {SiteSettings} from "./background/dataManager";
 import {
     AddDataChangeListenerMessage,

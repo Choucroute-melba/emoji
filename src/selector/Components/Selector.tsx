@@ -1,4 +1,3 @@
-import './Selector.css';
 import {useRef, useEffect, useState} from "react";
 import EmojiCard from "./EmojiCard";
 import {Emoji} from "emojibase";
