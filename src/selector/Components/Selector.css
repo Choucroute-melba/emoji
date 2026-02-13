@@ -1,7 +1,7 @@
 .popup {
     z-index: 1000;
-    background: var(--ejz-surface);
-    color: var(--ejz-onSurface);
+    background: var(--th-popup);
+    color: var(--th-popup-text);
     border-radius: 5px;
     padding: 6px 15px;
     margin-top: 3px;

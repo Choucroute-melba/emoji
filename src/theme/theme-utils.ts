@@ -166,6 +166,8 @@ function pickColor(c: ThemeTypeColorsType | undefined, ...keys: (keyof ThemeType
 
 const colorTokens = [
     "--ejz-accent",
+    "--ejz-accent-hover",
+    "--ejz-accent-active",
     "--ejz-background",
     "--ejz-surface",
     "--ejz-surfaceHover",
@@ -196,6 +198,20 @@ export async function getCssTheme(selector: string): Promise<string> {
             case "--ejz-accent":
                 color = pickColor(c, "icons_attention", "icons")
                 break;
+            case "--ejz-accent-hover":
+                color = assignedColors.get("--ejz-accent")
+                if(color && preferredSheme == "dark")
+                    color = colord(color).lighten(0.1).toHex()
+                else if(color)
+                    color = colord(color).darken(0.1).toHex()
+                break;
+            case "--ejz-accent-active":
+                color = assignedColors.get("--ejz-accent")
+                if(color && preferredSheme == "dark")
+                    color = colord(color).lighten(0.2).toHex()
+                else if(color)
+                    color = colord(color).darken(0.2).toHex()
+                break
             case "--ejz-background":
                 color = pickColor(c, "frame", "frame_inactive")
                 break;
@@ -238,6 +254,16 @@ export async function getCssTheme(selector: string): Promise<string> {
         }
         assignedColors.set(token, color)
     }
+    // then generate variables directly pointing to theme colors
+    if(c) {
+        const keys = Object.keys(c) as (keyof ThemeTypeColorsType)[]
+        for (const key of keys) {
+            let varName = `--th-${key.replace('_', '-').toLowerCase()}`
+            if (c[key] && typeof c[key] === "string" && c[key] !== "")
+                assignedColors.set(varName, c[key])
+        }
+    }
+    // finally generate the rule text
     console.log(ruleText)
     assignedColors.forEach((value, key) => {
         if(value) {

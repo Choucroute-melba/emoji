@@ -169,6 +169,8 @@
 @media (prefers-color-scheme: dark) {
     :root, :host {
         --ejz-accent: var(--fx-primary);
+        --ejz-accent-hover: var(--fx-primary-hover);
+        --ejz-accent-active: var(--fx-primary-active);
         --ejz-background: var(--fx-gray-95);
         --ejz-surface: var(--fx-gray-80);
         --ejz-surfaceHover: var(--fx-gray-70);
@@ -193,12 +195,59 @@
         --fx-info: var(--fx-blue-10);
         --fx-info-bg: var(--fx-blue-100);
         --fx-info-text: var(--fx-blue-20);
+        --fx-background: #1c1b22;
+        --fx-onBackground: #fbfbfe;
+        --fx-onBackgroundVariant: #b6b5b9;
+
+        --th-bookmark-text: #fbfbfe;
+        --th-button-background-active: #6a6971;
+        --th-button-background-hover: #4e4d55;
+        --th-icons: #fbfbfe;
+        --th-icons-attention: #00ddff;
+        --th-frame: #1c1b22;
+        --th-frame-inactive: #1f1e25;
+        --th-ntp-background: #000;
+        --th-ntp-card-background: #000;
+        --th-ntp-text: #000;
+        --th-popup: #42414d;
+        --th-popup-border: #52525e;
+        --th-popup-highlight: #2b2a33;
+        --th-popup-highlight-text: #fbfbfe;
+        --th-popup-text: #fbfbfe;
+        --th-sidebar: #000;
+        --th-sidebar-border: #000;
+        --th-sidebar-highlight: #000;
+        --th-sidebar-highlight-text: #000;
+        --th-sidebar-text: #000;
+        --th-tab-background-separator: #000;
+        --th-tab-background-text: #000;
+        --th-tab-line: #000;
+        --th-tab-loading: #000;
+        --th-tab-selected: #000;
+        --th-tab-text: #000;
+        --th-toolbar: #2b2a33;
+        --th-toolbar-bottom-separator: #3e3d44;
+        --th-toolbar-field: #1e1d24;
+        --th-toolbar-field-border: var(--th-toolbar-field);
+        --th-toolbar-field-border-focus: #52525e;
+        --th-toolbar-field-focus: var(--th-popup);
+        --th-toolbar-field-highlight: #2e7183;
+        --th-toolbar-field-highlight-text: var(--th-toolbar-field-text);
+        --th-toolbar-field-separator: #52525e;
+        --th-toolbar-field-text: #fbfbfe;
+        --th-toolbar-field-text-focus: #fbfbfe;
+        --th-toolbar-text: #fbfbfe;
+        --th-toolbar-top-separator: var(--th-toolbar);
+        --th-toolbar-vertical-separator: #a8a8ac;
+
     }
 }
 
 @media (prefers-color-scheme: light) {
     :root, :host {
         --ejz-accent: var(--fx-primary);
+        --ejz-accent-hover: var(--fx-primary-hover);
+        --ejz-accent-active: var(--fx-primary-active);
         --ejz-background: var(--fx-gray-10);
         --ejz-surface: var(--fx-gray-0);
         --ejz-surfaceHover: var(--fx-gray-5);
@@ -224,6 +273,50 @@
         --fx-info: var(--fx-blue-70);
         --fx-info-bg: var(--fx-blue-0);
         --fx-info-text: var(--fx-blue-70);
+        --fx-background: #ffffff;
+        --fx-onBackground: #15141a;
+        --fx-onBackgroundVariant: #5d5d61;
+
+        --th-bookmark-text: #15141a;
+        --th-button-background-active: #b4b4b7;
+        --th-button-background-hover: #d3d2d5;
+        --th-icons: #5b5b66;
+        --th-icons-attention: #0061e0;
+        --th-frame: #eaeaed;
+        --th-frame-inactive: #ebebef;
+        --th-popup: #ffffff;
+        --th-popup-border: #f0f0f4;
+        --th-popup-highlight: #e0e0e6;
+        --th-popup-highlight-text: #000000;
+        --th-popup-text: #000000;
+        --th-toolbar: #f9f9fb;
+        --th-toolbar-bottom-separator: #dddde0;
+        --th-toolbar-field: #ececee;
+        --th-toolbar-field-border: var(--th-toolbar-field);
+        --th-toolbar-field-border-focus: #f0f0f4;
+        --th-toolbar-field-focus: var(--th-popup);
+        --th-toolbar-field-highlight: #0078d7;
+        --th-toolbar-field-highlight-text: #ffffff;
+        --th-toolbar-field-separator: #f0f0f4;
+        --th-toolbar-field-text: #15141a;
+        --th-toolbar-field-text-focus: #000000;
+        --th-toolbar-text: var(--th-bookmark-text);
+        --th-toolbar-top-separator: var(--th-toolbar);
+        --th-toolbar-vertical-separator: #717075;
+        --th-sidebar: #000;
+        --th-sidebar-border: #000;
+        --th-sidebar-highlight: #000;
+        --th-sidebar-highlight-text: #000;
+        --th-sidebar-text: #000;
+        --th-tab-background-separator: #000;
+        --th-tab-background-text: #000;
+        --th-tab-line: #000;
+        --th-tab-loading: #000;
+        --th-tab-selected: #000;
+        --th-tab-text: #000;
+        --th-ntp-background: #000;
+        --th-ntp-card-background: #000;
+        --th-ntp-text: #000;
     }
 }
 
@@ -236,6 +329,12 @@ a {
     color: var(--ejz-accent);
     text-decoration: none;
 }
+a:hover {
+    color: var(--ejz-accent-hover);
+}
+a:active {
+    color: var(--ejz-accent-active);
+}
 
 button {
     margin: 5px;
@@ -246,12 +345,17 @@ button {
     font-size: 15px;
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-weight: 600;
-    background-color: var(--ejz-surface);
-    color: var(--ejz-onSurface);
+    background-color: var(--th-popup);
+    color: var(--th-popup-text);
 }
 button.accent {
     background-color: var(--ejz-accent);
-    color: var(--ejz-onBackground);
+}
+button.accent:hover {
+    background-color: var(--ejz-accent-hover);
+}
+button.accent:active {
+    background-color: var(--ejz-accent-active);
 }
 
 button:hover {
@@ -279,7 +383,7 @@ button.danger:active {
 }
 
 .outlined {
-    border: 1px solid var(--ejz-onSurface);
+    border: 1px solid var(--th-popup-border);
 }
 
 .confirmationPopup, .emojeezer.confirmationPopup {
@@ -291,8 +395,8 @@ button.danger:active {
     justify-content: center;
     align-items: flex-start;
     z-index: 1000;
-    background-color: var(--ejz-surface);
-    color: var(--ejz-onSurface);
+    background-color: var(--th-popup);
+    color: var(--th-popup-text);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     border: 1px solid rgba(0, 0, 0, 0.5);
     border-radius: 12px;

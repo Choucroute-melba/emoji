@@ -1,6 +1,6 @@
 body {
     width: 286px;
-    background-color: var(--ejz-surface);
+    background-color: var(--th-popup);
 }
 
 a {
@@ -19,7 +19,7 @@ a:active {
 footer {
     margin-top: 10px;
     text-align: center;
-    color: var(--ejz-onBackgroundVariant);
+    color: var(--th-popup-text);
     margin-bottom: 7px;
 }
 
