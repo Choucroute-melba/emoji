@@ -1,5 +1,7 @@
 import '@src/base.css'
 import './SettingsPage.css'
+import '@src/selector/Components/EmojiCard.css'
+import '@src/selector/Components/Selector.css'
 import React from 'react'
 import {useState} from 'react';
 import {GlobalSettings, SiteSettings} from "../background/dataManager";
