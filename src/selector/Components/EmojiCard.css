@@ -110,7 +110,7 @@
 .shortcode {
     font-size: small;
     font-family: "JetBrains Mono", monospace;
-    color: var(--fx-onBackgroundVariant);
+    color: color-mix(in srgb, var(--th-popup-text) 70%, #FFF0 30%);
     padding: 0px;
     margin: 0px;
     overflow: hidden;
