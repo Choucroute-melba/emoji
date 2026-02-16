@@ -55,6 +55,12 @@ function toggleAllowEmojiSuggestions(allow: boolean) {
     })
 }
 
+function toggleAutoHide() {
+    browser.runtime.sendMessage({
+        action: "toggleAutoHide"
+    } as Message)
+}
+
 async function deleteUsageData() {
     await browser.runtime.sendMessage({action: "deleteUsageData"})
     window.location.reload();
@@ -97,7 +103,8 @@ function renderSettings() {
         toggleAllowEmojiSuggestions,
         deleteUsageData,
         toggleFavoriteEmoji,
-        setEmojiLocale
+        setEmojiLocale,
+        toggleAutoHide
     }))
 }
 
@@ -130,6 +137,9 @@ port.onMessage.addListener((message: any) => {
                 break;
             case "settings.emojiLocale":
                 settings.emojiLocale = m.data.value;
+                break;
+            case "settings.enableAutoHide":
+                settings.enableAutoHide = m.data.value;
                 break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {

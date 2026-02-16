@@ -204,7 +204,11 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 }
                 resolve(true);
             }
-            break
+            break;
+            case "toggleAutoHide":
+                dm.settings.enableAutoHide = !dm.settings.enableAutoHide;
+                resolve(true)
+                break;
             case "getFavoriteEmojis": {
                 const unicodes = dm.favoriteEmojis;
                 const emojis: Emoji[] = []

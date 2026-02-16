@@ -18,7 +18,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleAllowEmojiSuggestions,
     deleteUsageData,
     toggleFavoriteEmoji,
-    setEmojiLocale
+    setEmojiLocale,
+    toggleAutoHide
 } : {
     settings: GlobalSettings
     usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
@@ -30,7 +31,8 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleAllowEmojiSuggestions: (enable: boolean) => void
     deleteUsageData: () => void,
     toggleFavoriteEmoji: (emoji: Emoji | string) => void,
-    setEmojiLocale: (locale: Locale) => Promise<true>
+    setEmojiLocale: (locale: Locale) => Promise<true>,
+    toggleAutoHide: () => void,
 }) {
     const disabledSites: SiteSettings[] = [];
     for (let sitesKey in settings.sites) {
@@ -82,6 +84,11 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
             </div>
             <label>Select language for emojis :
                 <LocaleSelect current={settings.emojiLocale} onSelect={setEmojiLocale}/>
+            </label>
+            <label>
+                <input type={"checkbox"} checked={settings.enableAutoHide} onChange={(e) => {
+                    toggleAutoHide();
+                }} /> Enable popup auto-hide (when focus is lost)
             </label>
             <h3>Usage data and favorites</h3>
             <div>

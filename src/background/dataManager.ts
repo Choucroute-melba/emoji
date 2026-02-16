@@ -25,6 +25,7 @@ export type GlobalSettings = {
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
     emojiLocale: Locale,
+    enableAutoHide: boolean,
     sites: { [url: string]: SiteSettings },
 }
 
@@ -41,6 +42,7 @@ export default class DataManager {
             actionIcon: "😉",
             allowEmojiSuggestions: true,
             emojiLocale: browser.i18n.getUILanguage() as Locale,
+            enableAutoHide: true,
             sites: {} as {[url: string]: SiteSettings},
         }
     };

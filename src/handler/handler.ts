@@ -87,6 +87,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private readonly esChangeEvent: (e: Event) => void = (e) => {
         this.onEmojiSelected(this.es.getFocusedEmoji())
     }
+    protected autoHide: boolean = true
 
     onExit: (() => void) = () => {console.warn("onExit not provided.")}
 
@@ -108,6 +109,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
             this.searchResults = results
             this.onSearchUpdated()
         })
+        browser.runtime.sendMessage({action: "readData", data: {key: "settings.enableAutoHide"}})
+            .then((res) => {
+                this.autoHide = res as boolean
+            })
 
         this.log("new handler", "\t\t\t---")
     }
