@@ -92,10 +92,17 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         })
     }
 
-/*    protected onFocusLost() {
-        this.log(null, "Focus lost")
-        super.onFocusLost();
-    }*/
+    protected onTargetBlur(){
+        this.log(null, "target lost focus")
+        if(!this.es.hasFocus && !this.sr.activeElement && this.autoHide) {
+
+            this.log(null, "Dismissing search due to focus lost")
+            this.dismissSearch("TARGET_LOST_FOCUS");
+        }
+        else {
+            console.log("es has focus")
+        }
+    }
 
     onSearchBarInput(e: Event): void {
         this.search = this.searchBar.value;

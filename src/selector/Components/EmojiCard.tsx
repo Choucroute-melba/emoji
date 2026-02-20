@@ -40,6 +40,7 @@ export default function EmojiCard(props: {
                      e.stopPropagation()
                      props.onFavoriteToggle(props.emoji);
                  }}
+                 tabIndex={0}
             >
                 <Star filled={props.isFavorite} height={props.cardStyle === "full" ? 24 : 12} width={props.cardStyle === "full" ? 24 : 12}/>
             </div>

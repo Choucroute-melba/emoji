@@ -82,8 +82,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
     private mixedEmojiData: Emoji[] = []
     private _active = false
     private allowEmojiSuggestions = true
-    private readonly boundHandleDocumentKeydown: (e: KeyboardEvent) => void;
-    private readonly boundFocusLost: (e: FocusEvent) => void;
     private readonly esChangeEvent: (e: Event) => void = (e) => {
         this.onEmojiSelected(this.es.getFocusedEmoji())
     }
@@ -95,15 +93,20 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.es = es
         this._target = target
         this.onExit = onExit
+
         this.es.addEventListener("change", this.esChangeEvent)
-        this.boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
-        this.boundFocusLost = this.onFocusLost.bind(this)
         document.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
-        // check if the target is within another document (iframe)
         if(target.ownerDocument !== document) {
             target.ownerDocument.addEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         }
-        this.target.addEventListener('focusout', this.boundFocusLost)
+        document.addEventListener('pointerdown', this.boundOnDocumentPointerEvent);
+        if(target.ownerDocument !== document) {
+            document.addEventListener('pointerdown', this.boundOnDocumentPointerEvent);
+        }
+        document.addEventListener('focusin', this.boundOnActiveElementChanged)
+
+        this.es.onBlur = this.boundOnSelectorBlur
+        this.es.onClose = this.boundOnSelectorClose
 
         searchEmoji("").then((results) => {
             this.searchResults = results
@@ -300,10 +303,62 @@ export default abstract class Handler<EltType extends HTMLElement> {
                     break;
             }
     }
+    private readonly boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
 
-    protected onFocusLost() {
-        this.dismissSearch("FOCUS_LOST")
+    /** Focus lost by the selector (ex: user switched to another window or tab)
+     * @protected
+     */
+    protected onSelectorBlur() {
+        if(this.autoHide)
+            this.dismissSearch("FOCUS_LOST")
+        else
+            console.log("onSelectorBlur (FOCUS_LOST)")
     }
+    private readonly boundOnSelectorBlur = this.onSelectorBlur.bind(this)
+
+    /**
+     * Selector closed because of user command (ex: esc. key, close button, or click outside)
+     * @protected
+     */
+    protected onSelectorClose() {
+        if(this.autoHide)
+            this.dismissSearch("ES_CLOSE")
+        else
+            console.log("onSelectorClose (ES_CLOSE)")
+    }
+    private readonly boundOnSelectorClose = this.onSelectorClose.bind(this)
+
+    /**
+     * The text field used for search has lost focus (ex: user clicked on another element or used tab to change focus)
+     * @protected
+     */
+    protected onTargetBlur () {
+        if(this.autoHide)
+            this.dismissSearch("TARGET_LOST_FOCUS")
+        else
+            console.log("onTargetBlur (TARGET_LOST_FOCUS)")
+    }
+    private readonly boundOnTargetBlur = this.onTargetBlur.bind(this)
+
+    protected onActiveElementChanged(e: FocusEvent) {
+        if(document.activeElement !== this.target && !this.es.hasFocus)
+            this.onTargetBlur()
+        else if(this.es.hasFocus)
+            return // console.log("selector has focus")
+    }
+    private readonly boundOnActiveElementChanged = this.onActiveElementChanged.bind(this)
+
+    private onDocumentPointerEvent(e: MouseEvent) {
+        if(e.target === this.target)
+            return // console.log("target clicked")
+        else if(e.target === this.es.element)
+            return // console.log("selector clicked")
+        else if(this.autoHide)
+            this.dismissSearch("OUTSIDE_CLICK")
+        else
+            console.log("onDocumentPointerEvent (OUTSIDE_CLICK)")
+    }
+    private boundOnDocumentPointerEvent = this.onDocumentPointerEvent.bind(this);
 
     destroy() {
         this.log(null, "destroying...")
@@ -313,7 +368,14 @@ export default abstract class Handler<EltType extends HTMLElement> {
         if(this.target.ownerDocument !== document) {
             this.target.ownerDocument.removeEventListener('keydown', this.boundHandleDocumentKeydown, {capture: true})
         }
-        this.target.removeEventListener('focusout', this.boundFocusLost)
+        document.removeEventListener('pointerdown', this.boundOnDocumentPointerEvent);
+        if(this.target.ownerDocument !== document) {
+            this.target.ownerDocument.removeEventListener('pointerdown', this.boundOnDocumentPointerEvent);
+        }
+        this._target.removeEventListener('blur', this.boundOnTargetBlur)
+        document.removeEventListener('focusin', this.boundOnActiveElementChanged)
+        this.es.onBlur = () => {}
+        this.es.onClose = () => {}
         this.es.display = false
         this.es.removeEventListener("change", this.esChangeEvent)
         this.es = null as any

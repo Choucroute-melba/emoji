@@ -1,5 +1,5 @@
 .container {
-    background-color: var(--th-popup);
+    background-color: var(--th-toolbar);
     position: fixed;
     z-index: 9999;
     box-shadow: 0px -9px 10px 0px rgba(0,0,0,0.22);
@@ -10,11 +10,12 @@
     padding: 10px;
     margin: 0;
     border-radius: 15px 15px 0 0;
-    color: var(--th-popup-text);
+    color: var(--th-toolbar-text);
 }
 @media (prefers-color-scheme: dark) {
     .container {
         border: 1px solid var(--th-popup-border);
+        border-bottom: 1px solid var(--th-toolbar-bottom-separator);
     }
 }
 

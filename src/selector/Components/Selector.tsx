@@ -111,7 +111,11 @@ export default function Selector({
     }
 
     return (
-        <div ref={selectorRef} className={"emojeezer " + (positionMode!=="static" ? "popup" : "")} style={getStyle()}>
+        <div
+            ref={selectorRef}
+            className={"emojeezer " + (positionMode!=="static" ? "popup" : "")}
+            style={getStyle()} tabIndex={0}
+        >
             {children}
             <div className={"emoji-list"}>
                 {emojiList}

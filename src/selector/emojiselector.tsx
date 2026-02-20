@@ -80,15 +80,15 @@ export default class EmojiSelector {
     connectedCallback() {
         this.sr = this.elt.attachShadow({mode: 'open'});
         this.sr.addEventListener('keydown', this.boundKeydownListener, {capture: true});
-        this.elt.addEventListener('blur', () => {this.onBlur()});
+        this.sr.addEventListener('focus', this.boundOnFocus, {capture: true});
 
         this.elt.classList.add('emojeezer');
 
         this.updateTheme(this._theme)
 
         this.popupBackground = document.createElement('div');
-        if(this.mode !== "static")
-            this.popupBackground.classList.add('popupBackground');
+/*        if(this.mode !== "static")
+            this.popupBackground.classList.add('popupBackground');*/
         this.popupBackground.tabIndex = 0;
         this.popupBackground.addEventListener('click', (e) => {
             const path = e.composedPath();
@@ -99,6 +99,7 @@ export default class EmojiSelector {
             }
             this.onClose();
         });
+        this.popupBackground.addEventListener('blur', () => {this.onBlur()});
 
         this.reactRoot = createRoot(this.popupBackground);
         this.sr.appendChild(this.popupBackground);
@@ -329,6 +330,12 @@ export default class EmojiSelector {
         }
     }
 
+    private onFocus(evt: Event) {
+    }
+    private boundOnFocus = this.onFocus.bind(this);
+
+
+
     private onEmojiSelected = (emoji: Emoji)=> {
         this.value = emoji.emoji;
         this.fireChangeEvent();
@@ -407,10 +414,10 @@ export default class EmojiSelector {
     }
 
     set mode(value: "static" | "absolute" | "relative" | "fixed" | "sticky") {
-        if(value === "static")
+/*        if(value === "static")
             this.popupBackground?.classList.remove("popupBackground")
         else
-            this.popupBackground?.classList.add("popupBackground")
+            this.popupBackground?.classList.add("popupBackground")*/
         this.elt.setAttribute("mode", value);
     }
     get mode() {
@@ -511,7 +518,8 @@ export default class EmojiSelector {
     }
 
     get hasFocus(): boolean {
-        return this.elt.contains(document.activeElement);
+        if(!this._inDocument) return false;
+        return this.sr!.activeElement !== null;
     }
 
     set value(name: string) {
