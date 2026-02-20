@@ -38,8 +38,6 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
     'change': Event;
 }
 
-const initialTheme = await getCssTheme(":root, :host")
-
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
  * it offers a simple API to control the selector's interface and properties
@@ -57,7 +55,8 @@ export default class EmojiSelector {
     private _inDocument = false;
     private _elt: HTMLElement;
     private _favoriteEmojis: string[] = [];
-    private _theme = initialTheme;
+    private _themePromise = getCssTheme(":root, :host").then((th: string) => (this._theme = th));
+    private _theme: string | undefined = undefined;
     // private readonly boundComponent = () => this.component();
 
     private observer: MutationObserver | null = null;
@@ -84,7 +83,10 @@ export default class EmojiSelector {
 
         this.elt.classList.add('emojeezer');
 
-        this.updateTheme(this._theme)
+        if(!this._theme)
+            this._themePromise.then(() => this.updateTheme(this._theme!));
+        else
+            this.updateTheme(this._theme)
 
         this.popupBackground = document.createElement('div');
 /*        if(this.mode !== "static")
@@ -341,7 +343,7 @@ export default class EmojiSelector {
         this.fireChangeEvent();
     }
 
-    get theme() {
+    get theme(): string | undefined {
         return this._theme
     }
     set theme(value: string) {

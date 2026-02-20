@@ -77,7 +77,9 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     }
 
     private updateTheme() {
-        const themeVariables = this.es.theme
+        const themeVariables = this.es.theme || ""
+        if(themeVariables === "")
+            console.warn("No theme variables found for EmojiSelector. Using default theme.")
         const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
         const styleSheet = new CSSStyleSheet()
         styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
