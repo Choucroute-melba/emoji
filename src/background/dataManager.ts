@@ -229,63 +229,62 @@ export default class DataManager {
     }
 
     private async writeData(key: string, value: any): Promise<boolean> {
-            let parsedKey = parseStorageKey(key)
-            const queueKey = parsedKey == null ? "__GLOBAL__" : parsedKey[0];
-            const doWrite = async () => {
-                if (parsedKey == null) {
-                    return await browser.storage.sync.set(value).catch(err => {
-                        console.error(`Error writing setting ${key}: ${err}`)
-                        throw err
-                    }).then(() => true)
-                }
-
-                if (parsedKey.length === 0)
-                    return false
-
-                const topKey = parsedKey[0]
-                const res = await browser.storage.sync.get(topKey)
-                let root = (res as any)[topKey]
-
-                if (parsedKey.length === 1) {
-                    return await browser.storage.sync.set({[topKey]: value}).catch(err => {
-                        console.error(`Error writing setting ${key}: ${err}`)
-                        throw err
-                    }).then(() => true)
-                }
-
-                if (root === undefined || root === null)
-                    root = {}
-
-                let current: any = root
-                for (let i = 1; i < parsedKey.length - 1; i++) {
-                    const seg = parsedKey[i]
-                    if (current[seg] === undefined || current[seg] === null)
-                        current[seg] = {}
-                    current = current[seg]
-                }
-
-                current[parsedKey[parsedKey.length - 1]] = value
-                return await browser.storage.sync.set({[topKey]: root}).catch(err => {
+        let parsedKey = parseStorageKey(key)
+        const queueKey = parsedKey == null ? "__GLOBAL__" : parsedKey[0];
+        const doWrite = async () => {
+            if (parsedKey == null) {
+                return await browser.storage.sync.set(value).catch(err => {
                     console.error(`Error writing setting ${key}: ${err}`)
                     throw err
                 }).then(() => true)
             }
 
-            // Chaîner la nouvelle écriture après la précédente pour la même queueKey
-            const prev = this.pendingWrites.get(queueKey) ?? Promise.resolve(true);
-            const next = prev.then(() => doWrite()).catch(() => doWrite());
-            // stocker la promesse courante (ne pas await ici)
-            this.pendingWrites.set(queueKey, next);
-            // quand la promesse est terminée, si c'était la dernière, on peut la retirer (optionnel)
-            next.finally(() => {
-                // si la promesse stockée est bien la même, la supprimer
-                if (this.pendingWrites.get(queueKey) === next) this.pendingWrites.delete(queueKey);
-            });
-            return next;
+            if (parsedKey.length === 0)
+                return false
+
+            const topKey = parsedKey[0]
+            const res = await browser.storage.sync.get(topKey)
+            let root = (res as any)[topKey]
+
+            if (parsedKey.length === 1) {
+                return await browser.storage.sync.set({[topKey]: value}).catch(err => {
+                    console.error(`Error writing setting ${key}: ${err}`)
+                    throw err
+                }).then(() => true)
+            }
+
+            if (root === undefined || root === null)
+                root = {}
+
+            let current: any = root
+            for (let i = 1; i < parsedKey.length - 1; i++) {
+                const seg = parsedKey[i]
+                if (current[seg] === undefined || current[seg] === null)
+                    current[seg] = {}
+                current = current[seg]
+            }
+
+            current[parsedKey[parsedKey.length - 1]] = value
+            return await browser.storage.sync.set({[topKey]: root}).catch(err => {
+                console.error(`Error writing setting ${key}: ${err}`)
+                throw err
+            }).then(() => true)
         }
 
+        // Chaîner la nouvelle écriture après la précédente pour la même queueKey
+        const prev = this.pendingWrites.get(queueKey) ?? Promise.resolve(true);
+        const next = prev.then(() => doWrite()).catch(() => doWrite());
+        // stocker la promesse courante (ne pas await ici)
+        this.pendingWrites.set(queueKey, next);
+        // quand la promesse est terminée, si c'était la dernière, on peut la retirer (optionnel)
+        next.finally(() => {
+            // si la promesse stockée est bien la même, la supprimer
+            if (this.pendingWrites.get(queueKey) === next) this.pendingWrites.delete(queueKey);
+        });
+        return next;
+    }
+
     async initializeStorage() {
-        if(!(await this._readData("settings")))
         // remove unwanted keys :
         // @ts-ignore
         const keys = await browser.storage.sync.getKeys() as string[];
@@ -295,26 +294,38 @@ export default class DataManager {
                 await browser.storage.sync.remove(key)
             }
         }
+        if(!(await this._readData("settings"))) {
+            console.log("write whole settings object", this._settings.value)
             await this.writeData("settings", this._settings.value)
+        }
         else {
+            console.log("writing settings object keys:")
             const storedSettings = await this._readData(this._settings.key) as typeof this._settings.value;
             const defaultKeys = Object.keys(this._settings.value)
             const storedKeys = Object.keys(storedSettings)
             for(let key of defaultKeys) {
+                console.log(`- ${key}`)
                 if(!storedKeys.includes(key))
-                { // @ts-ignore
+                {
+                    // @ts-ignore
+                    console.log(`+ ${key}: ${this._settings.value[key] as any}`)
+                    // @ts-ignore
                     storedSettings[key] = this._settings.value[key] as any
                 }
             }
-            this.settings = storedSettings;
+            await this.writeData(this._settings.key, storedSettings)
         }
-        if(!(await this._readData("emojiUsage")))
+        if(!(await this._readData("emojiUsage"))) {
             await this.writeData("emojiUsage", this._emojiUsage.value)
+            console.info("emojiUsage key created", this._emojiUsage.value)
+        }
         else {
             this.emojiUsage = await this._readData(this._emojiUsage.key) as typeof this._emojiUsage.value;
         }
-        if(!(await this._readData("favoriteEmojis")))
+        if(!(await this._readData("favoriteEmojis"))) {
             await this.writeData("favoriteEmojis", this._favoriteEmojis.value)
+            console.info("favoriteEmojis key created", this._favoriteEmojis.value)
+        }
         else {
             this.favoriteEmojis = await this._readData(this._favoriteEmojis.key) as unknown as typeof this._favoriteEmojis.value;
         }
