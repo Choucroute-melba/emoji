@@ -61,7 +61,6 @@ export default class EmojiSelector {
 
     private observer: MutationObserver | null = null;
     private attributesObserver: MutationObserver | null = null;
-    private readonly boundKeydownListener = (evt: KeyboardEvent | Event) => this.onKeyDown(evt)
 
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
     public onToggleEmojiFavorite: (emoji: Emoji) => void = (e) => {};
@@ -78,7 +77,6 @@ export default class EmojiSelector {
 
     connectedCallback() {
         this.sr = this.elt.attachShadow({mode: 'open'});
-        this.sr.addEventListener('keydown', this.boundKeydownListener, {capture: true});
         this.sr.addEventListener('focus', this.boundOnFocus, {capture: true});
 
         this.elt.classList.add('emojeezer');
@@ -303,33 +301,6 @@ export default class EmojiSelector {
     private renderReact = () => {
         if(!this._inDocument) return;
         this.reactRoot!.render(this.component());
-    }
-
-    private onKeyDown(evt: KeyboardEvent | Event) {
-        const e = evt as KeyboardEvent;
-        if(e.key === "Escape") {
-            e.preventDefault();
-            e.stopPropagation();
-            this.onClose();
-        }
-        else if(e.key === "ArrowUp") {
-            e.preventDefault();
-            e.stopPropagation();
-            this.focusUp();
-        }
-        else if(e.key === "ArrowDown") {
-            e.preventDefault();
-            e.stopPropagation();
-            this.focusDown();
-        }
-        else if(e.key === "Enter") {
-            e.preventDefault();
-            e.stopPropagation();
-            if(e.ctrlKey)
-                this.toggleFavorite(this.getFocusedEmoji()!.emoji);
-            else
-                this.onEmojiSelected(this.getFocusedEmoji()!);
-        }
     }
 
     private onFocus(evt: Event) {
