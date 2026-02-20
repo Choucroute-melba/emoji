@@ -286,6 +286,15 @@ export default class DataManager {
 
     async initializeStorage() {
         if(!(await this._readData("settings")))
+        // remove unwanted keys :
+        // @ts-ignore
+        const keys = await browser.storage.sync.getKeys() as string[];
+        for(let key of keys) {
+            if(![this._settings.key, this._emojiUsage.key, this._favoriteEmojis.key].includes(key)) {
+                console.log(`Removing unwanted key ${key}`)
+                await browser.storage.sync.remove(key)
+            }
+        }
             await this.writeData("settings", this._settings.value)
         else {
             const storedSettings = await this._readData(this._settings.key) as typeof this._settings.value;
