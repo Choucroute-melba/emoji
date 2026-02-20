@@ -57,14 +57,16 @@ browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
 
 const dm = new DataManager();
 console.log("Initializing storage")
-dm.initializeStorage();
 
 function listener(message: any, sender: MessageSender): Promise<unknown> {
-
     const p = new Promise<unknown>(async (r, reject) => {
         const resolve = (value: unknown) => {
             console.groupEnd();
             r(value);
+        }
+        if(!dm.storageReady) {
+            console.info("Waiting for storage to be ready...")
+            await dm.initializeStorage();
         }
         const m = message as Message;
         const activeTab = await getActiveTab()

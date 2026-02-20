@@ -57,6 +57,8 @@ export default class DataManager {
 
     private proxyCache = new WeakMap<object, any>();
     private pendingWrites: Map<string, Promise<boolean>> = new Map<string, Promise<boolean>>();
+    private _storageReady = false;
+    get storageReady() {return this._storageReady}
 
     constructor() {
         let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
@@ -220,6 +222,9 @@ export default class DataManager {
     }
 
     async readData(key: string | null) {
+        if(!this._storageReady) {
+            throw new Error("Storage not ready, call initializeStorage() first.")
+        }
         return await this._readData(key)
     }
 
@@ -305,6 +310,7 @@ export default class DataManager {
             this.favoriteEmojis = await this._readData(this._favoriteEmojis.key) as unknown as typeof this._favoriteEmojis.value;
         }
         console.log("Storage initialized")
+        this._storageReady = true;
     }
 
     private onConnect(p: Port) {
