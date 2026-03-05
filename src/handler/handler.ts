@@ -348,7 +348,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     }
     private readonly boundOnActiveElementChanged = this.onActiveElementChanged.bind(this)
 
-    private onDocumentPointerEvent(e: MouseEvent) {
+    protected onDocumentPointerEvent(e: MouseEvent) {
         if(e.target === this.target)
             return // console.log("target clicked")
         else if(e.target === this.es.element)
