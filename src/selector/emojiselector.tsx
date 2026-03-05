@@ -266,6 +266,9 @@ export default class EmojiSelector {
     }
 
     place(parent: HTMLElement) {
+        if(this._inDocument) {
+            this.remove();
+        }
         parent.appendChild(this.elt);
         this.connectedCallback();
     }
