@@ -246,6 +246,7 @@ async function applySettings(settings: SiteSettings) {
             DOMChangesListenerLoaded = true
         }
         es.place(document.body)
+        console.log("EmojiSelector placed")
     }
     else {
         window.removeEventListener('keydown', mainListener, true)
