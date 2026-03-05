@@ -60,9 +60,9 @@ async function getSettings(): Promise<{
 
 async function getSettingsForSite(): Promise<SiteSettings> {
     console.log("Getting settings");
-    return (await browser.runtime.sendMessage<Message>({
+    return  browser.runtime.sendMessage<Message>({
         action: "getSiteSettings"
-    })) as SiteSettings;
+    }) as Promise<SiteSettings>;
 }
 
 await applyTheme()
