@@ -5,6 +5,7 @@ import {DataChangedEvent, EnableForSiteMessage, EnableMessage, Message, ReadData
 import {SiteSettings} from "./background/dataManager";
 import {parseStorageKey} from "./background/utils";
 import {applyTheme} from "@theme/theme-utils";
+import React from "react";
 
 console.log("action.ts");
 console.log(window.location.href);
@@ -97,17 +98,25 @@ port.onMessage.addListener(async (message: any) => {
         siteSettings = await getSettingsForSite();
         console.log("new siteSettings: ", siteSettings, "\nchangedKey:", changedKey);
     }
-    root.render(ActionPopup({
-        siteSettings,
-        enabledGlobally: settings.enabled,
-        keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled,
-        onToggleEnabled,
-        onToggleEnabledForSite
-    }));
+
+    renderReact();
 })
+
+function renderReact() {
+    root.render(React.createElement(
+        ActionPopup,
+        {
+            siteSettings,
+            enabledGlobally: settings.enabled,
+            keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled,
+            onToggleEnabled,
+            onToggleEnabledForSite
+        }
+    ));
+}
 
 port.postMessage({action: "addDataChangeListener", data: {keys: [
     "settings.**"
         ]}})
 
-root.render(ActionPopup({siteSettings, enabledGlobally: settings.enabled, keepFreeSelectorEnabled: settings.keepFreeSelectorEnabled, onToggleEnabled, onToggleEnabledForSite}));
+renderReact()
