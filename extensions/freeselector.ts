@@ -106,6 +106,12 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         }
     }
 
+    protected onDocumentPointerEvent(e: MouseEvent) {
+        if(e.target === this.container)
+            return
+        super.onDocumentPointerEvent(e);
+    }
+
     onSearchBarInput(e: Event): void {
         this.search = this.searchBar.value;
     }
