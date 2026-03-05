@@ -77,13 +77,17 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
 
         switch (m.action) {
             case "readData":
-                if(typeof m.data.key === "string")
-                    resolve(await dm.readData(m.data.key));
+                if(typeof m.data.key === "string") {
+                    const data = await dm.readData(m.data.key);
+                    console.log("readData: ", m.data.key, data);
+                    resolve(data);
+                }
                 else if(Array.isArray(m.data.key)) {
                     const result: {[key: string]: any} = {};
                     for(const key of m.data.key) {
                         result[key] = await dm.readData(key);
                     }
+                    console.log("readData: ", m.data.key, result);
                     resolve(result);
                 }
                 resolve(undefined);
