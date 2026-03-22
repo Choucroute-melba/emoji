@@ -48,5 +48,6 @@ export type GlobalSettings = {
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
     emojiLocale: Locale,
+    enableAutoHide: boolean,
     sites: { [url: string]: SiteSettings },
 }

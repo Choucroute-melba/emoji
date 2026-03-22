@@ -1,7 +1,7 @@
 import '@src/base.css'
 import './action-popup.css';
 import React, {useState} from "react";
-import {SiteSettings} from "../background/dataManager";
+import {SiteSettings} from "../background/types";
 import browser from "webextension-polyfill";
 import {getDomainName} from "../background/utils";
 

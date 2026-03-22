@@ -9,7 +9,7 @@ import {
     getAvailableHandlers, HandlerManifest
 } from "./handler/handlersManager";
 import browser from "webextension-polyfill";
-import {SiteSettings} from "./background/dataManager";
+import {SiteSettings} from "./background/types";
 import {
     AddDataChangeListenerMessage,
     EventMessage,

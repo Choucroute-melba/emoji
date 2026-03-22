@@ -4,6 +4,7 @@ import {Emoji} from "emojibase"
 import {Message} from "../background/messsaging";
 import browser from "webextension-polyfill";
 import {getEmojiFromShortCode} from "../emoji/emoji-content";
+import {GlobalSettings, SiteSettings} from "@src/background/types";
 
 const colors =
    ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',

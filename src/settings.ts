@@ -2,7 +2,7 @@ import {createRoot} from "react-dom/client";
 import SettingsPage from "./settings/SettingsPage";
 import browser from "webextension-polyfill";
 import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
-import {GlobalSettings} from "./background/dataManager";
+import {GlobalSettings} from "./background/types";
 import {parseStorageKey} from "./background/utils";
 import {getEmojiFromUnicode, getMostUsedEmoji} from "./emoji/emoji-content";
 import {Emoji, Locale} from "emojibase"

@@ -2,7 +2,7 @@ import {createRoot} from 'react-dom/client';
 import ActionPopup from "./action-popup/action-popup";
 import browser from "webextension-polyfill";
 import {DataChangedEvent, EnableForSiteMessage, EnableMessage, Message, ReadDataMessage} from "./background/messsaging";
-import {SiteSettings} from "./background/dataManager";
+import {SiteSettings} from "./background/types";
 import {parseStorageKey} from "./background/utils";
 import {applyTheme} from "@theme/theme-utils";
 import React from "react";

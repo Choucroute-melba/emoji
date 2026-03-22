@@ -2,7 +2,8 @@ import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
 import {getDomainName} from "./background/utils";
 import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
-import DataManager, {SiteSettings} from "./background/dataManager";
+import DataManager from "./background/dataManager";
+import {SiteSettings} from "./background/types";
 import MessageSender = Runtime.MessageSender;
 import {
     getEmojiDataset,

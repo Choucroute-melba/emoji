@@ -1,4 +1,4 @@
-import {GlobalSettings, SiteSettings} from "./dataManager";
+import {GlobalSettings, SiteSettings} from "./types";
 import {SearchOption} from "../emoji/types";
 import {Locale} from "emojibase"
 

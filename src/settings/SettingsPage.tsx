@@ -4,7 +4,7 @@ import '@src/selector/Components/EmojiCard.css'
 import '@src/selector/Components/Selector.css'
 import React from 'react'
 import {useState} from 'react';
-import {GlobalSettings, SiteSettings} from "../background/dataManager";
+import {GlobalSettings, SiteSettings} from "../background/types";
 import {Emoji, Locale} from "emojibase";
 import EmojiCard from "../selector/Components/EmojiCard";
 import {LOCALES} from "../emoji/types";
