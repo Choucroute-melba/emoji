@@ -171,6 +171,10 @@ export default class DataManager {
                             }
                         }
                     }
+                    else if(k === "*") {
+                        if (!firedListeners.includes(portName))
+                            firedListeners.push(portName)
+                    }
                 })
             });
         }
