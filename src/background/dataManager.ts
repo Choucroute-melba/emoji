@@ -285,7 +285,8 @@ export default class DataManager {
             const defaultKeys = Object.keys(this._settings.value)
             const storedKeys = Object.keys(storedSettings)
             for(let key of defaultKeys) {
-                console.log(`- ${key}`)
+                // @ts-ignore
+                console.log(`-[default] ${key}\t= ${this._settings.value[key] as any}`)
                 if(!storedKeys.includes(key))
                 {
                     // @ts-ignore
@@ -295,6 +296,7 @@ export default class DataManager {
                 }
             }
             await this.writeData(this._settings.key, storedSettings)
+            this._settings.value = storedSettings;
         }
         if(!(await this._readData("emojiUsage"))) {
             await this.writeData("emojiUsage", this._emojiUsage.value)
