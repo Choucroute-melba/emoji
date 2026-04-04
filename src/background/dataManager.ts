@@ -328,14 +328,20 @@ export default class DataManager {
             this.connections.push(p);
 //        console.log("Connected to " + p.name + " (" + p.sender?.url + ")")
         p.onDisconnect.addListener(this.boundOnDisconnect);
-        p.onMessage.addListener(this.onMessage.bind(this));
+        p.onMessage.addListener(this.boundOnMessage);
         p.postMessage({action: "greeting"})
+        console.log("Connected to " + p.name + " (" + p.sender?.url + ")")
     }
 
     private onDisconnect(p: Port) {
         const i = this.getPortIndex(p.name);
         if(i === -1) return
         this.connections.splice(i, 1);
+        p.onDisconnect.removeListener(this.boundOnDisconnect);
+        p.onMessage.removeListener(this.boundOnMessage);
+        if(this.listeners.has(p.name))
+            this.listeners.delete(p.name);
+        console.log("Disconnected from " + p.name + " (" + p.sender?.url + ")")
     }
     private boundOnDisconnect = this.onDisconnect.bind(this);
 
@@ -373,6 +379,7 @@ export default class DataManager {
             this.listeners.set(sender.name, lst)
         }
     }
+    private boundOnMessage = this.onMessage.bind(this);
 
     async removeFavoriteEmoji(emoji: string) {
         const previousValue = this._favoriteEmojis.value
