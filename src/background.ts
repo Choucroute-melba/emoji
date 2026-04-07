@@ -244,7 +244,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 loadEmojiDataset(m.data.locale).then(() => {
                     dm.settings.emojiLocale = m.data.locale;
                     resolve(true);
-                });
+                }).catch(err => {
+                    console.error("Error while setting emoji locale:", err)
+                    resolve(true)
+                })
                 break;
             case "getCurrentTheme":
                 resolve(browser.theme.getCurrent())

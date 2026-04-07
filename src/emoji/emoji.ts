@@ -117,6 +117,7 @@ export function getEmojiDataset(locale: Locale) : Emoji[] | null {
 
     if(cacheExpired) {
         loadEmojiDataset(locale) // renew the cache
+            .catch(e => console.error("Failed to renew cache of emoji dataset for locale " + locale, e));
         return cachedDataStets.get(locale)!; // don't make the user wait for the fetch
     }
     // if the dataset is not found, return null
