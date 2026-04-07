@@ -22,6 +22,8 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
     constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
         super(es, target, onExit);
         this.active = true;
+    constructor(target: HTMLTextAreaElement) {
+        super(target);
     }
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {

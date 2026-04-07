@@ -115,7 +115,7 @@ export function buildShortcutString(e: KeyboardEvent) {
  * @param handlers
  * @param e
  */
-export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent | string): Promise<new (es: EmojiSelector, target: any, onExit: () => void) => Handler<any>> {
+export async function chooseAndLoadHandler(handlers: HandlerManifest[], e: KeyboardEvent | string): Promise<new (target: any) => Handler<any>> {
     const isCommand = typeof e === "string";
     const sc = isCommand ? e : buildShortcutString(e);
     const isCombo = isCommand ? false : (sc !== e.key);

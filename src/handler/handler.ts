@@ -92,6 +92,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
     protected constructor(es: EmojiSelector, target: EltType, onExit: () => void = () => {}) {
         this.es = es
+    protected constructor(target: EltType) {
         this._target = target
         this.onExit = onExit
 

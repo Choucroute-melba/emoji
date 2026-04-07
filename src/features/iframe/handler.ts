@@ -12,8 +12,8 @@ export default class HTMLIFrameHandler extends AriaDivHandler {
     }
     canHandleTarget = HTMLIFrameHandler.canHandleTarget
 
-    protected get window() {
-        return this.target.ownerDocument?.defaultView || window;
+    constructor(target: HTMLTextAreaElement) {
+        super(target);
     }
 
 

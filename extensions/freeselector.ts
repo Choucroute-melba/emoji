@@ -35,7 +35,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
 
     previousActiveElement: HTMLElement | null = null;
 
-    constructor(es: EmojiSelector, target: any, onExit: () => void = () => {}) {
+    constructor(target: any) {
         const searchBar = document.createElement("input");
         const container = document.createElement("div");
         const info = document.createElement("p");
@@ -45,7 +45,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         info.textContent = "Press Enter to copy the selected emoji to clipboard";
         container.appendChild(info)
 
-        super(es, searchBar, onExit);
+        super(searchBar);
 
         this.sr.appendChild(container);
         this.updateTheme();

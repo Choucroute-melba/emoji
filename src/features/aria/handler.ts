@@ -27,6 +27,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     private backSpaceHandled: boolean = false;
     private tempInputListener = (e: Event) => {
         this.backSpaceHandled = true;
+    constructor(target: HTMLTextAreaElement) {
+        super(target);
         this.target.removeEventListener('input', this.tempInputListener, {capture: true});
     }
 
