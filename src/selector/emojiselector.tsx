@@ -41,10 +41,10 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
 /** @class EmojiSelector
  * This class is responsible for managing the emoji selector component
  * it offers a simple API to control the selector's interface and properties
- * @property {function} onEmojiSelected - a callback function that will be executed when an emoji is selected (for example when the user click on the interface)
+ * @property {function} onEmojiChosen - a callback function that will be executed when an emoji is selected (for example when the user click on the interface)
  */
 export default class EmojiSelector {
-    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w"]
+    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w", "blur"]
 
     private reactRoot: Root | null = null;
     private popupBackground: HTMLDivElement | null = null;
@@ -64,6 +64,7 @@ export default class EmojiSelector {
 
     public onResize: (geometry: EmojiSelectorGeometry) => void = () => {};
     public onToggleEmojiFavorite: (emoji: Emoji) => void = (e) => {};
+    public onEmojiChosen: (emoji: Emoji) => void = (e) => {};
     public onBlur: () => void = () => {};
     public onClose: () => void = () => {};
 
@@ -117,7 +118,6 @@ export default class EmojiSelector {
         this.sr = null;
         this.popupBackground?.remove();
         this.popupBackground = null;
-        this.options = [];
         this._inDocument = false;
     }
 
@@ -167,6 +167,8 @@ export default class EmojiSelector {
             case "w":
                 this.shape = {w: parseInt(newValue)};
                 break;
+            case "background-blur":
+                this.backgroundBlur = (newValue === "true")
         }
         if(this._inDocument)
             this.renderReact()
@@ -214,27 +216,6 @@ export default class EmojiSelector {
                 }
             }
         }
-    }
-
-    focusUp() {
-        if(this._focusedEmojiIndex > 0) {
-            this._focusedEmojiIndex--;
-        }
-        else
-            this._focusedEmojiIndex = this.options.length - 1;
-        this.fireInputEvent()
-        if(this._inDocument)
-            this.renderReact()
-    }
-    focusDown() {
-        if(this._focusedEmojiIndex < this.options.length - 1) {
-            this._focusedEmojiIndex++;
-        }
-        else
-            this._focusedEmojiIndex = 0;
-        this.fireInputEvent()
-        if(this._inDocument)
-            this.renderReact()
     }
 
     getFocusedEmoji() {
@@ -313,8 +294,10 @@ export default class EmojiSelector {
 
 
     private onEmojiSelected = (emoji: Emoji)=> {
+        this.setFocusedEmoji(this.options.findIndex(e => e.emoji === emoji.emoji) || 0);
         this.value = emoji.emoji;
-        this.fireChangeEvent();
+        //this.fireChangeEvent();
+        this.onEmojiChosen(emoji);
     }
 
     get theme(): string | undefined {
@@ -484,6 +467,15 @@ export default class EmojiSelector {
         }
         return list;*/
         return this._favoriteEmojis
+    }
+
+    set backgroundBlur(value: boolean) {
+        this.elt.setAttribute("background-blur", value ? "true" : "false");
+        if(this._inDocument)
+            this.renderReact()
+    }
+    get backgroundBlur() {
+        return this.elt.getAttribute("background-blur") === "true";
     }
 
     /** set a text that will be shown in the selector for debugging purposes */
