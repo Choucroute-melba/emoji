@@ -1,27 +1,21 @@
-import EmojiSelector from "./selector/emojiselector";
-import TextAreaHandler from "./features/textarea/handler";
-import Handler from "./handler/handler";
-import HTMLInputHandler from "./features/input/handler";
-import AriaDivHandler from "./features/aria/handler";
+import Handler, {HandlerStatus} from "./handler/handler";
 import {
     buildShortcutString,
     chooseAndLoadHandler,
-    getAvailableHandlers, HandlerManifest
+    getAvailableHandlers,
+    HandlerManifest
 } from "./handler/handlersManager";
 import browser from "webextension-polyfill";
 import {SiteSettings} from "./background/types";
-import {
-    AddDataChangeListenerMessage,
-    EventMessage,
-} from "./background/messsaging";
+import {AddDataChangeListenerMessage, EventMessage,} from "./background/messsaging";
 import {getDomainName} from "./background/utils";
 
 console.log('Emoji on the go ✨')
 
 
-const handlers = [HTMLInputHandler, TextAreaHandler, AriaDivHandler]
 const availableHandlers = await getAvailableHandlers();
 const disabledHandlers: HandlerManifest[] = []
+let currentHandler: Handler<any> | null = null
 
 function disableHandler(handlerName: string) {
     const handlerIndex = availableHandlers.findIndex(h => h.name === handlerName)
@@ -46,8 +40,6 @@ function disableEveryHandleExcept(handlerNames: string[]) {
         if (handlerNames.includes(handler.name))
             enableHandler(handler.name)
     }
-    console.log(availableHandlers)
-    console.log(disabledHandlers)
 }
 
 function enableHandler(handlerName: string) {
@@ -69,55 +61,11 @@ function enableEveryHandlerExcept(handlerNames: string[]) {
         if (handlerNames.includes(handler.name))
             disableHandler(handler.name)
     }
-    console.log(availableHandlers)
-    console.log(disabledHandlers)
 }
 
 function isHandlerEnabled(handlerName: string) {
     return availableHandlers.findIndex(h => h.name === handlerName) !== -1
 }
-
-/** waiting for support in content scripts **/
-/*
-console.log("defining custom elements")
-try {
-    customElements.define('emoji-selector', EmojiSelector);
-} catch (e) {console.error("Error defining emoji-selector custom element", e)}
-try {
-    customElements.define('emoji-option', EmojiSelectorOptionElement)
-} catch (e) {console.error("Error defining emoji-option custom element", e)}
-try {
-    customElements.define('selector-heading', SelectorHeadingComponent)
-} catch (e) {console.error("Error defining selector-heading custom element", e)}
-// @ts-ignore
-window.wrappedJSObject.EmojiSelector = cloneInto(EmojiSelector, window, {cloneFunctions: true});
-// @ts-ignore
-window.wrappedJSObject.peekaboo = "yoloo";
-
-console.log("waiting...")
-await browser.runtime.sendMessage({action: "declareCustomElement", data: { tagName: "emoji-selector"}})
-// @ts-ignore
-console.log(customElements.get('emoji-selector'))
-
-console.log("EmojiSelector custom element defined")
-
-const es = document.createElement('emoji-selector') as EmojiSelector;*/
-
-const esRoot = document.createElement('div')
-const es = new EmojiSelector(esRoot);
-es.mode = "absolute"
-es.display = false
-es.onToggleEmojiFavorite = async (emoji) => {
-    await browser.runtime.sendMessage({ action: "toggleFavoriteEmoji", data: { emoji: emoji.emoji } });
-    es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
-}
-es.favoriteEmojis = await browser.runtime.sendMessage({ action: "readData", data: {key : "favoriteEmojis"} }) as string[]
-
-let currentHandler: Handler<any> | null = null
-let listening = false
-
-const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
-
 
 async function mainListener(this: any, e: KeyboardEvent | string) {
     try {
@@ -153,14 +101,30 @@ async function mainListener(this: any, e: KeyboardEvent | string) {
                     console.log("EmojiSelector closed")
                     window.addEventListener('keydown', mainListener, true)
                 }
-                currentHandler = new h(es, (isCommand ? document.activeElement : e.target) as any, onExit);
-                if(currentHandler) { // Handler may be destroyed during the instantiation
+                currentHandler = new h((isCommand ? document.activeElement : e.target) as any);
+
+                currentHandler.onExit = onExit;
+                currentHandler.readyPromise.then(() => { // Wait for constructor to finish
                     console.log(currentHandler ? `%cHandled by ${currentHandler.HandlerName}` : "%cNo handler found", (currentHandler ? 'color: #00FF00' : 'color: #FF0000') + '; font-weight: bold')
-                    window.removeEventListener('keydown', mainListener, true)
-                }
-                else {
-                    console.error("Something went wrong while creating the handler");
-                }
+
+                    if(currentHandler && !(currentHandler.status === HandlerStatus.NOT_READY || currentHandler?.status === HandlerStatus.ERROR))
+                    { // Handler may be destroyed during the instantiation
+                        window.removeEventListener('keydown', mainListener, true)
+                        if (!currentHandler.active)
+                            currentHandler.enable();
+                    }
+                    else if (!currentHandler)
+                        console.error("currentHandler is null")
+                    else {
+                        console.error("Something went wrong while creating the handler");
+                    }
+
+                })
+                .catch((err) => {
+                        console.error("Error while creating the handler", err);
+                        currentHandler?.destroy()
+                        currentHandler = null;
+                    })
             }
             else {
                 console.warn("there is already a handler active", currentHandler.HandlerName, "for", currentHandler.target);
@@ -233,30 +197,20 @@ let mainListenerLoaded = false
 let DOMChangesListenerLoaded = false
 
 async function applySettings(settings: SiteSettings) {
+    // reset listeners before anything
+    window.removeEventListener('keydown', mainListener, true)
+    document.removeEventListener('DOMContentLoaded', bindIframeListeners);
+    browser.runtime.onMessage.removeListener(commandsListener);
+    observer.disconnect();
+    await removeIframeListeners();
+
+    // then enable if needed we need
     if(settings.enabled || settings.freeSelector) {
-        if(!mainListenerLoaded) {
-            window.addEventListener('keydown', mainListener, true)
-            browser.runtime.onMessage.addListener(commandsListener);
-            mainListenerLoaded = true
-        }
-        if(!DOMChangesListenerLoaded) {
-            document.addEventListener('DOMContentLoaded', bindIframeListeners);
-            await bindIframeListeners();
-            observer.observe(document.body, {childList: true, subtree: true});
-            DOMChangesListenerLoaded = true
-        }
-        es.place(document.body)
-        console.log("EmojiSelector placed")
-    }
-    else {
-        window.removeEventListener('keydown', mainListener, true)
-        browser.runtime.onMessage.removeListener(commandsListener);
-        mainListenerLoaded = false
+        window.addEventListener('keydown', mainListener, true)
+        browser.runtime.onMessage.addListener(commandsListener);
         document.removeEventListener('DOMContentLoaded', bindIframeListeners);
-        DOMChangesListenerLoaded = false
-        observer.disconnect();
-        await removeIframeListeners();
-        es.remove()
+        await bindIframeListeners();
+        observer.observe(document.body, {childList: true, subtree: true});
     }
 
     if(settings.enabled && settings.freeSelector) {
@@ -272,14 +226,17 @@ async function applySettings(settings: SiteSettings) {
         disableEveryHandleExcept([])
     }
     siteSettings = settings
+
     console.log(`Site settings (${tabId}) :`, siteSettings);
+    console.log(`enabled : [${availableHandlers.map(h => h.name).join(", ")}]\ndisabled : [${disabledHandlers.map(h => h.name).join(", ")}]`)
 }
 
+
+const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
 const observer = new MutationObserver(bindIframeListeners);
-
 let siteSettings = await browser.runtime.sendMessage({ action: "getEffectiveModeOnSite", data: { url: window.location.href }}) as SiteSettings
-
 const port = browser.runtime.connect({ name: `emoji-tab-${tabId}` });
+
 port.onMessage.addListener(async (message) => {
     const msg = message as EventMessage
     if(msg.event === "dataChanged") {
