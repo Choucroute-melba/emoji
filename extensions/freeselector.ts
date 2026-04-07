@@ -1,5 +1,5 @@
 import { Emoji } from "emojibase";
-import EmojiSelector, {EmojiSelectorGeometry} from "../src/selector/emojiselector";
+import {EmojiSelectorGeometry} from "@src/selector/emojiselector";
 import EditableHandler from "../src/handler/editableHandler";
 
 import css from "./freeselector.css?inline";
@@ -49,7 +49,6 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
 
         this.sr.appendChild(container);
         this.updateTheme();
-        document.body.appendChild(this.root);
 
         this.mode = "default";
 
@@ -60,26 +59,48 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.container.className = "container"
         this.searchBar.className = "searchBar"
         this.infoLine.className = "info"
+    }
 
+    //region actions ---
+
+    enable(hidden: boolean = false): void {
+        document.body.appendChild(this.root);
         this.searchBar.addEventListener("input", this.onSearchBarInput.bind(this));
-        this.active = true;
         this.updateSearchBarGeometry()
+
         this.previousActiveElement = document.activeElement as HTMLElement | null;
         this.log(this.previousActiveElement)
+
         // get caret position
         const selection = window.getSelection();
         if(selection && selection.rangeCount > 0) {
             const caretPosition = selection.getRangeAt(0).startOffset || 0;
             this.log(null, "Caret position detected at: " + caretPosition);
         }
-
         this.searchBar.focus()
+
+        super.enable();
+        if(!hidden)
+            this.es.display = true
     }
+
+    disable() {
+        document.body.removeChild(this.root);
+        this.searchBar.removeEventListener("input", this.onSearchBarInput.bind(this));
+        if(this.previousActiveElement) {
+            this.previousActiveElement.focus();
+        }
+        super.disable();
+    }
+
+    //endregion
+
+    //region protected methods ---
 
     private updateTheme() {
         const themeVariables = this.es.theme || ""
         if(themeVariables === "")
-            console.warn("No theme variables found for EmojiSelector. Using default theme.")
+            this.warn(null, "No theme variables found for EmojiSelector. Using default theme.")
         const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
         const styleSheet = new CSSStyleSheet()
         styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
@@ -92,28 +113,6 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         sheets.forEach((s) => {
             unwrappedSr.adoptedStyleSheets.push(s)
         })
-    }
-
-    protected onTargetBlur(){
-        this.log(null, "target lost focus")
-        if(!this.es.hasFocus && !this.sr.activeElement && this.autoHide) {
-
-            this.log(null, "Dismissing search due to focus lost")
-            this.dismissSearch("TARGET_LOST_FOCUS");
-        }
-        else {
-            console.log("es has focus")
-        }
-    }
-
-    protected onDocumentPointerEvent(e: MouseEvent) {
-        if(e.target === this.container)
-            return
-        super.onDocumentPointerEvent(e);
-    }
-
-    onSearchBarInput(e: Event): void {
-        this.search = this.searchBar.value;
     }
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
@@ -164,14 +163,31 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         }
         super.dismissSearch(trigger);
     }
+    //endregion
 
-    protected onDestroy(): void {
-        document.body.removeChild(this.root);
-        this.searchBar.removeEventListener("input", this.onSearchBarInput.bind(this));
-        if(this.previousActiveElement) {
-            this.previousActiveElement.focus();
-        }
-        super.onDestroy();
+    //region protected event listeners ---
+
+    protected onActiveElementChanged(e: FocusEvent): void  {
+        if(this.root.contains(document.activeElement))
+            return
+        super.onActiveElementChanged(e);
     }
 
+        protected onDocumentPointerEvent(e: MouseEvent) {
+            if(this.root.contains(e.target as Node))
+                return
+            super.onDocumentPointerEvent(e);
+        }
+
+    onSearchBarInput(e: Event): void {
+        this.search = this.searchBar.value;
+    }
+    //endregion
+
+    //region protected hooks ---
+
+    protected onDestroy(): void {
+        super.onDestroy();
+    }
+    //endregion
 }

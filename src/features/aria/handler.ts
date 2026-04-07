@@ -1,9 +1,10 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
-import {getPositionFromEditableDivCaret} from "../../selector/selector-utils";
+import {EmojiSelectorGeometry} from "@src/selector/emojiselector";
+import {getPositionFromEditableDivCaret} from "@src/selector/selector-utils";
 import {Emoji} from "emojibase";
+import {HandlerError, HandlerStatus} from "@src/handler/handler";
 
-
+// TODO: update to handler structure change.
 export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
     static sites = []
     static targets = ["div"]
@@ -18,27 +19,31 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
     readonly sites: string[] = AriaDivHandler.sites;
     readonly targets: string[] = AriaDivHandler.targets;
-    private boundAriaHandleSelectionChange: (e: Event) => void;
 
-    protected get window() {
-        return window;
-    }
     protected readonly focusedChild: Node | null = null;
-    private backSpaceHandled: boolean = false;
-    private tempInputListener = (e: Event) => {
-        this.backSpaceHandled = true;
+    private backSpaceHandled: boolean = false
+
     constructor(target: HTMLTextAreaElement) {
         super(target);
-        this.target.removeEventListener('input', this.tempInputListener, {capture: true});
+        this.boundAriaHandleSelectionChange = this.handleSelectionChange.bind(this);
+        this.status = HandlerStatus.INACTIVE
     }
 
-    constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
-        super(es, target, onExit);
-        this.log(this.focusedChild, "focusedChild")
-        this.boundAriaHandleSelectionChange = this.handleSelectionChange.bind(this);
-        target.addEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
-        this.active = true;
+    //region actions ---
+
+    enable() {
+        this.target.addEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
+        super.enable();
     }
+
+    disable() {
+        this.target.removeEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
+        this.target.removeEventListener('input', this.tempInputListener, {capture: true});
+        super.disable();
+    }
+    //endregion
+
+    //region protected methods ---
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         return getPositionFromEditableDivCaret(this.target, this.window.getSelection());
@@ -50,13 +55,11 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         }
         const selection = this.window.getSelection();
         if(!selection) return {start: 0, end: 0, direction: "forward"}
-        const newSelect = {
+        return {
             start: selection.anchorOffset,
             end: selection.focusOffset!,
             direction: selection.type == "Caret" ? "none" : selection.anchorNode == selection.focusNode ? selection.anchorOffset < selection.focusOffset ? "forward" : "backward" : "forward"
         }
-        // this.log(selection, `${newSelect.start} -> ${newSelect.end} (${newSelect.direction})`, true)
-        return newSelect
     }
 
     protected getFieldValue(): string {
@@ -94,7 +97,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
 
         if(!newSearchPosition) {
             newSearchPosition = {
-                begin: newSelection.start,
+                begin: newSelection.start-1, // minus one to include the colon
                 end: newSelection.end,
                 caret: newSelection.start
             }
@@ -112,6 +115,11 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     }
 
     protected async insertEmoji(emoji: Emoji) {
+        if(!this.searchPosition) {
+            this.reportError("Search position is undefined, cannot insert emoji", this.active ? "fatal" : "warning");
+            if(this.active) this.status = HandlerStatus.ERROR
+            return;
+        }
         const selection = this.window.getSelection();
         if(!selection) return;
         // this.log((selection), `Insert Emoji - ${this.searchPosition.begin} -> ${this.searchPosition.end} : ${this.searchPosition.caret}`, true)
@@ -124,10 +132,16 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
             selection.setPosition(selection.focusNode, this.searchPosition.begin + emoji.emoji.length)
         }
         catch (e) {
-            this.error(e, "Error setting position")
+            this.reportError(new HandlerError("Failed to set caret position after inserting emoji", e instanceof Error ? e : undefined), "error")
         }
         this.target.dispatchEvent(new Event('input', {bubbles: true}));
     }
+
+    //endregion
+
+    //region protected event listeners ---
+
+    private boundAriaHandleSelectionChange: (e: Event) => void;
 
     protected handleKeydown(e: KeyboardEvent) {
         if(e.key == "Backspace") {
@@ -144,9 +158,18 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
         super.handleKeydown(e);
     }
 
-    onDestroy() {
-        this.target.removeEventListener('input', this.boundAriaHandleSelectionChange, {capture: true});
+    private tempInputListener = (e: Event) => {
+        this.backSpaceHandled = true;
         this.target.removeEventListener('input', this.tempInputListener, {capture: true});
-        super.onDestroy();
     }
+
+    //endregion
+
+    //region getters and setters ---
+
+    protected get window() {
+        return window;
+    }
+
+    //endregion
 }

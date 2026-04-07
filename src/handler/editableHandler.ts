@@ -1,5 +1,4 @@
-import Handler from "./handler";
-import EmojiSelector from "../selector/emojiselector";
+import Handler, {HandlerStatus} from "./handler";
 import {Emoji} from "emojibase";
 import {setNativeValue, setValueFromSafeOrigin, verifyEmojiInsertion} from "./utils";
 
@@ -21,44 +20,82 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         throw new Error("Method 'canHandleTarget' must be implemented in subclasses.");
     }
 
-    protected searchPosition: {
+    protected searchPosition?: {
         begin: number;
         end: number;
         caret: number;
     }
 
-    private readonly boundHandleKeydown: (e: KeyboardEvent) => void
-    private readonly boundHandleSelectionChange: (e: Event) => void
 
     private _mode: "selection" | "default" = "selection"
+    protected esMode: typeof this.es.mode = "absolute"
 
     protected constructor(target: EditableType) {
         super(target);
         this.boundHandleKeydown = this.handleKeydown.bind(this)
         this.boundHandleSelectionChange = this.handleSelectionChange.bind(this)
+    }
 
+    //region actions
+
+    enable(hidden: boolean = false) {
         this.target.addEventListener('selectionchange', this.boundHandleSelectionChange)
         this.target.addEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
 
         this.searchPosition = this.getSearchPosition()
-        this.es.geometry = this.getSelectorGeometry()
-        this.es.display = false
+
+        super.enable(hidden);
+        if(this.status === HandlerStatus.ACTIVE) {
+            this.es.mode = this.esMode
+            this.es.geometry = this.getSelectorGeometry()
+        }
     }
 
-    protected async onEmojiSelected(emoji: Emoji): Promise<void> {
-        this.active = false
+    disable() {
+        this.target.removeEventListener('selectionchange', this.boundHandleSelectionChange)
+        this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
+        super.disable();
+    }
+
+    show() {
+        super.show();
+        this.es.mode = this.esMode
+        this.es.geometry = this.getSelectorGeometry()
+    }
+
+    //endregion
+
+    //region protected hooks
+
+    protected async onEmojiChosen(emoji: Emoji): Promise<void> {
         await this.insertEmoji(emoji)
         this.reportEmojiUsage(emoji)
         this.destroy()
     }
 
+    protected onDestroy() {
+        this.log(null, "onDestroy editableHandler")
+    }
+    //endregion
+
+    //region protected methods
+
     protected async insertEmoji(emoji: Emoji) {
+        if(!this.searchPosition) {
+            this.reportError("Search position is undefined, cannot insert emoji", this.active ? "fatal" : "warning");
+            return;
+        }
+        this.disable() // avoid triggering events listeners when changing the value of the input
         const newValue =
             this.target.value.slice(0, this.searchPosition.begin) +
             emoji.emoji +
             this.target.value.slice(this.searchPosition.end);
 
         const setCursor = () => {
+            if(!this.searchPosition) {
+                this.reportError("Search position is undefined, cannot insert emoji", this.active ? "fatal" : "warning");
+                return;
+            }
             this.target.setSelectionRange(
                 this.searchPosition.begin + emoji.emoji.length,
                 this.searchPosition.begin + emoji.emoji.length
@@ -86,32 +123,12 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         });
     }
 
-    /**
-     *
-     * @param e
-     * @protected
-     */
-    protected handleSelectionChange(e: Event) {
-        if(!this.active) return
-        // this.log(null, "Selection changed")
-        const newSearchPosition = this.getSearchPosition()
-        if(this.searchPosition.begin >= newSearchPosition.caret) {
-            this.dismissSearch("SEARCH_EMPTIED")
-            return;
-        }
-        this.searchPosition = newSearchPosition
-        const newSearchValue = this.getSearchValue()
-        if(!this.active) return
-        this.search = newSearchValue
-    }
-
     protected getSelectionPosition(): {start: number, end: number, direction: string} {
-        const newPos =  {
+        return {
             start: this.target.selectionStart!,
             end: this.target.selectionEnd!,
             direction: this.target.selectionDirection!
         }
-        return newPos
     }
 
     /**
@@ -124,7 +141,7 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         let newSearchPosition = this.searchPosition
         if(!newSearchPosition) {
             newSearchPosition = {
-                begin: newSelection.start,
+                begin: newSelection.start-1, // minus one to include the colon
                 end: newSelection.end,
                 caret: newSelection.start
             }
@@ -141,6 +158,61 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
         // this.log(null, `searchPosition : ${newSearchPosition.begin} -> ${newSearchPosition.end} : ${newSearchPosition.caret}`)
         return newSearchPosition
     }
+
+    protected getFieldValue(): string {
+        return this.target.value
+    }
+
+    protected getSearchValue(): string {
+        if(!this.searchPosition) {
+            this.reportError("Search position is undefined, cannot insert emoji", this.active ? "fatal" : "warning");
+            return "";
+        }
+        return this.getFieldValue().slice(this.searchPosition.begin+1 , this.searchPosition.end)
+    }
+    //endregion
+
+    //region protected event listeners
+
+    /**
+     *
+     * @param e
+     * @protected
+     */
+    protected handleSelectionChange(e: Event) {
+        if(!this.active) return
+        if(!this.searchPosition) {
+            this.reportError("Search position is undefined, cannot insert emoji", "fatal");
+            return;
+        }
+        // this.log(null, "Selection changed")
+        const newSearchPosition = this.getSearchPosition()
+        if(this.searchPosition.begin >= newSearchPosition.caret) {
+            this.dismissSearch("SEARCH_EMPTIED")
+            return;
+        }
+        this.searchPosition = newSearchPosition
+        const newSearchValue = this.getSearchValue()
+        if(!this.active) return
+        this.search = newSearchValue
+    }
+    private readonly boundHandleSelectionChange: (e: Event) => void
+
+    protected handleKeydown(e: KeyboardEvent): void {
+        if(!this.active) return
+        if(e.key == "Enter") {
+            e.stopPropagation()
+            e.preventDefault()
+            if(e.ctrlKey)
+                this.es.onToggleEmojiFavorite(this.es.getFocusedEmoji())
+            else
+                this.chooseEmoji(this.es.getFocusedEmoji())
+        }
+    }
+    private readonly boundHandleKeydown: (e: KeyboardEvent) => void
+    //endregion
+
+    //region getters and setters
 
     /**
      * Working mode of the handler:
@@ -161,43 +233,5 @@ export default abstract class HTMLEditableHandler<EditableType extends  Editable
     protected get mode(): "selection" | "default" {
         return this._mode
     }
-
-    protected getFieldValue(): string {
-        return this.target.value
-    }
-
-    protected getSearchValue(): string {
-        return this.getFieldValue().slice(this.searchPosition.begin+1 , this.searchPosition.end)
-    }
-
-    protected onSearchUpdated() {
-        super.onSearchUpdated();
-        if(this.search.length > 0 && !this.es.display)
-            this.es.display = true
-    }
-
-    protected handleKeydown(e: KeyboardEvent): void {
-        if(!this.active) return
-        if(e.key == "Enter") {
-            e.stopPropagation()
-            e.preventDefault()
-            if(e.ctrlKey)
-                this.es.onToggleEmojiFavorite(this.es.getFocusedEmoji())
-            else
-                this.selectEmoji(this.es.getFocusedEmoji())
-        }
-    }
-
-    protected onEnabled() {
-        super.onEnabled();
-        this.searchPosition = this.getSearchPosition()
-        this.es.geometry = this.getSelectorGeometry()
-        this.es.display = true
-    }
-
-    protected onDestroy() {
-        this.target.removeEventListener('selectionchange', this.boundHandleSelectionChange)
-        this.target.removeEventListener('keydown', this.boundHandleKeydown as EventListener, {capture: true})
-        this.log(null, "onDestroy")
-    }
+    //endregion
 }

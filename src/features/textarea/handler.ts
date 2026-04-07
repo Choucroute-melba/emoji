@@ -1,6 +1,6 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
 import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
-import {getPositionFromTextareaCaret} from "../../selector/selector-utils";
+import {getPositionFromTextareaCaret} from "@src/selector/selector-utils";
 
 
 export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
@@ -19,15 +19,15 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
     readonly sites: string[] = TextAreaHandler.sites;
     readonly targets: string[] = TextAreaHandler.targets;
 
-    constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
-        super(es, target, onExit);
-        this.active = true;
     constructor(target: HTMLTextAreaElement) {
         super(target);
     }
+
+    //region protected methods ---
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         const pos = getPositionFromTextareaCaret(this.target);
         return pos;
     }
+    //endregion
 }

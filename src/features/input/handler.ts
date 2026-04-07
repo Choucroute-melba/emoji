@@ -1,6 +1,6 @@
 import HTMLEditableHandler from "../../handler/editableHandler";
-import EmojiSelector, {EmojiSelectorGeometry} from "../../selector/emojiselector";
-import {getPositionFromElement} from "../../selector/selector-utils";
+import {EmojiSelectorGeometry} from "@src/selector/emojiselector";
+import {getPositionFromElement} from "@src/selector/selector-utils";
 
 export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputElement> {
     static sites = []
@@ -21,6 +21,8 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
         super(target);
     }
 
+    //region protected methods ---
+
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         const {position, placement} = getPositionFromElement(this.target);
         return {
@@ -28,4 +30,5 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
             placement,
         };
     }
+    //endregion
 }

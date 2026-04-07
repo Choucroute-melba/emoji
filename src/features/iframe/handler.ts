@@ -1,4 +1,3 @@
-import EmojiSelector from "../../selector/emojiselector";
 import AriaDivHandler from "../aria/handler";
 
 
@@ -16,14 +15,18 @@ export default class HTMLIFrameHandler extends AriaDivHandler {
         super(target);
     }
 
-
-    constructor(es: EmojiSelector, target: HTMLTextAreaElement, onExit: () => void = () => {}) {
-        super(es, target, onExit);
-    }
-
+    //region protected methods ---
 
     protected getFieldValue(): string {
         // this.log(window.getSelection()!.focusNode, "field value : '" + window.getSelection()!.focusNode!.nodeValue! + "'", true)
         return this.window.getSelection()!.focusNode!.nodeValue!;
     }
+    //endregion
+
+    //region getters and setters ---
+
+    protected get window() {
+        return this.target.ownerDocument?.defaultView || window;
+    }
+    //endregion
 }
