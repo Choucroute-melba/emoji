@@ -272,6 +272,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 })
             }
             break;
+            case "setThemeMode":
+                dm.settings.themeMode = m.data.mode;
+                resolve(true);
+                break;
             default:
                 reject(`Unknown action: ${m.action}`)
                 break;

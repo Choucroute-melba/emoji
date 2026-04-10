@@ -20,6 +20,7 @@ export default class DataManager {
             allowEmojiSuggestions: true,
             emojiLocale: browser.i18n.getUILanguage() as Locale,
             enableAutoHide: true,
+            themeMode: "color",
             sites: {} as {[url: string]: SiteSettings},
         }
     };

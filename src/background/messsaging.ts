@@ -7,7 +7,7 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
-    SetEmojiLocaleMessage | DeclareCustomElementMessage |
+    SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme" | "toggleAutoHide"
     };
@@ -136,6 +136,7 @@ export type GetFavoriteEmojisMessage = {
         count?: number,
     }
 }
+
 /**
  * to Add a new data change listener, send this through the port you opened with the background. The listener will be
  * called whenever one of the specified keys changes.
@@ -186,6 +187,13 @@ export type SetEmojiLocaleMessage = {
     action: "setEmojiLocale",
     data: {
         locale: Locale,
+    }
+}
+
+export type SetThemeModeMessage = {
+    action: "setThemeMode",
+    data: {
+        mode: "light" | "dark" | "system" | "color"
     }
 }
 
