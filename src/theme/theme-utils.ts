@@ -271,6 +271,11 @@ export async function getCssTheme(selector: string): Promise<string> {
 
 export async function applyTheme() {
     const css = await getCssTheme(":root")
+    const mode = await getRecommendedThemeMode()
+    if(mode === "system")
+        document.documentElement.style.colorScheme = "light dark"
+    else
+        document.documentElement.style.colorScheme = mode;
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
     console.log("apply theme", sheet)
