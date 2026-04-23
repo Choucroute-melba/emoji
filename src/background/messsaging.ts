@@ -9,7 +9,8 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
     SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage |
     {
-        action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme" | "toggleAutoHide"
+        action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme" | "toggleAutoHide" |
+            "toggleTransparentBackground"
     };
 
 export type EventMessage = SettingsUpdatedEvent | SiteSettingsUpdatedEvent | DataChangedEvent;

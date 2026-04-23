@@ -276,6 +276,10 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.themeMode = m.data.mode;
                 resolve(true);
                 break;
+            case "toggleTransparentBackground":
+                dm.settings.transparentBackground = !dm.settings.transparentBackground
+                resolve(true)
+                break;
             default:
                 reject(`Unknown action: ${m.action}`)
                 break;

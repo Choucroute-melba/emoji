@@ -50,5 +50,6 @@ export type GlobalSettings = {
     emojiLocale: Locale,
     enableAutoHide: boolean,
     themeMode: "light" | "dark" | "system" | "color",
+    transparentBackground: boolean,
     sites: { [url: string]: SiteSettings },
 }
