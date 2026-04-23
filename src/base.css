@@ -253,7 +253,7 @@
     --th-ntp-text: #000;
 }
 
-* {
+body {
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
@@ -264,9 +264,11 @@ a {
 }
 a:hover {
     color: var(--ejz-accent-hover);
+    text-decoration: underline;
 }
 a:active {
     color: var(--ejz-accent-active);
+    text-decoration: underline;
 }
 
 h1 {
@@ -329,6 +331,11 @@ button.danger:hover {
 
 button.danger:active {
     background-color: var(--fx-critical);
+}
+
+pre {
+    font-family: "JetBrains Mono", "SF Mono", SF Mono, Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    color: var(--fx-gray-80);
 }
 
 .outlined {
