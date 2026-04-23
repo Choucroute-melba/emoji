@@ -124,7 +124,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         else
             this.container.style.colorScheme = this.userData.settings.themeMode;
 
-        if(true) //TODO : implement blurred background setting
+        if(this.userData.settings.transparentBackground)
             this.container.classList.add("transparent")
         else
             this.container.classList.remove("transparent")

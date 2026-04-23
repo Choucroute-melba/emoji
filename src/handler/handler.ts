@@ -115,7 +115,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
                 this.info(null, "Handler ready, idle.")
                 this.es.favoriteEmojis = this.userData.favoriteEmojis
                 this.es.themeMode = this.userData.settings.themeMode
-                this.es.backgroundBlur = true // TODO : Create setting
+                this.es.backgroundBlur = this.userData.settings.transparentBackground
                 this.readyResolver(this.status)
                 if(this.userData.settings.themeMode === "color") {
                     getCssTheme(":root, :host").then(theme => {
@@ -179,6 +179,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
             this.es.onEmojiChosen = this.boundChooseEmoji
             this.es.onToggleEmojiFavorite = this.boundToggleFavorite
             this.es.themeMode = this.userData.settings.themeMode
+            this.es.backgroundBlur = this.userData.settings.transparentBackground
         }
     }
 
@@ -486,6 +487,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
             this._userData.siteSettings = await this.getSiteSettings()
             if(msg.data.key === "settings.themeMode")
                 this.es.themeMode = this._userData.settings.themeMode
+            if(msg.data.key === "settings.transparentBackground")
+                this.es.backgroundBlur = this._userData.settings.transparentBackground
         }
         else if(msg.data.key.startsWith("favoriteEmojis")) {
             this._userData.favoriteEmojis = await this.getFavoriteEmojis()
