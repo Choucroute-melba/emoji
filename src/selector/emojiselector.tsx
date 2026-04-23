@@ -141,7 +141,10 @@ export default class EmojiSelector {
         }
         else {
             styleSheet = mergedSheet;
-            this._appliedColorScheme = "system";
+            if(this.themeMode === "system" || this.themeMode === "color")
+                this._appliedColorScheme = "system";
+            else
+                this._appliedColorScheme = this.themeMode
         }
         const sheets = [emojiCardSheet, componentSheet, styleSheet]
         if(!this.sr)
