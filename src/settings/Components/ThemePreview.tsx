@@ -43,7 +43,6 @@ export default function ThemePreview(
                 </svg>
                 <div className={"middle"}>
                     <div className={"line one"}></div>
-                    <div className={"line two"}></div>
                 </div>
             </div>
             <div className={"row three"}>
@@ -52,7 +51,6 @@ export default function ThemePreview(
                 </svg>
                 <div className={"middle"}>
                     <div className={"line one"}></div>
-                    <div className={"line two"}></div>
                 </div>
             </div>
             <div className={"themeName"}>
@@ -60,8 +58,6 @@ export default function ThemePreview(
                 {(mode == "dark") && <p style={{fontSize: 40}}>Dark</p>}
                 {(mode == "light") && <p style={{fontSize: 40}}>Light</p>}
                 {(mode == "color") && <p style={{fontSize: 20}}>Firefox<br/>Colors</p>}
-
-
             </div>
         </div>
         </div>
