@@ -20,7 +20,7 @@
     }
 }
 .container.transparent {
-    background: rgb(from var(--th-popup) r g b / 0.89);
+    background: rgb(from var(--th-popup) r g b / 0.83);
     backdrop-filter: blur(10px);
 }
 
