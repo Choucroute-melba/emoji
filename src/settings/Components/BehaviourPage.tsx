@@ -110,11 +110,11 @@ export default function BehaviourPage(
                 }
             </div>
             <h3>Your favorites</h3>
-            <p className={"hint"}>Your favorites will be show first when searching for emojis.</p>
+            <p className={"hint"}>Your favorites will be shown first when searching for emojis.</p>
             <div className={"favoriteEmojisList"}>
                 {
                     favoriteEmojis.length === 0 ? <p className={"placeholder"}>No favorite emojis yet</p> : favoriteEmojis.map((emoji) => {
-                        return <EmojiCard
+                        return <div style={{width: "280px", marginRight: "10px"}}><EmojiCard
                             emoji={emoji}
                             selected={true}
                             isFavorite={true}
@@ -124,7 +124,7 @@ export default function BehaviourPage(
                             }}
                             cardStyle={"full"}
                             key={emoji.emoji}
-                        />
+                        /></div>
                     })
                 }
             </div>
@@ -141,9 +141,11 @@ export default function BehaviourPage(
                 }
             </div>
             <label style={{marginTop: "20px", color: "gray", display: "block"}}>
-                <input type={"checkbox"} checked={settings.enableAutoHide} onChange={(e) => {
+                (for testing purposes only, do not change this) : <input type={"checkbox"}
+                                                                         checked={settings.enableAutoHide}
+                                                                         onChange={(e) => {
                     toggleAutoHide();
-                }} /> (for testing purposes only, do not change this) Enable popup auto-hide
+                }} /> Enable popup auto-hide
             </label>
         </>
     )
