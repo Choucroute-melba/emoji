@@ -4,7 +4,6 @@ import {getPositionFromEditableDivCaret} from "@src/selector/selector-utils";
 import {Emoji} from "emojibase";
 import {HandlerError, HandlerStatus} from "@src/handler/handler";
 
-// TODO: update to handler structure change.
 export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElement> {
     static sites = []
     static targets = ["div"]
