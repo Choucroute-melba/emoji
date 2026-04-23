@@ -1,0 +1,46 @@
+
+.siteBlacklistItem {
+    margin: 5px;
+    padding: 5px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px solid var(--ejz-onBackgroundVariant);
+}
+
+.emojiUsageDetails {
+    position: absolute;
+    z-index: 1001;
+    background-color: var(--ejz-onBackgroundVariant);
+    box-shadow: 0px 0px 31px 0px rgba(0, 12, 17, 0.94);
+    color: var(--ejz-onSurface);
+    border-radius: 5px;
+    padding: 5px;
+    font-family: monospace;
+    font-size: 1em;
+}
+
+.hint {
+    color: var(--fx-onBackgroundVariant);
+    font-style: italic;
+}
+
+.placeholder {
+    text-align: center;
+    align-self: center;
+    width: 100%;
+}
+
+.favoriteEmojisList {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-top: 10px;
+    width: 100%;
+}
+.favoriteEmojisList > * {
+    margin: 3px;
+}

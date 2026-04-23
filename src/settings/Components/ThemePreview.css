@@ -1,0 +1,91 @@
+.themePreview {
+    height: 180px;
+    width: 155px;
+    border-radius: 8px;
+    border: 1px solid var(--fx-surface);
+    background-color: var(--th-popup);
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.themePreview.selected {
+    box-shadow: 0px 0px 0px 2px var(--fx-primary);
+}
+
+.horizontalSection {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    gap: 5px;
+    padding: 5px;
+    margin: 3px;
+    border-radius: 4px;
+    height: 25px;
+}
+.row.one {
+    box-shadow: 0px 0px 0px 1px var(--th-popup-border) inset;
+    background-color: var(--th-popup-highlight);
+    color: var(--th-popup-highlight-text);
+}
+.spacer {
+    flex: 2;
+}
+
+.row svg {
+    height: 16px;
+    width: 16px;
+}
+
+.middle {
+    width: 85%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.line {
+    height: 4px;
+    background-color: var(--th-popup-text);;
+    border-radius: 2px;
+    width: 85%;
+}
+.one .line {
+    background-color: var(--th-popup-highlight-text);
+}
+.line.one {
+    width: 50%;
+}
+.line.two {
+    width: 90%;
+    background-color: color-mix(in srgb, var(--th-popup-text) 70%, #FFF0 30%);
+    height: 3px;
+}
+.one .line.two {
+    background-color: color-mix(in srgb, var(--th-popup-highlight-text) 70%, #FFF0 30%);
+}
+
+.selected .themeName {
+    background-color: var(--fx-primary);
+    height: 80px;
+}
+.selected .themeName p {
+    color: white;
+}
+.themeName p {
+    font-size: 30px;
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+    color: var(--th-popup-text);
+    border-top: 1px solid var(--th-popup-border);
+}

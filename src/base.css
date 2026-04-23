@@ -172,13 +172,13 @@
     --ejz-accent-hover: var(--fx-primary-hover);
     --ejz-accent-active: var(--fx-primary-active);
 
-    --ejz-background: light-dark(var(--fx-gray-10), var(--fx-gray-95));
-    --ejz-surface: light-dark(var(--fx-gray-0), var(--fx-gray-80));
-    --ejz-surfaceHover: light-dark(var(--fx-gray-5), var(--fx-gray-70));
-    --ejz-backgroundHover: light-dark(var(--fx-gray-5), var(--fx-gray-80));
-    --ejz-onSurface: light-dark(var(--fx-gray-90), var(--fx-gray-5));
-    --ejz-onBackground: light-dark(var(--fx-gray-100), var(--fx-gray-5));
-    --ejz-onBackgroundVariant: light-dark(var(--fx-gray-80), var(--fx-gray-40));
+    --ejz-background: var(--fx-background);
+    --ejz-surface: var(--fx-surface);
+    --ejz-surfaceHover: color-mix(in srgb, var(--ejz-surface) 90%, light-dark(black, white) 10%);
+    --ejz-backgroundHover: color-mix(in srgb, var(--ejz-background) 90%, light-dark(black, white) 10%);
+    --ejz-onSurface: light-dark(var(--fx-gray-100), var(--fx-gray-0));
+    --ejz-onBackground: var(--fx-onBackground);
+    --ejz-onBackgroundVariant: var(--fx-onBackgroundVariant);
     --ejz-onSurfaceVariant: light-dark(var(--fx-gray-70), var(--fx-gray-50));
 
     --fx-primary: light-dark(var(--fx-blue-60), var(--fx-cyan-30));
@@ -202,6 +202,7 @@
     --fx-info-text: light-dark(var(--fx-blue-70), var(--fx-blue-20));
 
     --fx-background: light-dark(#ffffff, #1c1b22);
+    --fx-surface: light-dark(#eeeeef, #2c2b31);
     --fx-onBackground: light-dark(#15141a, #fbfbfe);
     --fx-onBackgroundVariant: light-dark(#5d5d61, #b6b5b9);
 
@@ -268,6 +269,19 @@ a:active {
     color: var(--ejz-accent-active);
 }
 
+h1 {
+    font-size: 35px;
+    font-weight: 600;
+}
+
+h2 {
+    font-size: 23px;
+}
+
+h3 {
+    font-size: 16px;
+}
+
 button {
     margin: 5px;
     padding: 5px;
@@ -277,17 +291,20 @@ button {
     font-size: 15px;
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-weight: 600;
-    background-color: var(--th-popup);
-    color: var(--th-popup-text);
+    background-color: var(--ejz-surface);
+    color: var(--ejz-onSurface);
 }
 button.accent {
     background-color: var(--ejz-accent);
+    color: white;
 }
 button.accent:hover {
     background-color: var(--ejz-accent-hover);
+    color: white;
 }
 button.accent:active {
     background-color: var(--ejz-accent-active);
+    color: white;
 }
 
 button:hover {

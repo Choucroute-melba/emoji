@@ -70,6 +70,14 @@ function setEmojiLocale(locale: Locale): Promise<true> {
     return browser.runtime.sendMessage({action: "setEmojiLocale", data: {locale}})
 }
 
+function setThemeMode(themeMode: "dark" | "light" | "system" | "color") {
+    return browser.runtime.sendMessage<Message>({action: "setThemeMode", data: { mode: themeMode }})
+}
+
+function toggleUseTransparentBg() {
+    return browser.runtime.sendMessage<Message>({action: "toggleTransparentBackground"})
+}
+
 function toggleFavoriteEmoji(emoji: Emoji | string) {
     browser.runtime.sendMessage({
         action: "toggleFavoriteEmoji",
@@ -104,7 +112,9 @@ function renderSettings() {
         deleteUsageData,
         toggleFavoriteEmoji,
         setEmojiLocale,
-        toggleAutoHide
+        toggleAutoHide,
+        setThemeMode,
+        toggleUseTransparentBg,
     }))
 }
 
@@ -140,6 +150,12 @@ port.onMessage.addListener((message: any) => {
                 break;
             case "settings.enableAutoHide":
                 settings.enableAutoHide = m.data.value;
+                break;
+            case "settings.themeMode":
+                settings.themeMode = m.data.value;
+                break;
+            case "settings.transparentBackground":
+                settings.transparentBackground = m.data.value;
                 break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {
