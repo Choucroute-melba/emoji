@@ -2,7 +2,7 @@ import React from 'react';
 import {createRoot, Root} from 'react-dom/client';
 import Selector from "./Components/Selector";
 import {Emoji} from "emojibase";
-import {getCssTheme, mergeCss} from "@theme/theme-utils";
+import {getCssTheme, getRecommendedThemeMode, mergeStyleSheets} from "@theme/theme-utils";
 
 import resetCss from "@theme/reset.text.css"
 const resetSheet = new CSSStyleSheet();
@@ -44,7 +44,7 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
  * @property {function} onEmojiChosen - a callback function that will be executed when an emoji is selected (for example when the user click on the interface)
  */
 export default class EmojiSelector {
-    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w", "blur"]
+    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w", "background-blur", "theme-mode"]
 
     private reactRoot: Root | null = null;
     private popupBackground: HTMLDivElement | null = null;
@@ -57,6 +57,7 @@ export default class EmojiSelector {
     private _favoriteEmojis: string[] = [];
     private _themePromise = getCssTheme(":root, :host").then((th: string) => (this._theme = th));
     private _theme: string | undefined = undefined;
+    private _appliedColorScheme : "light" | "dark" | "system" = "system"
     // private readonly boundComponent = () => this.component();
 
     private observer: MutationObserver | null = null;
@@ -128,10 +129,23 @@ export default class EmojiSelector {
     }
 
     private updateTheme(themeVariables: string) {
-        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
-        const styleSheet = new CSSStyleSheet()
-        styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
-        const sheets = [styleSheet, emojiCardSheet, componentSheet]
+        const mergedSheet = mergeStyleSheets(resetSheet, baseSheet, /:host\s?/i);
+        let styleSheet: CSSStyleSheet;
+        if(this.themeMode === "color" && themeVariables !== "") {
+            const themeSheet = new CSSStyleSheet();
+            themeSheet.replaceSync(themeVariables);
+            styleSheet = mergeStyleSheets(mergedSheet, themeSheet, /:host\s?/i);
+            getRecommendedThemeMode().then((mode) => {
+                this.appliedColorScheme = mode;
+            })
+        }
+        else {
+            styleSheet = mergedSheet;
+            this._appliedColorScheme = "system";
+        }
+        const sheets = [emojiCardSheet, componentSheet, styleSheet]
+        if(!this.sr)
+            return
         // @ts-ignore
         const unwrappedSr = this.sr.wrappedJSObject
         for(let i = unwrappedSr.adoptedStyleSheets.length - 1; i >= 0; i--) {
@@ -169,6 +183,15 @@ export default class EmojiSelector {
                 break;
             case "background-blur":
                 this.backgroundBlur = (newValue === "true")
+                break;
+            case "theme-mode":
+                if(newValue !== "light" && newValue !== "dark" && newValue !== "system" && newValue !== "color") {
+                    console.warn("Invalid theme-mode attribute value: ", newValue, ". Using 'light' instead.")
+                    this.themeMode = "light";
+                }
+                else
+                    this.themeMode = newValue;
+                break;
         }
         if(this._inDocument)
             this.renderReact()
@@ -271,6 +294,8 @@ export default class EmojiSelector {
             position : this.position,
             displayAbove : this.placement == "up",
             positionMode : this.mode,
+            themeMode: this._appliedColorScheme,
+            backgroundBlur : this.backgroundBlur,
             shape : this.shape,
             searchResults : this.options,
             favorites : this.favoriteEmojis,
@@ -299,7 +324,9 @@ export default class EmojiSelector {
         //this.fireChangeEvent();
         this.onEmojiChosen(emoji);
     }
+    //endregion
 
+    //region getters and setters
     get theme(): string | undefined {
         return this._theme
     }
@@ -478,6 +505,35 @@ export default class EmojiSelector {
         return this.elt.getAttribute("background-blur") === "true";
     }
 
+    set themeMode(value: "light" | "dark" | "system" | "color") {
+        if(value !== this.themeMode)
+            this.elt.setAttribute("theme-mode", value);
+        if(value === "color")
+            this.updateTheme(this._theme || "");
+        else
+            this.updateTheme("")
+        if(this._inDocument)
+            this.renderReact()
+    }
+    get themeMode() {
+        const attrValue = this.elt.getAttribute("theme-mode");
+        if(attrValue !== "light" && attrValue !== "dark" && attrValue !== "system" && attrValue !== "color") {
+            console.warn("Invalid theme-mode attribute value: ", attrValue, ". Using 'color' instead.")
+            this.elt.setAttribute("theme-mode", "color");
+            return "color";
+        }
+        return attrValue;
+    }
+
+    set appliedColorScheme(scheme: "light" | "dark" | "system") {
+        this._appliedColorScheme = scheme;
+        if(this._inDocument)
+            this.renderReact()
+    }
+    get appliedColorScheme() {
+        return this._appliedColorScheme;
+    }
+
     /** set a text that will be shown in the selector for debugging purposes */
     set debugText(value: string) {
         this._debugText = value;
@@ -513,6 +569,7 @@ export default class EmojiSelector {
     private set elt(elt: HTMLElement) {
         this._elt = elt;
     }
+    //endregion
 }
 
 

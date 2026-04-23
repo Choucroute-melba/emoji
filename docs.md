@@ -141,6 +141,8 @@ the severity is `"fatal"`, the status will be set to `ERROR`.
       1. Provide easy and secure ways to change the state
    2. Notify subclasses when the state changes
 5. Keep the UI in sync with the state
+   1. Provide the theme colours synced with the settings
+   2. Notify when the theme changes
 
 ### Solutions
 | Requirement | Solution                                                                                                                 |
@@ -160,7 +162,8 @@ the severity is `"fatal"`, the status will be set to `ERROR`.
 | 4.1, 4.1.1  | Provide getters, setters and actions to change the state. make fields readonly.                                          |
 | 4.2         | Call protected hooks corresponding to an action                                                                          |
 | 5 --------- | _**Keep the UI in sync with the state**_                                                                                 |
-|             |                                                                                                                          |
+| 5.1         | `protected readonly themeVariables: string`                                                                              |
+| 5.2         | `protected onThemeUpdated` hook                                                                                          |
 
 
 
@@ -208,6 +211,9 @@ update the `errors` array and call the `onError` callback.
 `onSelectorBlur()` : Called when the selector UI loses focus.
 
 `onSelectorClose()` : Called when the selector UI is closes following a user action.
+
+`onThemeUpdated()` : Called when the themeVariables are updated. Will not be triggered if the theme
+changed from light to dark or vice versa.
 
 #### Protected event listeners
 

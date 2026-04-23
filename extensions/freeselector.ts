@@ -6,11 +6,12 @@ import css from "./freeselector.css?inline";
 const sheet = new CSSStyleSheet();
 sheet.replaceSync(css);
 import resetCss from "@theme/reset.text.css"
-import {mergeCss} from "@theme/theme-utils";
+import {getRecommendedThemeMode, mergeStyleSheets} from "@theme/theme-utils";
 import baseCss from "@src/base.css?inline";
 const resetSheet = new CSSStyleSheet();
 resetSheet.replaceSync(resetCss);
-console.log(css, baseCss, resetCss)
+const baseSheet = new CSSStyleSheet();
+baseSheet.replaceSync(baseCss);
 
 export default class FreeSelectorHandler extends EditableHandler<any> {
     static sites: string[] = ["*"];
@@ -98,12 +99,34 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     //region protected methods ---
 
     private updateTheme() {
-        const themeVariables = this.es.theme || ""
-        if(themeVariables === "")
-            this.warn(null, "No theme variables found for EmojiSelector. Using default theme.")
-        const mergedCss = mergeCss(resetCss, baseCss, /:host\s?/i);
-        const styleSheet = new CSSStyleSheet()
-        styleSheet.replaceSync(mergeCss(mergedCss, themeVariables, /:host\s?/i));
+        const themeVariables = this.themeVariables
+        const mergedCss = mergeStyleSheets(resetSheet, baseSheet, /:host\s?/i);
+        let styleSheet = mergedCss
+        if(this.userData.settings.themeMode === "color") {
+            if (themeVariables === "")
+                this.warn(null, "No theme variables found for EmojiSelector. Using default theme.")
+            else {
+                getRecommendedThemeMode().then((mode) => {
+                    if(mode === "system")
+                        this.container.style.colorScheme = "light dark"
+                    else
+                        this.container.style.colorScheme = mode;
+                })
+                const themeSheet = new CSSStyleSheet();
+                themeSheet.replaceSync(themeVariables);
+                styleSheet = mergeStyleSheets(mergedCss, themeSheet, /:host\s?/i);
+            }
+        }
+        else if (this.userData.settings.themeMode === "system")
+            this.container.style.colorScheme = "light dark"
+        else
+            this.container.style.colorScheme = this.userData.settings.themeMode;
+
+        if(true) //TODO : implement blurred background setting
+            this.container.classList.add("transparent")
+        else
+            this.container.classList.remove("transparent")
+
         const sheets = [styleSheet, sheet]
         // @ts-ignore
         const unwrappedSr = this.sr.wrappedJSObject
@@ -113,6 +136,11 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         sheets.forEach((s) => {
             unwrappedSr.adoptedStyleSheets.push(s)
         })
+    }
+
+    protected onThemeUpdated() {
+        this.updateTheme()
+        super.onThemeUpdated();
     }
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
