@@ -10,6 +10,7 @@ import {
 } from "../background/messsaging";
 import browser, {Menus} from "webextension-polyfill";
 import {GlobalSettings, SiteSettings} from "@src/background/types";
+import {getCssTheme} from "@theme/theme-utils";
 
 const colors =
    ['#FF6633', '#FFB399', '#FF33FF', '#FFFF99', '#00B3E6',
@@ -79,6 +80,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     } | undefined = undefined
     private _errors: HandlerError[] = []
     protected port?: browser.Runtime.Port
+    private _themeVariables : string = ""
 
     private readyResolver!: (status: HandlerStatus) => void
     private readyRejecter!: (reason?: any) => void
@@ -112,7 +114,17 @@ export default abstract class Handler<EltType extends HTMLElement> {
                 this.status = HandlerStatus.INACTIVE // handler is ready
                 this.info(null, "Handler ready, idle.")
                 this.es.favoriteEmojis = this.userData.favoriteEmojis
+                this.es.themeMode = this.userData.settings.themeMode
+                this.es.backgroundBlur = true // TODO : Create setting
                 this.readyResolver(this.status)
+                if(this.userData.settings.themeMode === "color") {
+                    getCssTheme(":root, :host").then(theme => {
+                        this._themeVariables = theme
+                        this.onThemeUpdated()
+                    }).catch(err => {
+                        this.reportError(new HandlerError(err, "Error while reading theme variables", "error"))
+                    })
+                }
             })
             .catch((err) => {
                 this.status = HandlerStatus.ERROR
@@ -149,6 +161,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
 
         this.status = hidden ? HandlerStatus.ACTIVE_HIDDEN : HandlerStatus.ACTIVE
 
+        this.es.display = false
+
         if(this.userData.settings.allowEmojiSuggestions || this.userData.favoriteEmojis.length > 0) {
             searchEmoji("", {
                 useFavorites: true,
@@ -158,15 +172,13 @@ export default abstract class Handler<EltType extends HTMLElement> {
                 this.onResultsUpdated()
             })
         }
-        else {
-            this.es.display = false
-        }
 
         if(!hidden) {
             document.body.appendChild(this.esRoot)
             this.es.place(this.esRoot)
             this.es.onEmojiChosen = this.boundChooseEmoji
             this.es.onToggleEmojiFavorite = this.boundToggleFavorite
+            this.es.themeMode = this.userData.settings.themeMode
         }
     }
 
@@ -333,7 +345,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
         // this.log(this.searchResults, `search results updated : ${this.searchResults.length}`, false)
         if(this.search.length === 0 && this.searchResults.length === 0) {
             // the user has not typed anything, no suggestions are allowed, and there are no favorites to display, don't show the ui
-            this.es.display = false
             this.focusedIndex = -1
             this.es.options = []
             return
@@ -362,7 +373,6 @@ export default abstract class Handler<EltType extends HTMLElement> {
      * @protected
      */
     protected onSelectorBlur() {
-        // TODO : check where is the focus and close or not the selector
         console.log("onSelectorBlur (FOCUS_LOST)")
     }
     private readonly boundOnSelectorBlur = this.onSelectorBlur.bind(this)
@@ -376,6 +386,15 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.dismissSearch("ES_CLOSE")
     }
     private readonly boundOnSelectorClose = this.onSelectorClose.bind(this)
+
+    /**
+     * called when the themeVariables field has been updated. Will not be triggered if the theme
+     * changed from light to dark or vice versa.
+     * @protected
+     */
+    protected onThemeUpdated() {
+        this.es.themeMode = this.userData.settings.themeMode
+    }
     //endregion
 
     /**---------------------------**/
@@ -465,6 +484,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
         if(msg.data.key.startsWith("settings")) {
             this._userData.settings = await this.getSettings()
             this._userData.siteSettings = await this.getSiteSettings()
+            if(msg.data.key === "settings.themeMode")
+                this.es.themeMode = this._userData.settings.themeMode
         }
         else if(msg.data.key.startsWith("favoriteEmojis")) {
             this._userData.favoriteEmojis = await this.getFavoriteEmojis()
@@ -695,6 +716,10 @@ export default abstract class Handler<EltType extends HTMLElement> {
         this.onStatusChanged(oldValue, value)
     }
     get status() { return this._status }
+
+    protected get themeVariables() {
+        return this._themeVariables
+    }
 
     protected get errors() { return this._errors }
 //endregion
