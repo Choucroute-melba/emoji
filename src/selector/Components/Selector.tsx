@@ -3,11 +3,14 @@ import EmojiCard from "./EmojiCard";
 import {Emoji} from "emojibase";
 import React from 'react';
 import {EmojiSelectorGeometry} from "../emojiselector";
+import {theme} from "webextension-polyfill";
 
 export default function Selector({
     position,
     displayAbove,
     positionMode,
+    themeMode,
+    backgroundBlur,
     shape,
     searchResults,
     favorites,
@@ -16,10 +19,13 @@ export default function Selector({
     onEmojiSelected,
     onResize,
     onToggleEmojiFavorite,
+    topComponent
  }: {
     position: {x: number, y: number},
     displayAbove: boolean,
     positionMode: string,
+    themeMode: "system" | "light" | "dark" | "color",
+    backgroundBlur: boolean,
     shape: { w: number, h: number },
     searchResults: Emoji[],
     favorites: string[]
@@ -28,6 +34,7 @@ export default function Selector({
     onEmojiSelected: (emoji: Emoji) => void,
     onResize: (geometry: EmojiSelectorGeometry) => void,
     onToggleEmojiFavorite: (emoji: Emoji) => void,
+    topComponent?: React.ReactNode,
  }) {
 
     const selectorRef = useRef<HTMLDivElement>(null);
@@ -106,17 +113,19 @@ export default function Selector({
         let style = {left: position.x, width: shape.w || undefined, height: shape.h || undefined};
         let vPos = displayAbove ? {bottom: position.y} : {top: position.y};
         let mode = {position: positionMode}
-        style = {...style, ...vPos, ...mode};
+        let colorScheme = {colorScheme: (themeMode === "system" || themeMode == "color") ? "light dark" : themeMode}
+
+        style = {...style, ...vPos, ...mode, ...colorScheme};
         return style;
     }
 
     return (
         <div
             ref={selectorRef}
-            className={"emojeezer " + (positionMode!=="static" ? "popup" : "")}
-            style={getStyle()} tabIndex={0}
+            className={"emojeezer " + (positionMode!=="static" ? "popup" : "") + (backgroundBlur ? " transparent" : "")}
+            style={{...getStyle()}} tabIndex={0}
         >
-            {children}
+            {topComponent && <div className={"top-component"}>{topComponent}</div>}
             <div className={"emoji-list"}>
                 {emojiList}
             </div>
