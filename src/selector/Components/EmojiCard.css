@@ -119,3 +119,7 @@
     white-space: nowrap;
     max-width: 100%;
 }
+
+.focus .shortcode {
+    color: color-mix(in srgb, var(--th-popup-highlight-text) 70%, #FFF0 30%);
+}

@@ -49,7 +49,9 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         super(searchBar);
 
         this.sr.appendChild(container);
-        this.updateTheme();
+        this.readyPromise.then(() => {
+            this.updateTheme();
+        })
 
         this.mode = "default";
 
@@ -79,10 +81,10 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
             this.log(null, "Caret position detected at: " + caretPosition);
         }
         this.searchBar.focus()
-
-        super.enable();
         if(!hidden)
             this.es.display = true
+
+        super.enable();
     }
 
     disable() {
@@ -148,7 +150,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         return {
             position: {
                 x: g.x,
-                y: g.y + g.height + 5,
+                y: g.y + g.height + 30,
             },
             shape: {
                 w: g.width - 10,
