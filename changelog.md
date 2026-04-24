@@ -1,3 +1,8 @@
+# Version 5.0.1
+*24/04/2026*
+
+- Fixed a font issue
+
 # Version 5.0.0
 *24/04/2026*
 
