@@ -1,3 +1,23 @@
+# Version 5.0.1
+*24/04/2026*
+
+- Fixed a font issue
+
+# Version 5.0.0
+*24/04/2026*
+
+This version brings theming, including dark mode and custom themes, plus a lot of internal changes
+for a more stable extension.
+Visit the extension's settings to see the new features and customise the theme.
+Enjoy!
+
+- Added a dark mode
+- Added a custom theme support
+- Better UI for the popup selector
+- lots of UI / UX Improvements and bug fixes
+- Added an "about addon" page
+- Architecture changes in the codebase
+
 # Version 4.4.1
 *26/01/2026*
 
