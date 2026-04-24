@@ -253,7 +253,7 @@
     --th-ntp-text: #000;
 }
 
-body {
+:root, :host {
     font-family: TwitterChirp, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 15px;
 }
