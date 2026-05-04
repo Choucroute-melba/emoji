@@ -1,3 +1,8 @@
+# Version 5.0.2
+*04/05/2026*
+
+- Fixed wrong font and some styles for light and dark themes
+
 # Version 5.0.1
 *24/04/2026*
 
