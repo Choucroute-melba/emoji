@@ -103,21 +103,19 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     private updateTheme() {
         const themeVariables = this.themeVariables
         const mergedCss = mergeStyleSheets(resetSheet, baseSheet, /:host\s?/i);
-        let styleSheet = mergedCss
+        const emptySheet = new CSSStyleSheet()
+        emptySheet.replaceSync("")
+        let styleSheet = mergeStyleSheets(mergedCss, emptySheet, "")
         if(this.userData.settings.themeMode === "color") {
-            if (themeVariables === "")
-                this.warn(null, "No theme variables found for EmojiSelector. Using default theme.")
-            else {
-                getRecommendedThemeMode().then((mode) => {
-                    if(mode === "system")
-                        this.container.style.colorScheme = "light dark"
-                    else
-                        this.container.style.colorScheme = mode;
-                })
-                const themeSheet = new CSSStyleSheet();
-                themeSheet.replaceSync(themeVariables);
-                styleSheet = mergeStyleSheets(mergedCss, themeSheet, /:host\s?/i);
-            }
+            getRecommendedThemeMode().then((mode) => {
+                if(mode === "system")
+                    this.container.style.colorScheme = "light dark"
+                else
+                    this.container.style.colorScheme = mode;
+            })
+            const themeSheet = new CSSStyleSheet();
+            themeSheet.replaceSync(themeVariables);
+            styleSheet = mergeStyleSheets(mergedCss, themeSheet, /:host\s?/i);
         }
         else if (this.userData.settings.themeMode === "system")
             this.container.style.colorScheme = "light dark"

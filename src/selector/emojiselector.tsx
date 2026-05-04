@@ -140,7 +140,9 @@ export default class EmojiSelector {
             })
         }
         else {
-            styleSheet = mergedSheet;
+            const emptySheet = new CSSStyleSheet();
+            emptySheet.replaceSync("");
+            styleSheet = mergeStyleSheets(mergedSheet, emptySheet, /:host\s?/i);
             if(this.themeMode === "system" || this.themeMode === "color")
                 this._appliedColorScheme = "system";
             else
