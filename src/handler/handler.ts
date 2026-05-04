@@ -402,7 +402,7 @@ export default abstract class Handler<EltType extends HTMLElement> {
     /** protected event listeners **/
     //region
 
-    /** this listener listens only to events that happen at the document level */
+    /** this listener listens only to events that happen at the document level, on the capture phase */
     protected handleDocumentKeyDown(e: KeyboardEvent) {
         // this.log(null, "Handler.handleKeyDown : " + e.code)
         if(this.active)
@@ -434,6 +434,8 @@ export default abstract class Handler<EltType extends HTMLElement> {
                     e.stopPropagation()
                     this.focusDown()
                     break;
+                default:
+                    e.stopPropagation();
             }
     }
     private readonly boundHandleDocumentKeydown = this.handleDocumentKeyDown.bind(this)
