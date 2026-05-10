@@ -1,3 +1,9 @@
+# Version 5.0.3
+*10/05/2026*
+
+- Changed offboard page
+- Show the major version changelog in minor updates
+
 # Version 5.0.2
 *04/05/2026*
 
