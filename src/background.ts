@@ -1,7 +1,8 @@
+import './background/user-engagement'
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
 import {getDomainName} from "./background/utils";
-import {callOnActiveTab, getActiveTab, getActiveTabUrl} from './background/tabs-utils'
+import {getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager from "./background/dataManager";
 import {SiteSettings} from "./background/types";
 import MessageSender = Runtime.MessageSender;
@@ -16,29 +17,6 @@ import {
 import {Emoji} from "emojibase";
 
 console.log("background.ts");
-
-const build = browser.runtime.getManifest().name.includes("Dev") ? "beta" : "stable"
-const version = browser.runtime.getManifest().version;
-browser.runtime.setUninstallURL(`https://emojeezer-website.vercel.app/uninstallation/feedback?version=${version}&buildtype=${build}`)
-    .then(() => console.log(`Uninstall URL set to https://emojeezer-website.vercel.app/uninstallation/feedback?version=${version}&buildtype=${build}`))
-    .catch(err => console.error("Error while setting uninstall URL:", err))
-
-browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
-    // if(temporary) return;
-    if(reason !== "install" && reason !== "update") return;
-    console.log(reason + " extension")
-    fetch("https://emojeezer-website.vercel.app/api/usage", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            version: version,
-            beta: (build === "beta"),
-            action: reason === "install" ? "installation" : "update"
-        })
-    })
-})
 
 const dm = new DataManager();
 console.log("Initializing storage")
