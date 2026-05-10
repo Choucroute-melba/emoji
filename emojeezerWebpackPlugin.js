@@ -64,20 +64,33 @@ export default class EmojeezerWebpackPlugin {
                 const fullChangelog = fs.readFileSync(changelogPath, 'utf8');
                 let changelog = "";
                 let goodVersion = false;
+                let gooMajorVersion = false;
                 let stop = false;
+                const majorVersion = version.split('.')[0];
+                const majorVersion3Digits = majorVersion + '.0.0';
+                const majorVersion4Digits = majorVersion + '.0.0.0';
+
                 fullChangelog.split('\n').forEach((line) => {
                     if(goodVersion && line.startsWith('#')) {
-                        stop = true;
+                        goodVersion = false;
+                    }
+                    if(gooMajorVersion && line.startsWith('#')) {
+                        gooMajorVersion = false;
                         return;
                     }
-                    if(!stop)
-                        changelog += line + '\n';
                     if(line.startsWith('#') && line.includes(version)) {
                         goodVersion = true;
                     }
+                    if(line.startsWith('#') && (line.includes(majorVersion3Digits) || line.includes(majorVersion4Digits))) {
+                        gooMajorVersion = true;
+                    }
+
+                    if(gooMajorVersion || goodVersion)
+                        changelog += line + '\n';
+
                 });
-                if(!goodVersion)
-                    changelog = "# Changelog\n\n## " + version + "\n\nNo changelog found for this version."
+                if(changelog === "")
+                    changelog = "# Changelog\\n\\n## " + version + "\\n\\nNo changelog found for this version.";
                 fs.writeFileSync(path.join(distDir, 'changelog.txt'), changelog);
 
                 console.log("Changelog extracted");
