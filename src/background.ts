@@ -14,46 +14,29 @@ import {
     searchEmoji
 } from "./emoji/emoji";
 import {Emoji} from "emojibase";
-import EmojiSelector from "@src/selector/emojiselector";
 
 console.log("background.ts");
 
 const build = browser.runtime.getManifest().name.includes("Dev") ? "beta" : "stable"
-browser.runtime.setUninstallURL("https://emojeezer-website.vercel.app/?b=" + build)
-    .then(() => console.log("Uninstall URL set to https://emojeezer-website.vercel.app/"))
+const version = browser.runtime.getManifest().version;
+browser.runtime.setUninstallURL(`https://emojeezer-website.vercel.app/uninstallation/feedback?version=${version}&buildtype=${build}`)
+    .then(() => console.log(`Uninstall URL set to https://emojeezer-website.vercel.app/uninstallation/feedback?version=${version}&buildtype=${build}`))
     .catch(err => console.error("Error while setting uninstall URL:", err))
 
 browser.runtime.onInstalled.addListener(async ({reason, temporary}) => {
-    if(temporary) return;
-    switch (reason) {
-        case "install": {
-            console.log("Installing extension")
-            fetch("https://emojeezer-website.vercel.app/api/onboard", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    version: browser.runtime.getManifest().version,
-                    build: build
-                })
-            }).catch(err => console.error("Error while sending onboard request:", err))
-        }
-        break;
-        case "update": {
-            console.log("Updating extension")
-            fetch("https://emojeezer-website.vercel.app/api/update", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    toVersion: browser.runtime.getManifest().version,
-                    build: build
-                })
-            }).catch(err => console.error("Error while sending update request:", err))
-        }
-    }
+    // if(temporary) return;
+    console.log(reason + " extension")
+    fetch("https://emojeezer-website.vercel.app/api/usage", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            version: version,
+            beta: (build === "beta"),
+            action: reason === "install" ? "installation" : "update"
+        })
+    })
 })
 
 const dm = new DataManager();
