@@ -1,9 +1,17 @@
-import React from "react";
+import React, {useState} from "react";
 import browser from "webextension-polyfill";
 import './AboutPage.css'
+import LinkNewTab from "@src/Components/LinkNewTab";
 
 export default function AboutPage() {
     const manifest = browser.runtime.getManifest();
+    const [freeSelectorCommand, setFreeSelectorCommand] = useState<string | null>(null);
+    browser.commands.getAll().then((commands) => {
+        const cmd = commands.find((command) => command.name === "show-free-selector");
+        if(cmd) {
+            setFreeSelectorCommand(cmd.shortcut || "null");
+        }
+    })
     return (
         <div className={"aboutPage"}>
             <div className={"mainContent"}>
@@ -11,6 +19,34 @@ export default function AboutPage() {
                 <p>Emojeezer is a Firefox extension designed to make using emojis online easier. Its main feature is the
                     ability to insert emojis while typing anywhere on the web, using the :colon: syntax.</p>
                 <p>Emojeezer is open source and available on <a href={"https://github.com/Choucroute-melba/emoji"}>GitHub</a></p>
+                <h3>Keyboard Shortcuts</h3>
+                <table className={"keyboardShortcuts"}>
+                    <tbody>
+                    <tr>
+                        <td>Open a selector with a search bar on any website</td>
+                        <td><pre>{freeSelectorCommand || "Crtl + Comma"}</pre></td>
+                        <td><LinkNewTab href={"about:addons"} onClick={(e) => {
+                            e.preventDefault();
+                            browser.commands.openShortcutSettings()
+                        }}>Change</LinkNewTab></td>
+                    </tr>
+                    <tr>
+                        <td>Add the selected emoji to favorites</td>
+                        <td><pre>Ctrl + Enter</pre></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Insert / Copy emoji</td>
+                        <td><pre>Enter</pre></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Navigate Up or Down in emoji list</td>
+                        <td><pre>Arrows Up / Down</pre></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
                 <h3>Help and Bug Reports</h3>
                 <p>Everything happens here : <a href={"https://github.com/Choucroute-melba/emoji"}>GitHub Issues</a></p>
                 <h3>Support Developpement</h3>
