@@ -335,7 +335,7 @@ button.danger:active {
 
 pre {
     font-family: "JetBrains Mono", "SF Mono", SF Mono, Consolas, "Liberation Mono", Menlo, Courier, monospace;
-    color: var(--fx-gray-80);
+    color: light-dark(var(--fx-gray-80), var(--fx-gray-20));
 }
 
 .outlined {
