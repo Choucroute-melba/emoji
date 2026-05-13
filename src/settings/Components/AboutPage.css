@@ -4,4 +4,13 @@
     justify-content: space-between;
     align-items: flex-start;
     height: 95%;
+    padding-right: 10px;
+}
+
+table.keyboardShortcuts {
+    width: 100%;
+    border: 1px solid var(--ejz-surfaceHover);
+    border-radius: 5px;
+    padding: 0 8px;
+    margin-right: 10px;
 }
