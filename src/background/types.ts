@@ -11,7 +11,7 @@ export type SiteSettings = {
     freeSelector: boolean
 }
 
-type Locale =
+export type Locale =
     | 'bn'
     | 'da'
     | 'de'
