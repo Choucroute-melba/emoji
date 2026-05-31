@@ -286,7 +286,7 @@ h3 {
 
 button {
     margin: 5px;
-    padding: 5px;
+    padding: 5px 10px;
     border-radius: 5px;
     border: none;
     cursor: pointer;
