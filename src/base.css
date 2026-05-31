@@ -368,3 +368,39 @@ pre {
     background-color: rgba(0, 0, 0, 0.0);
     z-index: 999;
 }
+
+input[type="checkbox"] {
+    appearance: none;
+    position: relative;
+    height: 22px;
+    width: 22px;
+    border: 1px solid gray;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0px 3px;
+}
+input[type="checkbox"]:checked {
+    background-color: var(--ejz-accent);
+    border-color: var(--ejz-accent);
+}
+input[type="checkbox"]:disabled {
+    background-color: var(--ejz-onBackgroundVariant);
+    cursor: not-allowed;
+}
+input[type="checkbox"]::before {
+    content: "✓";
+    position: absolute;
+    font-size: 18px;
+    color: var(--ejz-surface);
+    left: 2px;
+    top: -2px;
+    visibility: hidden;
+}
+input[type="checkbox"]:checked::before {
+    visibility: visible;
+}
+
+label {
+    display: flex;
+    gap: 10px;
+}
