@@ -8,7 +8,7 @@ import {
 import browser from "webextension-polyfill";
 import {SiteSettings} from "./background/types";
 import {AddDataChangeListenerMessage, EventMessage,} from "./background/messsaging";
-import {getDomainName} from "./background/utils";
+import {getDomainName} from "./background/storage-utils";
 
 console.log('Emoji on the go ✨')
 

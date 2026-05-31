@@ -3,7 +3,7 @@ import ActionPopup from "./action-popup/action-popup";
 import browser from "webextension-polyfill";
 import {DataChangedEvent, EnableForSiteMessage, EnableMessage, Message, ReadDataMessage} from "./background/messsaging";
 import {SiteSettings} from "./background/types";
-import {parseStorageKey} from "./background/utils";
+import {parseStorageKey} from "./background/storage-utils";
 import {applyTheme} from "@theme/theme-utils";
 import React from "react";
 

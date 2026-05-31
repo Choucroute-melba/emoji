@@ -1,6 +1,6 @@
 import browser, {Runtime} from "webextension-polyfill";
 import Port = Runtime.Port;
-import {getStorageKey, parseStorageKey} from "./utils";
+import {getStorageKey, parseStorageKey} from "./storage-utils";
 import {DataChangedEvent} from "./messsaging";
 import {Locale} from "emojibase"
 import {LOCALES} from "../emoji/types";

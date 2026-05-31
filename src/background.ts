@@ -2,6 +2,7 @@ import './background/user-engagement'
 import browser, {Runtime, Tabs} from "webextension-polyfill";
 import {Message} from "./background/messsaging";
 import {getDomainName} from "./background/utils";
+import {getDomainName} from "./background/storage-utils";
 import {getActiveTab, getActiveTabUrl} from './background/tabs-utils'
 import DataManager from "./background/dataManager";
 import {SiteSettings} from "./background/types";
