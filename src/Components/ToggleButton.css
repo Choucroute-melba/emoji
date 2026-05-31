@@ -1,0 +1,47 @@
+.switch {
+ display: flex;
+   align-items: center;
+    justify-content: flex-start;
+   gap: 10px;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+    display: none;
+}
+.toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+}
+.slider {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    display: inline-block;
+    inset: 0;
+    background: var(--ejz-onBackgroundVariant);
+    border-radius: 22px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.slider::before {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    left: 3px;
+    bottom: 3px;
+    background: var(--ejz-surface);
+    border-radius: 50%;
+    transition: transform 0.2s;
+}
+.switch input:checked + .slider {
+    background: var(--ejz-accent);
+}
+.switch input:checked + .slider::before {
+    transform: translateX(18px);
+}
