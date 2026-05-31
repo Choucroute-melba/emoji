@@ -100,3 +100,20 @@ body {
     /*background-color: var(--fx-onBackground);*/
     background-color: currentColor;
 }
+
+
+.settingHighlight {
+    padding: 20px 15px;
+    width: 100%;
+    border-radius: 20px;
+    margin-top: 10px;
+}
+
+.settingHighlight.enabled {
+    background-color: color-mix(in srgb, var(--fx-primary) 10%, transparent 90%);
+}
+
+.settingHighlight.disabled {
+    background-color: color-mix(in srgb, var(--fx-onBackground) 5%, transparent 95%);
+}
+.settingHighlight.center { text-align: center; }
