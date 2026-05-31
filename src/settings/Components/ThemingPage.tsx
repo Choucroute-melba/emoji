@@ -1,6 +1,7 @@
 import React from "react";
 import ThemePreview from "@src/settings/Components/ThemePreview";
 import {GlobalSettings} from "@src/background/types";
+import ToggleButton from "@src/Components/ToggleButton";
 
 export default function ThemingPage({
     setThemeMode,
@@ -18,31 +19,31 @@ export default function ThemingPage({
         <>
             <h1>Theme and Customisation</h1>
             <h2>Select your theme</h2>
-            <div className={"horizontalSection"}>
-                <ThemePreview selected={theme === "system"} mode={"system"} onClick={ () => {
-                    //setTheme("system");
-                    setThemeMode("system");
-                }} />
-                <ThemePreview selected={theme === "light"} mode={"light"} onClick={ () => {
-                    //setTheme("light");
-                    setThemeMode("light");
-                }}/>
-                <ThemePreview selected={theme === "dark"} mode={"dark"} onClick={ () => {
-                    //setTheme("dark");
-                    setThemeMode("dark");
-                }}/>
-                <ThemePreview selected={theme === "color"} mode={"color"} onClick={ () => {
-                    //setTheme("color");
-                    setThemeMode("color");
-                }}/>
+            <div className={"settingHighlight disabled"}>
+                <div className={"horizontalSection"}>
+                    <ThemePreview selected={theme === "system"} mode={"system"} onClick={ () => {
+                        //setTheme("system");
+                        setThemeMode("system");
+                    }} />
+                    <ThemePreview selected={theme === "light"} mode={"light"} onClick={ () => {
+                        //setTheme("light");
+                        setThemeMode("light");
+                    }}/>
+                    <ThemePreview selected={theme === "dark"} mode={"dark"} onClick={ () => {
+                        //setTheme("dark");
+                        setThemeMode("dark");
+                    }}/>
+                    <ThemePreview selected={theme === "color"} mode={"color"} onClick={ () => {
+                        //setTheme("color");
+                        setThemeMode("color");
+                    }}/>
+                </div>
             </div>
-            <label style={{
-                display: "block",
-                marginTop: 20
-            }}>
-                <input type={"checkbox"} onChange={() => {toggleUseTransparentBg()}} checked={settings.transparentBackground}/>
+            <div className={"settingHighlight disabled"}>
+                <ToggleButton onChange={() => {toggleUseTransparentBg()}} checked={settings.transparentBackground}>
                 Use a blurred background effect
-            </label>
+                </ToggleButton>
+            </div>
         </>
     )
 }

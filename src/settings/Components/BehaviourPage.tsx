@@ -5,6 +5,7 @@ import EmojiCard from "@src/selector/Components/EmojiCard";
 import {Emoji, Locale} from "emojibase";
 import {LOCALES} from "@src/emoji/types";
 import './BehaviourPage.css'
+import ToggleButton from "@src/Components/ToggleButton";
 
 export default function BehaviourPage(
     {
@@ -59,15 +60,18 @@ export default function BehaviourPage(
     return (
         <>
             <h1>Behaviour and Data Collection</h1>
-            <button className={"globalEnableButton" + (settings.enabled ? "" : " accent")} onClick={() => {
-                toggleGloballyEnabled(!settings.enabled);
-            }}>{settings.enabled ? "Disable Autocomplete" : "Enable Autocomplete"}</button>
-            <div style={{marginTop: "10px"}}>
-                <label>
-                    <input type={"checkbox"} checked={settings.freeSelector} onChange={(e) => {
-                        toggleFreeSelectorGloballyEnabled(e.target.checked)
-                    }} />
-                    Enable the <code>{freeSelectorCommand}</code> shortcut for easy copy-paste emoji
+            <div className={"settingHighlight " + (settings.enabled ? "enabled" : "disabled")}>
+                <ToggleButton checked={settings.enabled} onChange={() => {
+                    toggleGloballyEnabled(!settings.enabled);
+                }}>Enable auto-replace and inline suggestions</ToggleButton>
+            </div>
+            <div className={"settingHighlight disabled"}>
+
+                    <ToggleButton checked={settings.freeSelector} onChange={(e) => {
+                        toggleFreeSelectorGloballyEnabled(!settings.freeSelector);
+                    }}>
+                        Enable the <code>{freeSelectorCommand}</code> shortcut for easy copy-paste emoji
+                    </ToggleButton>
                     <br/>
                     <label style={{marginLeft: "20px", marginTop: "10px", color: (settings.freeSelector ? "inherit" : "gray")}}>
                         <input type={"checkbox"} checked={settings.keepFreeSelectorEnabled} onChange={(e) => {
@@ -75,26 +79,28 @@ export default function BehaviourPage(
                         }} disabled={!settings.freeSelector}/>
                         Keep it enabled even when autocomplete is off
                     </label>
-                </label>
-                <p style={{marginTop: "7px"}} className={"hint"}>You can <a href={"about:addons"} onClick={openShortcutManagementPage}>change this shortcut</a>.
+                <p style={{marginTop: "15px", marginBottom: "0px"}} className={"hint"}>You can <a href={"about:addons"} onClick={openShortcutManagementPage}>change this shortcut</a>.
                     See <a
                         href={"https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox"}
                         target={"_blank"}
                     >Mozilla documentation</a> for more information. </p>
             </div>
-            <label>Select language for emojis :
-                <LocaleSelect current={settings.emojiLocale} onSelect={setEmojiLocale}/>
-            </label>
-            <h2>Usage data and favorites</h2>
-            <div>
-                <label>
-                    <input type={"checkbox"} checked={settings.allowEmojiSuggestions} onChange={(e) => {
-                        toggleAllowEmojiSuggestions(e.target.checked);
-                    }} />
-                    Show emoji suggestions based on your usage
-                    <br/>
+            <div className={"settingHighlight disabled"}>
+                <label>Select language for emojis shortcodes and names : <br/>
+                    <LocaleSelect current={settings.emojiLocale} onSelect={setEmojiLocale}/>
                 </label>
-                <button className={"dangerButton"} onClick={() => {setShowDeleteConfirmation(true)}}>Delete History</button>
+            </div>
+
+            <h2>Usage data and favorites</h2>
+            <div className={"settingHighlight disabled"}>
+                <ToggleButton checked={settings.allowEmojiSuggestions} onChange={(e) => {
+                    toggleAllowEmojiSuggestions(!settings.allowEmojiSuggestions);
+                }} >
+                Show emoji suggestions based on your usage
+                </ToggleButton>
+            </div>
+            <div style={{textAlign: "center", marginTop: "10px"}}>
+                <button className={"danger"} onClick={() => {setShowDeleteConfirmation(true)}}>Delete History</button>
                 {showDeleteConfirmation && <ConfirmUsageDataDeletion onConfirm={deleteUsageData} onCancel={() => {setShowDeleteConfirmation(false)}}/>}
             </div>
             <div className={"emojiUsageList"}>
@@ -140,7 +146,7 @@ export default function BehaviourPage(
                     })
                 }
             </div>
-            <label style={{marginTop: "20px", color: "gray", display: "block"}}>
+            <label style={{marginTop: "20px", color: "gray"}}>
                 (for testing purposes only, do not change this) : <input type={"checkbox"}
                                                                          checked={settings.enableAutoHide}
                                                                          onChange={(e) => {
