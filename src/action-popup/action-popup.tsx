@@ -3,7 +3,8 @@ import './action-popup.css';
 import React, {useState} from "react";
 import {SiteSettings} from "../background/types";
 import browser from "webextension-polyfill";
-import {getDomainName} from "../background/utils";
+import {getDomainName} from "../background/storage-utils";
+import ToggleButton from "@src/Components/ToggleButton";
 
 export default function ActionPopup({
     siteSettings,
@@ -40,8 +41,10 @@ export default function ActionPopup({
 
     return (
         <div>
-            <button className={enabled ? "" : "outlined"} onClick={onSetEnabled}>{enabled ? "Pause Extension" : "Activate"}</button>
-            <button className={enabledForSite ? "": "outlined"} onClick={onSetEnabledForSite} style={{display: !enabledGlobally ? "none" : "inline"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
+            <div className={"highlightSection " + (enabled ? "enabled" : "disabled")}>
+                <ToggleButton onChange={onSetEnabled} checked={enabled}>{enabled ? "Autocomplete ON" : "Autocomplete OFF"}</ToggleButton>
+            </div>
+            <button className={"siteControlButton " + (enabledForSite ? "outlined" : "accent")} onClick={onSetEnabledForSite} style={{display: !enabledGlobally ? "none" : "block"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
             <div className={"status"}>
                 <svg style={{width: "10px", height: "10px", marginRight: "5px"}}>
                     <circle cx="5" cy="5" r="5" fill={statusColor}/>

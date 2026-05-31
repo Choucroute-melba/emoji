@@ -23,6 +23,11 @@ footer {
     margin-bottom: 7px;
 }
 
+label {
+    font-size: 15px;
+    font-weight: 600;
+}
+
 .status {
     display: flex;
     flex-direction: row;
@@ -30,4 +35,25 @@ footer {
     align-items: baseline;
     margin-top: 10px;
     margin-bottom: 10px;
+}
+
+.highlightSection {
+    padding: 15px 10px;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+.highlightSection.enabled {
+    background-color: color-mix(in srgb, var(--ejz-accent) 10%, transparent 90%);
+}
+
+.highlightSection.disabled {
+    background-color: color-mix(in srgb, var(--ejz-surface) 5%, transparent 95%);
+}
+.highlightSection.center { text-align: center; }
+
+.siteControlButton {
+/*    width: -moz-available;
+    width: -webkit-fill-available;*/
+    text-align: center;
 }
