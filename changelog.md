@@ -1,3 +1,9 @@
+# Version 5.0.4
+*31/05/2026*
+
+- Added a list of keyboard shortcuts and navigation in settings -> About
+- Reworked some UI to make it more clear and easier to use
+
 # Version 5.0.3
 *10/05/2026*
 
