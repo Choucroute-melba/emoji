@@ -1,6 +1,6 @@
 import '@src/base.css'
 import './action-popup.css';
-import React, {useState} from "react";
+import React from "react";
 import {SiteSettings} from "../background/types";
 import browser from "webextension-polyfill";
 import {getDomainName} from "../background/storage-utils";
@@ -44,12 +44,15 @@ export default function ActionPopup({
             <div className={"highlightSection " + (enabled ? "enabled" : "disabled")}>
                 <ToggleButton onChange={onSetEnabled} checked={enabled}>{enabled ? "Autocomplete ON" : "Autocomplete OFF"}</ToggleButton>
             </div>
-            <button className={"siteControlButton " + (enabledForSite ? "outlined" : "accent")} onClick={onSetEnabledForSite} style={{display: !enabledGlobally ? "none" : "block"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
-            <div className={"status"}>
-                <svg style={{width: "10px", height: "10px", marginRight: "5px"}}>
-                    <circle cx="5" cy="5" r="5" fill={statusColor}/>
-                </svg>
-                <p style={{color: statusColor}}>{statusText}</p>
+            <div className={"siteControlSection highlightSection disabled"}>
+                <div className={"status"}>
+                    <p style={{color: statusColor}}>
+                    <span><svg style={{width: "10px", height: "10px", marginRight: "5px"}}>
+                        <circle cx="5" cy="5" r="5" fill={statusColor}/>
+                    </svg></span>
+                    {statusText}</p>
+                </div>
+                <button className={"siteControlButton " + (enabledForSite ? "outlined" : "accent")} onClick={onSetEnabledForSite} style={{display: !enabledGlobally ? "none" : "block"}}>{enabledForSite ? "Disable" : "Enable"} For This Site</button>
             </div>
             <footer>
                 <a href={browser.runtime.getURL("assets/settings.html")} target={"_blank"} >Settings</a> - <a href="https://github.com/Choucroute-melba/emoji/issues/new">Report a Bug</a> - <a href={"https://addons.mozilla.org/en-US/firefox/addon/emojeezer/"}>Leave a Review</a>
