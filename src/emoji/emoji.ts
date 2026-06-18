@@ -2,10 +2,12 @@
     this file is meant to run in the background script
  */
 import Fuse, {FuseIndex} from "fuse.js";
-import {Emoji, Locale, fetchEmojis} from "emojibase"
+import {Emoji, fetchEmojis, Locale} from "emojibase"
 import browser from "webextension-polyfill";
-import {LOCALES, SearchOption} from "./types";
+import {EmojiImages, LOCALES, SearchOption} from "./types";
 import DataManager from "../background/dataManager";
+import {Simulate} from "react-dom/test-utils";
+import error = Simulate.error;
 
 type FuseEmoji = {
     emoji: string;
@@ -285,4 +287,24 @@ export function calculateEmojiSignals({count, firstUsed, lastUsed}: { count: num
 export function calculateEmojiScore({count, firstUsed, lastUsed}: { count: number, firstUsed: number, lastUsed: number}): number {
     const {frequency, recency} = calculateEmojiSignals({count, firstUsed, lastUsed})
     return frequency * recency
+}
+
+export async function getEmojiOfTheDay(locale: Locale): Promise<string | undefined> {
+    const res = await fetch("https://emojeezer-website.vercel.app/api/emoji-of-the-day")
+    if(!res.ok) {
+        throw new Error("Failed to fetch emoji of the day")
+    }
+    return await res.text()
+}
+
+export function getEmojiImageUrl(unicode: string, format: "svg" = "svg"){
+    return `https://twemoji.maxcdn.com/v/latest/${format}/${unicode.codePointAt(0)?.toString(16)}.${format}`;
+}
+
+/** @param imgUrl should point to a SVG **/
+export async function setActionIcon(imgUrl: string) {
+    console.log("Setting action icon to " + imgUrl);
+    return browser.browserAction.setIcon({
+        path: imgUrl
+    })
 }
