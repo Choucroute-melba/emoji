@@ -7,7 +7,7 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
-    SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage |
+    SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage | SetActionIconMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme" | "toggleAutoHide" |
             "toggleTransparentBackground"
@@ -195,6 +195,13 @@ export type SetThemeModeMessage = {
     action: "setThemeMode",
     data: {
         mode: "light" | "dark" | "system" | "color"
+    }
+}
+
+export type SetActionIconMessage = {
+    action: "setActionIcon",
+    data: {
+        unicode: string | "emojiOfTheDay"
     }
 }
 

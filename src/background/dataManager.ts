@@ -17,6 +17,7 @@ export default class DataManager {
             freeSelector: true,
             keepFreeSelectorEnabled: true,
             actionIcon: "😉",
+            useEmojiOfTheDay: false,
             allowEmojiSuggestions: true,
             emojiLocale: browser.i18n.getUILanguage() as Locale,
             enableAutoHide: true,

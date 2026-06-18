@@ -20,6 +20,11 @@ export type SearchOption = {
     useGender?: Gender
 }
 
+export type EmojiImages = {
+    unicode: string,
+    hexcode: string,
+    images: Map<"16" | "32" | "64" | "svg", {url: string, font: "twemoji"}>
+}
 
 export type LocaleItem = { locale: Locale; displayName: string; emoji: string };
 

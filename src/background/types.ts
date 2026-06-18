@@ -45,6 +45,7 @@ export type GlobalSettings = {
     enabled: boolean,
     freeSelector: boolean,
     actionIcon: string,
+    useEmojiOfTheDay: boolean,
     keepFreeSelectorEnabled: boolean,
     allowEmojiSuggestions: boolean,
     emojiLocale: Locale,

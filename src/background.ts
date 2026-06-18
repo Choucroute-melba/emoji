@@ -9,10 +9,10 @@ import MessageSender = Runtime.MessageSender;
 import {
     getEmojiDataset,
     getEmojiFromShortCode,
-    getEmojiFromUnicode,
+    getEmojiFromUnicode, getEmojiImageUrl, getEmojiOfTheDay,
     getMostUsedEmoji,
     loadEmojiDataset,
-    searchEmoji
+    searchEmoji, setActionIcon
 } from "./emoji/emoji";
 import {Emoji} from "emojibase";
 
@@ -242,6 +242,24 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                 dm.settings.transparentBackground = !dm.settings.transparentBackground
                 resolve(true)
                 break;
+            case "setActionIcon":
+                if(m.data.unicode === "emojiOfTheDay") {
+                    dm.settings.useEmojiOfTheDay = true
+                    const emoji = await getEmojiOfTheDay(dm.settings.emojiLocale)
+                    if(emoji) { // set emoji as the action icon
+                        await setActionIcon(getEmojiImageUrl(emoji))
+                    }
+                }
+                else {
+                    dm.settings.useEmojiOfTheDay = false
+                    if(m.data.unicode === "default")
+                        dm.settings.actionIcon = "😉";
+                    else
+                        dm.settings.actionIcon = m.data.unicode;
+                    setActionIcon(getEmojiImageUrl(dm.settings.actionIcon))
+                }
+                resolve(true)
+                break;
             default:
                 reject(`Unknown action: ${m.action}`)
                 break;
@@ -264,3 +282,21 @@ browser.commands.onCommand.addListener((command, tab) => {
     }
     browser.tabs.sendMessage<string>(tab.id, command)
 })
+
+if(!dm.storageReady)
+    await dm.storageReadyPromise
+
+console.log("Loading done, getting daily emoji.")
+
+getEmojiOfTheDay(dm.settings.emojiLocale)
+    .then(emoji => {
+        if(dm.settings.useEmojiOfTheDay && emoji) { // set emoji as the action icon
+            console.log("Setting action icon to emoji of the day:", emoji)
+            setActionIcon(getEmojiImageUrl(emoji))
+        }
+        else {
+            console.log("Setting action icon to default emoji:", dm.settings.actionIcon)
+            setActionIcon(getEmojiImageUrl(dm.settings.actionIcon))
+        }
+    })
+
