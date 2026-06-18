@@ -38,6 +38,15 @@ export default class DataManager {
     private pendingWrites: Map<string, Promise<boolean>> = new Map<string, Promise<boolean>>();
     private _storageReady = false;
     get storageReady() {return this._storageReady}
+    private set storageReady(value: boolean) {
+        this._storageReady = value;
+        if(value)
+            this.resolveStorageReady();
+    }
+    private resolveStorageReady = () => {}
+    storageReadyPromise = new Promise<void>((resolve) => {
+        this.resolveStorageReady = resolve;
+    })
 
     constructor() {
         let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
@@ -315,7 +324,7 @@ export default class DataManager {
             this.favoriteEmojis = await this._readData(this._favoriteEmojis.key) as unknown as typeof this._favoriteEmojis.value;
         }
         console.log("Storage initialized")
-        this._storageReady = true;
+        this.storageReady = true;
     }
 
     private onConnect(p: Port) {
