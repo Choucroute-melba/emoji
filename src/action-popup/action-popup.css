@@ -41,16 +41,17 @@ label {
     border-radius: 5px;
     margin: 5px;
 }
-
 .highlightSection.enabled {
     background-color: color-mix(in srgb, var(--ejz-accent) 10%, transparent 90%);
 }
-
 .highlightSection.disabled {
    /* background-color: color-mix(in srgb, var(--ejz-surface) 95%, light-dark(black, white) 5%);*/
     background-color: light-dark(#0000000F, #FFFFFF0F);
 }
 .highlightSection.center { text-align: center; }
+.highlightSection.outlined {
+    border: 1px solid var(--th-popup-border);
+}
 
 .siteControlSection {
     display: flex;
