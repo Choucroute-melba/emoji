@@ -131,7 +131,7 @@ function pickColor(c: ThemeTypeColorsType | undefined, ...keys: (keyof ThemeType
     for (const key of keys) {
         const value = c[key];
         if (typeof value === "string" && value.trim().length > 0) {
-            console.log(`${key}: %c${value} \t\t%c     %c`, ``, `background-color: ${value};`, "background-color: inherit; color: inherit;")
+            //console.log(`${key}: %c${value} \t\t%c     %c`, ``, `background-color: ${value};`, "background-color: inherit; color: inherit;")
             return value;
         }
     }
@@ -165,7 +165,7 @@ export async function getCssTheme(selector: string): Promise<string> {
     const c = theme.colors
     const preferredSheme = theme.properties?.color_scheme ||
         window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-    console.log(theme)
+    // console.log(theme)
     let ruleText = `${selector} {\n`
     let pickedColor: string | undefined = undefined
     let assignedColor: { light: string, dark: string } | undefined
@@ -256,13 +256,13 @@ export async function getCssTheme(selector: string): Promise<string> {
     }
 
     // finally generate the rule text
-    console.log(ruleText)
+    //console.log(ruleText)
     assignedColors.forEach((value, key) => {
         if(value) {
             ruleText += `    ${key}: light-dark(${value.light}, ${value.dark});\n`
-            console.log(`${key}: light-dark(${value.light}, ${value.dark}); \t\t %c     %c / %c     %c`,
+            /*console.log(`${key}: light-dark(${value.light}, ${value.dark}); \t\t %c     %c / %c     %c`,
                 `background-color: ${value.light};`, "background-color: inherit; color: inherit;",
-                `background-color: ${value.dark};`, "background-color: inherit; color: inherit;")
+                `background-color: ${value.dark};`, "background-color: inherit; color: inherit;")*/
         }
     })
     ruleText += "}\n"
@@ -299,8 +299,8 @@ export async function getRecommendedThemeMode() {
             // @ts-ignore
             const color = c[key]
             if(color) {
-                console.log(`FOREG ${key}: ${color} \t\t %c     %c ${colord(color).isDark() ? "dark" : "light"}`,
-                    `background-color: ${color};`, "background-color: inherit; color: inherit;")
+                /*console.log(`FOREG ${key}: ${color} \t\t %c     %c ${colord(color).isDark() ? "dark" : "light"}`,
+                    `background-color: ${color};`, "background-color: inherit; color: inherit;")*/
                 if(colord(color).isDark())
                     lightSchemeScore++;
                 else
@@ -311,15 +311,15 @@ export async function getRecommendedThemeMode() {
             //@ts-ignore
             const color = c[key]
             if(color) {
-                console.log(`BACKG ${key}: ${color} \t\t %c     %c ${colord(color).isDark() ? "dark" : "light"}`,
-                    `background-color: ${color};`, "background-color: inherit; color: inherit;")
+                /*console.log(`BACKG ${key}: ${color} \t\t %c     %c ${colord(color).isDark() ? "dark" : "light"}`,
+                    `background-color: ${color};`, "background-color: inherit; color: inherit;")*/
                 if(colord(color).isDark())
                     darkSchemeScore++;
                 else
                     lightSchemeScore++;
             }
         }
-        console.log(`dark : ${darkSchemeScore}; light : ${lightSchemeScore};`)
+        // console.log(`dark : ${darkSchemeScore}; light : ${lightSchemeScore};`)
         return darkSchemeScore > lightSchemeScore ? "dark" : "light"
     }
 }
