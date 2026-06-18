@@ -1,6 +1,6 @@
 import {createRoot} from "react-dom/client";
 import SettingsPage from "./settings/SettingsPage";
-import browser from "webextension-polyfill";
+import browser, {browserAction} from "webextension-polyfill";
 import {EventMessage, Message, SetKeepFreeSelectorEnabledMessage} from "./background/messsaging";
 import {GlobalSettings} from "./background/types";
 import {parseStorageKey} from "./background/storage-utils";
@@ -78,6 +78,10 @@ function toggleUseTransparentBg() {
     return browser.runtime.sendMessage<Message>({action: "toggleTransparentBackground"})
 }
 
+function setActionIcon(icon: string) {
+    return browser.runtime.sendMessage<Message>({action: "setActionIcon", data: {unicode : icon}})
+}
+
 function toggleFavoriteEmoji(emoji: Emoji | string) {
     browser.runtime.sendMessage({
         action: "toggleFavoriteEmoji",
@@ -115,6 +119,7 @@ function renderSettings() {
         toggleAutoHide,
         setThemeMode,
         toggleUseTransparentBg,
+        setActionIcon
     }))
 }
 
@@ -156,6 +161,12 @@ port.onMessage.addListener((message: any) => {
                 break;
             case "settings.transparentBackground":
                 settings.transparentBackground = m.data.value;
+                break;
+            case "settings.useEmojiOfTheDay":
+                settings.useEmojiOfTheDay = m.data.value;
+                break;
+            case "settings.actionIcon":
+                settings.actionIcon = m.data.value;
                 break;
             default: {
                 if(m.data.key.startsWith("settings.sites[") || m.data.key.startsWith("settings.sites.")) {

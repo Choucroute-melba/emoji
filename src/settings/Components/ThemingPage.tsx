@@ -7,10 +7,12 @@ export default function ThemingPage({
     setThemeMode,
     settings,
     toggleUseTransparentBg,
+    setActionIcon,
                                     }: {
     setThemeMode: (mode: "system" | "light" | "dark" | "color") => void,
     settings: GlobalSettings,
     toggleUseTransparentBg: () => void,
+    setActionIcon: (icon: string) => void,
 }) {
     //const [theme, setTheme] = React.useState<"system" | "dark" | "light" | "color">("system");
     const theme = settings.themeMode
@@ -43,6 +45,19 @@ export default function ThemingPage({
                 <ToggleButton onChange={() => {toggleUseTransparentBg()}} checked={settings.transparentBackground}>
                 Use a blurred background effect
                 </ToggleButton>
+            </div>
+            <div className={"settingHighlight disabled"}>
+                <label>
+                    Select the icon that will be used in your browser's toolbar :
+                    <select value={settings.useEmojiOfTheDay ? "emojiOfTheDay" : "default"}
+                            onChange={(e) => {
+                                setActionIcon(e.target.value)
+                            }}
+                    >
+                        <option value={"default"}>Default</option>
+                        <option value={"emojiOfTheDay"}>Emoji of the Day</option>
+                    </select>
+                </label>
             </div>
         </>
     )

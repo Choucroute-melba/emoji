@@ -23,6 +23,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleAutoHide,
     setThemeMode,
     toggleUseTransparentBg,
+    setActionIcon
 } : {
     settings: GlobalSettings
     usageData: Map<Emoji, {count: number, firstUsed: number, lastUsed: number, recency: number, frequency: number, score: number}>,
@@ -38,6 +39,7 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
     toggleAutoHide: () => void,
     setThemeMode: (mode: "light" | "dark" | "system" | "color") => void,
     toggleUseTransparentBg: () => void,
+    setActionIcon: (icon: string) => void,
 }) {
 
     const [selectedTab, setSelectedTab] = useState<"behaviour" | "theming" | "about">("behaviour");
@@ -87,7 +89,12 @@ export default function SettingsPage({settings, usageData, favoriteEmojis,
                     />
                 }
                 {
-                    selectedTab === "theming" && <ThemingPage setThemeMode={setThemeMode} settings = {settings} toggleUseTransparentBg={toggleUseTransparentBg}/>
+                    selectedTab === "theming" && <ThemingPage
+                        setThemeMode={setThemeMode}
+                        settings = {settings}
+                        toggleUseTransparentBg={toggleUseTransparentBg}
+                        setActionIcon={setActionIcon}
+                    />
                 }
                 {
                     selectedTab === "about" && <AboutPage />
