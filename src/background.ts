@@ -27,6 +27,11 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
             console.groupEnd();
             r(value);
         }
+        if(message === "ping") {
+            console.log("ping from " + (sender.tab ? sender.tab.id : sender.url))
+            resolve("pong to sender " + (sender.tab ? sender.tab.id : sender.url))
+            return
+        }
         if(!dm.storageReady) {
             console.info("Waiting for storage to be ready...")
             await dm.initializeStorage();
@@ -280,7 +285,9 @@ browser.commands.onCommand.addListener((command, tab) => {
         console.warn("Tab id is undefined for command:", command)
         return
     }
-    browser.tabs.sendMessage<string>(tab.id, command)
+    browser.tabs.sendMessage<string>(tab.id, command).catch((e) => {
+        console.error("Error while sending command to tab", tab.id, e)
+    })
 })
 
 if(!dm.storageReady)

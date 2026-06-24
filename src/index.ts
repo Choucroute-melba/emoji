@@ -140,10 +140,13 @@ async function mainListener(this: any, e: KeyboardEvent | string) {
     }
 }
 
-const commandsListener = (command: any, tab: any) => {
-    if(typeof command !== "string")
+const oneOffListener = (msg: any, tab: any) => {
+    if(typeof msg !== "string")
         return;
-    mainListener(command)
+    if(msg === "ping") {
+        return Promise.resolve(`pong tab ${tab}`);
+    }
+    mainListener(msg)
 }
 
 async function bindIframeListeners() {
@@ -186,11 +189,17 @@ async function removeIframeListeners() {
         } catch (e) {}
         if (contentWindow) {
             console.groupCollapsed(`- #${iframe.id}.${iframe.className} - ${iframe.src}`);
-            contentWindow.removeEventListener('keydown', mainListener, true);
-            (contentWindow as any)._hasEmojiListener = false;
-            console.groupEnd()
+            try {
+                contentWindow.removeEventListener('keydown', mainListener, true);
+                (contentWindow as any)._hasEmojiListener = false;
+            } catch (e) {
+                console.error("error while removing iframe listeners", e)
+            } finally {
+                console.groupEnd()
+            }
         }
     }
+    return;
 }
 
 let mainListenerLoaded = false
@@ -200,14 +209,14 @@ async function applySettings(settings: SiteSettings) {
     // reset listeners before anything
     window.removeEventListener('keydown', mainListener, true)
     document.removeEventListener('DOMContentLoaded', bindIframeListeners);
-    browser.runtime.onMessage.removeListener(commandsListener);
+    browser.runtime.onMessage.removeListener(oneOffListener);
     observer.disconnect();
     await removeIframeListeners();
 
     // then enable if needed we need
     if(settings.enabled || settings.freeSelector) {
         window.addEventListener('keydown', mainListener, true)
-        browser.runtime.onMessage.addListener(commandsListener);
+        browser.runtime.onMessage.addListener(oneOffListener);
         document.removeEventListener('DOMContentLoaded', bindIframeListeners);
         await bindIframeListeners();
         observer.observe(document.body, {childList: true, subtree: true});
@@ -231,9 +240,20 @@ async function applySettings(settings: SiteSettings) {
     console.log(`enabled : [${availableHandlers.map(h => h.name).join(", ")}]\ndisabled : [${disabledHandlers.map(h => h.name).join(", ")}]`)
 }
 
-
-const tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
 const observer = new MutationObserver(bindIframeListeners);
+
+let connected = false;
+let tabId = 0;
+while (!connected) {
+    try {
+        tabId = (await browser.runtime.sendMessage({ action: "getTabId" })) as number;
+        connected = true
+    }
+    catch (e) {
+        console.info("backend not ready, retying...")
+    }
+}
+console.info(`Connected to backend, tabId: ${tabId}`)
 let siteSettings = await browser.runtime.sendMessage({ action: "getEffectiveModeOnSite", data: { url: window.location.href }}) as SiteSettings
 const port = browser.runtime.connect({ name: `emoji-tab-${tabId}` });
 
@@ -256,6 +276,15 @@ port.postMessage({
         ]
     }
 } as AddDataChangeListenerMessage)
+
+port.onDisconnect.addListener((p) => {
+    console.log("disconnected")
+    applySettings({
+        url: window.location.href,
+        enabled: false,
+        freeSelector: false
+    })
+})
 
 console.log(`Site settings (${tabId}) :`, siteSettings);
 
