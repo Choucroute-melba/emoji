@@ -1,3 +1,14 @@
+# Version 5.0.5
+*25/06/2026*
+
+Going back to five 0 five
+
+- UX and UI improvements
+- Stability improvements
+- Fixed a bug that prevented the extension from working after installation / update
+- Emoji of the day for your browser toolbar
+- If it's a 7 hour flight or a 45 minutes drive
+
 # Version 5.0.4
 *31/05/2026*
 
