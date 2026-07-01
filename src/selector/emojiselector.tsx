@@ -160,7 +160,7 @@ export default class EmojiSelector {
         if(!this.sr)
             return
         // @ts-ignore
-        const unwrappedSr = this.sr//.wrappedJSObject
+        const unwrappedSr = this.sr.wrappedJSObject
         for(let i = unwrappedSr.adoptedStyleSheets.length - 1; i >= 0; i--) {
             unwrappedSr.adoptedStyleSheets.pop();
         }
