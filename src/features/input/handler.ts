@@ -28,6 +28,7 @@ export default class HTMLInputHandler extends HTMLEditableHandler<HTMLInputEleme
         return {
             position,
             placement,
+            shape: {w: 300, h: 0}
         };
     }
     //endregion
