@@ -7,10 +7,10 @@ export type Message = GetSiteSettingsMessage | GetEffectiveModeOnSiteMessage | E
     SetKeepFreeSelectorEnabledMessage | ReadDataMessage | AddDataChangeListenerMessage | RemoveDataChangeListenerMessage |
     GetMostUsedEmojiMessage | ReportEmojiUsageMessage | SetAllowEmojiSuggestionsMessage | DeleteUsageDataMessage |
     ToggleFavoriteEmojiMessage | GetFavoriteEmojisMessage | SearchEmojisMessage | GetEmojiFromShortCodeMessage | GetEmojiFromUnicodeMessage |
-    SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage | SetActionIconMessage |
+    SetEmojiLocaleMessage | DeclareCustomElementMessage | SetThemeModeMessage | SetActionIconMessage | GetEmojisForGroupMessage |
     {
         action: "greeting" | "getSettings" | "addSettingsListener" | "getTabId" | "getCurrentTheme" | "toggleAutoHide" |
-            "toggleTransparentBackground"
+            "toggleTransparentBackground" | "fetchGroups"
     };
 
 export type EventMessage = SettingsUpdatedEvent | SiteSettingsUpdatedEvent | DataChangedEvent;
@@ -202,6 +202,13 @@ export type SetActionIconMessage = {
     action: "setActionIcon",
     data: {
         unicode: string | "emojiOfTheDay"
+    }
+}
+
+export type GetEmojisForGroupMessage = {
+    action: "getEmojisForGroup",
+    data: {
+        group: number,
     }
 }
 

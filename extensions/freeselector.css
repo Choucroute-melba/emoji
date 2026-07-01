@@ -22,12 +22,12 @@
 
 .searchBar {
     width: 85%;
-    border-radius: 10px;
+    border-radius: 25px;
     border: 1px solid var(--th-toolbar-field-border);
     background-color: var(--th-toolbar-field);
     color: var(--th-toolbar-field-text);
     padding: 5px;
-    height: 45px;
+    height: 25px;
 }
 .searchBar:focus {
     outline: none;
@@ -42,7 +42,40 @@
 }
 
 .info {
-    font-size: 12px;
+    font-size: 14px;
     margin: 5px;
     color: var(--th-popup-text)
+}
+
+.modeSelector {
+    border: 1px solid var(--th-toolbar-field-border);
+    background: rgb(from var(--th-popup) r g b / 0.83);
+    border-radius: 5px;
+    height: 30px;
+    margin-bottom: 5px;
+}
+
+.modeSelector button {
+    background-color: transparent;
+    position: relative;
+    height: 29px;
+    margin: 0;
+}
+.modeSelector button::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    border-radius: 4px 4px;
+    background-color: var(--ejz-accent);
+    transform: scaleX(0);
+    transition: transform 0.1s ease;
+}
+.modeSelector button.active::after {
+    transform: scaleX(1);
+}
+.modeSelector .navigation-hint {
+    margin-left: 5px;
 }

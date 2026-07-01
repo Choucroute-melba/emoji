@@ -423,3 +423,11 @@ label {
     min-height: 20px;
     margin-right: 5px;
 }
+
+.navigation-hint {
+    padding: 1px 4px;
+    border-radius: 5px;
+    color: var(--ejz-onSurfaceVariant);
+    border: 1px solid currentColor;
+    font-size: 12px;
+}
