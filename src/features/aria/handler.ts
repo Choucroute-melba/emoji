@@ -45,7 +45,8 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     //region protected methods ---
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
-        return getPositionFromEditableDivCaret(this.target, this.window.getSelection());
+        const pos =  getPositionFromEditableDivCaret(this.target, this.window.getSelection());
+        return {...pos, shape: {w: 300, h: 0}};
     }
 
     protected getSelectionPosition(): { start: number; end: number; direction: string } {

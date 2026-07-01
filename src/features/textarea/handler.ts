@@ -27,7 +27,7 @@ export default class TextAreaHandler extends HTMLEditableHandler<HTMLTextAreaEle
 
     getSelectorGeometry(): Partial<EmojiSelectorGeometry> {
         const pos = getPositionFromTextareaCaret(this.target);
-        return pos;
+        return {...pos, shape: {w: 300, h: 0}};
     }
     //endregion
 }
