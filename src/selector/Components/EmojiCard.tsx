@@ -1,5 +1,5 @@
 import {Emoji} from "emojibase"
-import {useState, useRef, useEffect} from "react";
+import {useState, useRef, useEffect, RefObject} from "react";
 import React from 'react';
 import Star from "./Star";
 
@@ -10,6 +10,7 @@ export default function EmojiCard(props: {
     onClick: (emoji: Emoji) => void,
     onFavoriteToggle: (emoji: Emoji) => void,
     cardStyle: "square" | "full",
+    ref?: RefObject<HTMLDivElement>,
 } ) {
 
     const [displayStar, setDisplayStar] = useState(false);
@@ -17,7 +18,7 @@ export default function EmojiCard(props: {
 
 
     return (
-        <div ref={cardRef} className={(props.cardStyle === "square" ? "emoji-card square" : "emoji-card") + (props.selected ? (" focus") : (""))}
+        <div ref={props.ref} className={(props.cardStyle === "square" ? "emoji-card square" : "emoji-card") + (props.selected ? (" focus") : (""))}
              data-stop-propagation="true"
              onClick={(e) => {
                  e.stopPropagation();
@@ -35,7 +36,7 @@ export default function EmojiCard(props: {
                     <p className={"shortcode"}>{props.emoji.shortcodes && props.emoji.shortcodes.join(", ")}</p>
                 }
             </div>
-            <div className={"right"} style={{display: displayStar || ((props.selected || props.isFavorite) && props.cardStyle !== "square") ? "flex" : "none"}}
+            <div className={"right"} style={{display: displayStar || props.selected || (props.isFavorite && props.cardStyle !== "square") ? "flex" : "none"}}
                  onClick={(e) => {
                      e.stopPropagation()
                      props.onFavoriteToggle(props.emoji);

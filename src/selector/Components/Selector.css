@@ -17,12 +17,113 @@
 }
 
 .emoji-list {
-    display: flex;
+/*    display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    align-items: center;
+    align-items: center;*/
+}
+
+.emoji-list table {
+    display: block;
+}
+
+.emoji-list tbody, .emoji-list tr, .emoji-list td {
+    padding: 0;
+    margin: 0;
+    display: inline-block;
+    width: 100%;
 }
 
 .searchText {
     font-size: x-small;
+}
+
+.emoji-browser {
+    position: relative;
+    display: inline-block;
+    width: max-content;
+    padding-top: 40px;
+}
+
+.browser-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 4px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    /* scroll-snap-type: x proximity;*/
+}
+
+.browser-header::-webkit-scrollbar {
+    display: none;
+}
+
+.browser-header__button {
+    flex: 0 0 auto;
+    position: relative;
+}
+.browser-header__button.selected::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 4px;
+    border-radius: 4px 0px;
+    background-color: var(--ejz-accent);
+}
+.browser-header__button.snap-start {
+    /*scroll-snap-align: start;*/
+}
+
+.browser-header__button .navigation-hint {
+    padding: 1px 4px;
+    margin-left: 7px;
+    border-radius: 5px;
+    color: var(--ejz-onSurfaceVariant);
+    border: 1px solid currentColor;
+    font-size: 12px;
+}
+
+.browser-content {
+    width: max-content;
+}
+
+.browser-content td {
+    padding:0;
+    margin:0;
+}
+
+.browser-content .emoji-card.square {
+    height: 40px;
+    width: 40px;
+    min-width: 40px;
+    margin: 0;
+}
+.browser-content .emoji-card.square p {
+    font-size: 1.9rem;
+    padding: 0;
+}
+.browser-content .emoji-card.square .left {
+    align-items: center;
+    width: 100%;
+}
+
+.browser-header__button.arrowLeft {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+}
+
+.browser-header__button.arrowRight {
+    position: sticky;
+    right: 0;
+    z-index: 1;
 }

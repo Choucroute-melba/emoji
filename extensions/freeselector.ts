@@ -31,19 +31,37 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     searchBar: HTMLInputElement
     container: HTMLDivElement
     infoLine: HTMLParagraphElement
+    modeSelector: HTMLDivElement
+    searchButton: HTMLButtonElement
+    browseButton: HTMLButtonElement
+    navHint = document.createElement("span")
     root: HTMLDivElement = document.createElement("div");
     sr: ShadowRoot = this.root.attachShadow({mode: "open"});
 
     previousActiveElement: HTMLElement | null = null;
+    private _browseMode = false;
 
     constructor(target: any) {
         const searchBar = document.createElement("input");
         const container = document.createElement("div");
         const info = document.createElement("p");
+        const modeSelector = document.createElement("div");
+        const searchButton = document.createElement("button");
+        const browseButton = document.createElement("button");
+        modeSelector.className = "modeSelector";
         searchBar.placeholder = "Search for emojis...";
         searchBar.type = "text";
+        searchButton.onclick = () => this.switchMode("search");
+        browseButton.onclick = () => this.switchMode("browse");
+        searchButton.textContent = "Search";
+        browseButton.textContent = "Browse";
+        modeSelector.appendChild(searchButton);
+        modeSelector.appendChild(browseButton);
+        container.appendChild(modeSelector);
         container.appendChild(searchBar)
-        info.textContent = "Press Enter to copy the selected emoji to clipboard";
+        info.innerHTML = `Press <span class="navigation-hint">Enter</span> to copy to the clipboard, <span class="navigation-hint">Ctrl + Enter</span> to set as favorite.<br/>`+
+            `Use arrow keys to navigate.`
+
         container.appendChild(info)
 
         super(searchBar);
@@ -58,10 +76,19 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
         this.searchBar = searchBar;
         this.container = container;
         this.infoLine = info;
+        this.modeSelector = modeSelector
+        this.searchButton = searchButton
+        this.browseButton = browseButton
 
         this.container.className = "container"
         this.searchBar.className = "searchBar"
         this.infoLine.className = "info"
+        this.navHint.className = "navigation-hint"
+
+        this.navHint.textContent = "Tab"
+        this.browseButton.appendChild(this.navHint)
+        this._browseMode = false
+        this.searchButton.classList.add("active");
     }
 
     //region actions ---
@@ -81,6 +108,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
             this.log(null, "Caret position detected at: " + caretPosition);
         }
         this.searchBar.focus()
+        this.es.onGroupChanged = this.onGroupChanged.bind(this)
         if(!hidden)
             this.es.display = true
 
@@ -94,6 +122,70 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
             this.previousActiveElement.focus();
         }
         super.disable();
+    }
+
+    switchMode(mode: "search" | "browse") {
+        if(mode === "search") {
+            this.es.presentation = "results"
+            this._browseMode = false
+            this.es.geometry = this.getSelectorGeometry()
+            this.searchButton.classList.add("active");
+            this.navHint.remove()
+            this.browseButton.classList.remove("active");
+            this.browseButton.appendChild(this.navHint)
+            this.searchBar.style.display = "block"
+            this.searchBar.focus()
+            this.navHint.textContent = "Tab"
+        }
+        else if (mode === "browse") {
+            this.es.presentation = "browser"
+            this._browseMode = true
+            this.es.focus()
+            this.browseButton.classList.add("active");
+            this.navHint.remove()
+            this.searchButton.classList.remove("active");
+            this.searchButton.appendChild(this.navHint)
+            this.searchBar.style.display = "none"
+            this.navHint.textContent = "Shift + Tab"
+        }
+    }
+
+    //endregion
+
+    //region listeners ---
+
+    protected handleDocumentKeyDown(e: KeyboardEvent) {
+
+        if(e.key === "Tab") {
+            e.preventDefault();
+            if(this._browseMode && e.shiftKey) {
+                if(this.es.groupIndex === 0) {
+                    e.stopPropagation();
+                    this.switchMode("search")
+                    return
+                }
+            }
+            else if(!e.shiftKey && !this._browseMode) {
+                this.switchMode("browse")
+                return;
+            }
+        }
+        if(this._browseMode) {
+            if(e.key === "ArrowUp" || e.key === "ArrowDown" || e.key === "ArrowLeft" || e.key === "ArrowRight")
+                return
+        }
+        else
+            super.handleDocumentKeyDown(e);
+    }
+
+    private onGroupChanged(groupId: number) {
+        if(!this._browseMode)
+            return
+        if(this.es.groupIndex === 0) {
+            this.searchButton.appendChild(this.navHint)
+        }
+        else
+            this.navHint.remove()
     }
 
     //endregion
@@ -150,7 +242,10 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
                 x: g.x,
                 y: g.y + g.height + 30,
             },
-            shape: {
+            shape: this._browseMode ? {
+                w: 0,
+                h: 0,
+            } : {
                 w: g.width - 10,
                 h: 0
             },
@@ -164,7 +259,7 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
             x: window.innerWidth / 2 - 200,
             y: 150,
             width: 400,
-            height: 50
+            height: 150
         };
     }
 
@@ -212,9 +307,17 @@ export default class FreeSelectorHandler extends EditableHandler<any> {
     }
     //endregion
 
+    //region getters and setters ---
+    get browseMode(): "search" | "browse" {
+        return this._browseMode ? "browse" : "search";
+    }
+    //endregion
+
     //region protected hooks ---
 
     protected onDestroy(): void {
+        this.searchButton.onclick = null;
+        this.browseButton.onclick = null;
         super.onDestroy();
     }
     //endregion

@@ -2,12 +2,11 @@
     this file is meant to run in the background script
  */
 import Fuse, {FuseIndex} from "fuse.js";
-import {Emoji, fetchEmojis, Locale} from "emojibase"
+import {Emoji, fetchEmojis, fetchFromCDN, Locale, MessagesDataset} from "emojibase"
 import browser from "webextension-polyfill";
 import {EmojiImages, LOCALES, SearchOption} from "./types";
 import DataManager from "../background/dataManager";
-import {Simulate} from "react-dom/test-utils";
-import error = Simulate.error;
+
 
 type FuseEmoji = {
     emoji: string;
@@ -55,6 +54,8 @@ function createFuseSearch(dataset: FuseEmoji[], index: FuseIndex<FuseEmoji>) {
 const cachedDataStets = new Map<Locale, Emoji[]>();
 const cachedIndex = new Map<Locale, FuseIndex<FuseEmoji>>();
 const cachedDataStetsTimeStamps = new Map<Locale, number>();
+const cachedGroupsDatasets = new Map<Locale, Record<number, string>>
+const cachedGroupsDatasetsTimeStamps = new Map<Locale, number>();
 let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
 // @ts-ignore
 if(LOCALES.findIndex(loc => loc.locale === defaultLocale) === -1) {     // check if the default language exists
@@ -91,6 +92,19 @@ for(const key in storedDatasets) {
             cachedIndex.set(locale, emojiIndex);
         }
     }
+    if(key.startsWith("groupsDataset.")) {
+        if(!key.includes(".timestamp")) {
+            const locale = key.replace("groupsDataset.", "") as Locale;
+            const data = storedDatasets[key] as Record<number, string>
+            cachedGroupsDatasets.set(locale, data)
+            const timestampKey = "groupsDataset." + locale + ".timestamp"
+            const timestamp = storedDatasets[timestampKey] as number | undefined;
+            if(timestamp)
+                cachedGroupsDatasetsTimeStamps.set(locale, timestamp);
+            else
+                cachedGroupsDatasetsTimeStamps.set(locale, Date.now());
+        }
+    }
 }
 // If there is no default dataset cached, fetch it immediately
 if(!cachedDataStets.has(defaultLocale)) {
@@ -100,6 +114,9 @@ if(!cachedDataStets.has(defaultLocale)) {
     const emojiIndex = createFuseIndex(emojis);
     cachedIndex.set(defaultLocale, emojiIndex);
     console.log("default emoji dataset (" + defaultLocale + ") loaded.");
+}
+if(!cachedGroupsDatasets.has(defaultLocale)) {
+    const groups = await loadGroupsDataset(defaultLocale);
 }
 
 /**
@@ -129,8 +146,9 @@ export function getEmojiDataset(locale: Locale) : Emoji[] | null {
 /**
  * will fetch the emoji dataset for a specific locale and store it in the cache.
  * @param locale
+ * @param useBrowserStorage : boolean - if false, the function won't try to use browser.storage.local
  */
-export async function loadEmojiDataset(locale: Locale) {
+export async function loadEmojiDataset(locale: Locale, useBrowserStorage: boolean = true) {
     console.log("Fetching emoji dataset for locale " + locale + "...");
     return fetchEmojis(locale, {
         compact: false,
@@ -141,6 +159,8 @@ export async function loadEmojiDataset(locale: Locale) {
         cachedDataStetsTimeStamps.set(locale, Date.now());
         const index = createFuseIndex(data);
         cachedIndex.set(locale, index);
+        if(!useBrowserStorage)
+            return data;
         browser.storage.local.set({["emojiDataset." + locale]: data})
             .catch(e => console.error(e))
             .then(() => {
@@ -148,6 +168,57 @@ export async function loadEmojiDataset(locale: Locale) {
                     .then(() => console.log("Emoji dataset for locale " + locale + " stored in cache."));
             });
         return data;
+    })
+}
+
+/**
+ * Will return the group dataset if the corresponding locale is found in cache, otherwise it will return null and will fetch
+ * the dataset for the next call.
+ * @param locale
+ */
+export function getGroupsDataset(locale: Locale): Record<number, string> | null {
+    const cacheExpirationMs = 1000 * 60 * 60 * 24 * 7; // 7 days
+    let cacheExpired = false
+    if(cachedGroupsDatasets.has(locale)) {
+        if(cachedGroupsDatasetsTimeStamps.get(locale) && Date.now() - cachedGroupsDatasetsTimeStamps.get(locale)! < cacheExpirationMs)
+            return cachedGroupsDatasets.get(locale)!;
+        else
+            cacheExpired = true;
+    }
+    else {
+        loadGroupsDataset(locale) // load the dataset if not cached
+            .catch(e => console.error("Failed to load groups dataset for locale " + locale, e));
+        return null; // don't make the user wait for the fetch
+    }
+
+    if(cacheExpired) {
+        loadGroupsDataset(locale) // renew the cache
+            .catch(e => console.error("Failed to renew cache of groups dataset for locale " + locale, e));
+        return cachedGroupsDatasets.get(locale)!; // don't make the user wait for the fetch
+    }
+    // if the dataset is not found, return null
+    return null;
+}
+
+export async function loadGroupsDataset(locale: Locale) {
+    return fetchFromCDN(locale+"/messages.json").then((value: unknown) => {
+        const data = value as any as MessagesDataset
+        const groups = data.groups
+        const localizedDataset: Record<number, string> = {}
+        groups.forEach((group, index) => {
+            if(group.key === "component")
+                return
+            localizedDataset[group.order] = group.message
+        })
+        cachedGroupsDatasets.set(locale, localizedDataset)
+        cachedGroupsDatasetsTimeStamps.set(locale, Date.now())
+        browser.storage.local.set({["groupsDataset." + locale]: localizedDataset})
+            .catch(e => console.error(e))
+            .then(() => {
+                browser.storage.local.set({["groupsDataset." + locale + ".timestamp"]: Date.now()})
+                    .then(() => console.log("Groups dataset for locale " + locale + " stored in cache."));
+            });
+        return localizedDataset;
     })
 }
 
@@ -247,6 +318,16 @@ export function getEmojiFromUnicode(unicode: string, locale: Locale): Emoji | un
     const emojis = getEmojiDataset(locale)
     if(!emojis) throw new Error("Emoji dataset for " + locale + " not loaded yet");
     return emojis.find((e) => e.emoji === unicode);
+}
+
+export function getGroups(locale: Locale): Record<number, string> {
+    return getGroupsDataset(locale) || {};
+}
+
+export function getEmojisForGroup(groupId: number, locale: Locale) {
+    const dataset = getEmojiDataset(locale)
+    if(dataset === null) throw new Error("Emoji dataset for " + locale + " not loaded yet");
+    return dataset.filter((e) => e.group === groupId);
 }
 
 /**

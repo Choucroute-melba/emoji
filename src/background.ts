@@ -9,7 +9,7 @@ import MessageSender = Runtime.MessageSender;
 import {
     getEmojiDataset,
     getEmojiFromShortCode,
-    getEmojiFromUnicode, getEmojiImageUrl, getEmojiOfTheDay,
+    getEmojiFromUnicode, getEmojiImageUrl, getEmojiOfTheDay, getEmojisForGroup, getGroups,
     getMostUsedEmoji,
     loadEmojiDataset,
     searchEmoji, setActionIcon
@@ -264,6 +264,12 @@ function listener(message: any, sender: MessageSender): Promise<unknown> {
                     setActionIcon(getEmojiImageUrl(dm.settings.actionIcon))
                 }
                 resolve(true)
+                break;
+            case "fetchGroups":
+                resolve(getGroups(dm.settings.emojiLocale))
+                break;
+            case "getEmojisForGroup":
+                resolve(getEmojisForGroup(m.data.group, dm.settings.emojiLocale))
                 break;
             default:
                 reject(`Unknown action: ${m.action}`)

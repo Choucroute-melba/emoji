@@ -17,6 +17,9 @@ import EmojiCardCss from "./Components/EmojiCard.css?inline"
 const emojiCardSheet = new CSSStyleSheet();
 emojiCardSheet.replaceSync(EmojiCardCss);
 
+import {fetchGroups, getEmojisForGroup} from "@src/emoji/emoji-content";
+import browser from "webextension-polyfill";
+
 export type EmojiSelectorPosition = {
     position: {
         x: number;
@@ -44,13 +47,14 @@ interface EmojiSelectorEventMap extends HTMLElementEventMap {
  * @property {function} onEmojiChosen - a callback function that will be executed when an emoji is selected (for example when the user click on the interface)
  */
 export default class EmojiSelector {
-    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w", "background-blur", "theme-mode"]
+    static observedAttributes = ["value", "mode", "x", "y", "placement", "h", "w", "background-blur", "theme-mode", "presentation"]
 
     private reactRoot: Root | null = null;
     private popupBackground: HTMLDivElement | null = null;
     private sr: ShadowRoot | null = null;
     private _display = false;
     private _focusedEmojiIndex = 0; // The index of the currently focused emoji in selector
+    private _yIndex = 0;
     private _debugText = ""
     private _inDocument = false;
     private _elt: HTMLElement;
@@ -58,6 +62,9 @@ export default class EmojiSelector {
     private _themePromise = getCssTheme(":root, :host").then((th: string) => (this._theme = th));
     private _theme: string | undefined = undefined;
     private _appliedColorScheme : "light" | "dark" | "system" = "system"
+    private _currentGroup: number = 0;
+    private _allGroups: Record<number, string> = {};
+    private _browserContent: Emoji[][] = []
     // private readonly boundComponent = () => this.component();
 
     private observer: MutationObserver | null = null;
@@ -68,6 +75,7 @@ export default class EmojiSelector {
     public onEmojiChosen: (emoji: Emoji) => void = (e) => {};
     public onBlur: () => void = () => {};
     public onClose: () => void = () => {};
+    public onGroupChanged: (groupId: number) => void = (groupId) => {};
 
     constructor(elt?: HTMLElement) {
         if(elt)
@@ -89,8 +97,8 @@ export default class EmojiSelector {
             this.updateTheme(this._theme)
 
         this.popupBackground = document.createElement('div');
-/*        if(this.mode !== "static")
-            this.popupBackground.classList.add('popupBackground');*/
+        /*        if(this.mode !== "static")
+                    this.popupBackground.classList.add('popupBackground');*/
         this.popupBackground.tabIndex = 0;
         this.popupBackground.addEventListener('click', (e) => {
             const path = e.composedPath();
@@ -135,7 +143,7 @@ export default class EmojiSelector {
             const themeSheet = new CSSStyleSheet();
             themeSheet.replaceSync(themeVariables);
             styleSheet = mergeStyleSheets(mergedSheet, themeSheet, /:host\s?/i);
-            getRecommendedThemeMode().then((mode) => {
+            getRecommendedThemeMode().then((mode: any) => {
                 this.appliedColorScheme = mode;
             })
         }
@@ -152,7 +160,7 @@ export default class EmojiSelector {
         if(!this.sr)
             return
         // @ts-ignore
-        const unwrappedSr = this.sr.wrappedJSObject
+        const unwrappedSr = this.sr//.wrappedJSObject
         for(let i = unwrappedSr.adoptedStyleSheets.length - 1; i >= 0; i--) {
             unwrappedSr.adoptedStyleSheets.pop();
         }
@@ -196,6 +204,9 @@ export default class EmojiSelector {
                 }
                 else
                     this.themeMode = newValue;
+                break;
+            case "presentation":
+                this.presentation = newValue as "results" | "browser";
                 break;
         }
         if(this._inDocument)
@@ -247,13 +258,52 @@ export default class EmojiSelector {
     }
 
     getFocusedEmoji() {
-        return this.options[this._focusedEmojiIndex];
+        if(this.presentation === "results") {
+            return this.options[this._focusedEmojiIndex];
+        }
+        else {
+            return this._browserContent[this._focusedEmojiIndex][this._yIndex];
+        }
     }
-    setFocusedEmoji(index: number) {
-        if(index < 0 || index >= this.options.length) return;
+    setFocusedEmoji(index: number, y: number = -1) {
+        if(this.presentation !== "browser") {
+            if (index < 0 || index >= this.options.length) {
+                if (index === -1) return;
+                console.error("Invalid index for focused emoji: ", index, ". Must be between 0 and ", this.options.length - 1);
+                return;
+            }
+        }
+        else if(index < 0 || index >= this._browserContent.length) {
+            console.error("Invalid index for focused emoji: ", index, ". Must be between 0 and ", this._browserContent.length - 1);
+            return;
+        }
         this._focusedEmojiIndex = index;
+        if(y !== -1) {
+            if(y < 0 || y >= this._browserContent[this._focusedEmojiIndex].length) {
+                console.error("Invalid y index for focused emoji: ", y, ". Must be between 0 and ", this._browserContent[this._focusedEmojiIndex].length - 1);
+                return;
+            }
+            this._yIndex = y
+        }
         if(this._inDocument)
             this.renderReact()
+    }
+    getFocusedEmojiIndex() {
+        if(this._yIndex !== -1) {
+            return {x: this._focusedEmojiIndex, y: this._yIndex}
+        }
+        else
+            return this._focusedEmojiIndex;
+    }
+
+    getEmojiIndex(ej: string): number | {x: number, y: number} {
+        if(this.presentation === "browser") {
+            const x = this._browserContent.findIndex(r => r.findIndex(e => e.emoji === ej) !== -1);
+            const y = this._browserContent[x]?.findIndex(e => e.emoji === ej);
+            return {x, y};
+        }
+        else
+            return this.options.findIndex(e => e.emoji === ej);
     }
 
     private fireInputEvent() {
@@ -287,6 +337,13 @@ export default class EmojiSelector {
         this.disconnectedCallback();
     }
 
+    focus() {
+        if(this.popupBackground)
+            this.popupBackground.focus();
+        else
+            this.elt.focus();
+    }
+
     private component = () => {
         const result = this.elt.querySelector("#selector-heading") as HTMLElement | null;
         let headingElt = result ? new SelectorHeadingComponent(result) : null;
@@ -302,13 +359,18 @@ export default class EmojiSelector {
             themeMode: this._appliedColorScheme,
             backgroundBlur : this.backgroundBlur,
             shape : this.shape,
-            searchResults : this.options,
+            searchResults : this.presentation === "results" ? this.options : this._browserContent,
             favorites : this.favoriteEmojis,
-            selectedEmojiIndex : this._focusedEmojiIndex,
+            selectedEmojiIndexX : this._focusedEmojiIndex,
+            selectedEmojiIndexY : this._yIndex,
             children : heading,
             onEmojiSelected : this.onEmojiSelected,
             onResize : this.onResize,
-            onToggleEmojiFavorite : this.onToggleEmojiFavorite
+            onToggleEmojiFavorite : this.onToggleEmojiFavorite,
+            presentation : this.presentation,
+            onSwitchGroup : this.onSwitchGroup.bind(this),
+            currentGroup : this._currentGroup,
+            groups : this._allGroups,
         });
     }
 
@@ -321,14 +383,129 @@ export default class EmojiSelector {
     }
     private boundOnFocus = this.onFocus.bind(this);
 
+    private async onSwitchGroup(groupId: number) {
+        if((groupId < 0) || (this._allGroups[groupId] == undefined)) {
+            console.warn("Invalid group ID: ", groupId);
+            return;
+        }
+        this._currentGroup = groupId;
+        this.onGroupChanged(groupId);
+        this._browserContent = []
+        const emojis = await getEmojisForGroup(this._currentGroup)
+        const columns = 10 // Math.ceil(Math.sqrt(emojis.length));
 
+        this.geometry = {
+            shape: {w: 0, h: 49 * 10},
+        }
+        let row = []
+        for(let i = 0; i < emojis.length; i++) {
+            for(let j = 0; j < columns; j++) {
+                row.push(emojis[i]);
+                i++;
+            }
+            this._browserContent.push(row);
+            row = []
+        }
+        if(this._inDocument)
+            this.renderReact();
+    }
 
     private onEmojiSelected = (emoji: Emoji)=> {
-        this.setFocusedEmoji(this.options.findIndex(e => e.emoji === emoji.emoji) || 0);
+        if(this.presentation == "results")
+            this.setFocusedEmoji(this.options.findIndex(e => e.emoji === emoji.emoji) || 0);
+        else {
+            const x = this._browserContent.findIndex(r => r.findIndex(e => e.emoji === emoji.emoji) !== -1);
+            const y = this._browserContent[x].findIndex(e => e.emoji === emoji.emoji);
+            this.setFocusedEmoji(x, y);
+        }
         this.value = emoji.emoji;
         //this.fireChangeEvent();
         this.onEmojiChosen(emoji);
     }
+
+    private keydownListener(e: KeyboardEvent) {
+        if(this.presentation !== "browser")
+            return;
+        console.log(e.key, e.ctrlKey);
+        e.stopPropagation();
+        e.preventDefault();
+        const groupList = Object.entries(this._allGroups)
+            .map(([key, value]) => ({id: parseInt(key), name: value}));
+        const currentGroupIndex = groupList.findIndex(g => g.id === this._currentGroup);
+        const nextGroupIndex = (currentGroupIndex + 1) % groupList.length ;
+        const prevGroupIndex = (currentGroupIndex - 1 + groupList.length) % groupList.length;
+        const nextGroup = groupList.length > 0 ? groupList[nextGroupIndex].id : 0;
+        const prevGroup = groupList.length > 0 ? groupList[prevGroupIndex].id : 0;
+        switch (e.key) {
+            case "ArrowUp":
+                if(this._focusedEmojiIndex > 0)
+                    this.setFocusedEmoji(this._focusedEmojiIndex - 1, Math.min(this._yIndex, this._browserContent[this._focusedEmojiIndex-1].length - 1));
+                else if(currentGroupIndex > 0) {
+                    this.onSwitchGroup(prevGroup).then(() => {
+                        const xIndex = Math.min(this._focusedEmojiIndex, this._browserContent[0].length)
+                        this.setFocusedEmoji(xIndex, Math.min(this._yIndex, this._browserContent[xIndex].length - 1));
+                    })
+                }
+                break;
+            case "ArrowDown":
+                if(this._focusedEmojiIndex < this._browserContent.length - 1)
+                    this.setFocusedEmoji(this._focusedEmojiIndex + 1, Math.min(this._yIndex, this._browserContent[this._focusedEmojiIndex+1].length - 1));
+                else if(currentGroupIndex < (groupList.length - 1)) {
+                    this.onSwitchGroup(nextGroup + 1).then(() => {
+                        this.setFocusedEmoji(0, Math.min(this._yIndex, this._browserContent[0].length - 1));
+                    })
+                }
+                break;
+            case "ArrowLeft":
+                if(this._yIndex > 0)
+                    this.setFocusedEmoji(this._focusedEmojiIndex, this._yIndex - 1);
+                else if(this._focusedEmojiIndex > 0)
+                    this.setFocusedEmoji(this._focusedEmojiIndex - 1, this._browserContent[this._focusedEmojiIndex-1].length - 1);
+                else if(currentGroupIndex > 0) {
+                    this.onSwitchGroup(prevGroup).then(() => {
+                        const xIndex = Math.min(this._focusedEmojiIndex, this._browserContent.length)
+                        this.setFocusedEmoji(xIndex, this._browserContent[xIndex].length - 1);
+                    })
+                }
+                break;
+            case "ArrowRight":
+                if(this._yIndex < this._browserContent[this._focusedEmojiIndex].length - 1)
+                    this.setFocusedEmoji(this._focusedEmojiIndex, this._yIndex + 1);
+                else if(this._focusedEmojiIndex < this._browserContent.length - 1)
+                    this.setFocusedEmoji(this._focusedEmojiIndex + 1, 0);
+                else if(currentGroupIndex < (groupList.length - 1)) {
+                    this.onSwitchGroup(nextGroup).then(() => {
+                        this.setFocusedEmoji(0, 0);
+                    })
+                }
+                break;
+            case "Tab":
+                if(e.shiftKey) {
+                    if(currentGroupIndex > 0) {
+                        this.onSwitchGroup(prevGroup).then(() => {
+                            this.setFocusedEmoji(0, 0);
+                        });
+                    }
+                }
+                else if(currentGroupIndex < (groupList.length - 1)) {
+                    this.onSwitchGroup(nextGroup).then(() => {
+                        this.setFocusedEmoji(0, 0);
+                    });
+                }
+                break;
+            case "Enter":
+                if(e.ctrlKey)
+                    this.onToggleEmojiFavorite(this.getFocusedEmoji());
+                else
+                    this.onEmojiSelected(this.getFocusedEmoji());
+                break;
+            case "Escape":
+                this.onClose();
+
+        }
+        // console.log(`x: ${this._focusedEmojiIndex}, y: ${this._yIndex}, h : ${this._browserContent.length}, w ${this._browserContent[this._focusedEmojiIndex]?.length}`)
+    }
+    boundKeydownListener = this.keydownListener.bind(this);
     //endregion
 
     //region getters and setters
@@ -338,6 +515,13 @@ export default class EmojiSelector {
     set theme(value: string) {
         this._theme = value;
         this.updateTheme(value);
+    }
+
+    get groupIndex(): number {
+        if (this.presentation === "results")
+            return -1
+        else
+            return Object.entries(this._allGroups).findIndex(([key, value]) => parseInt(key) === this._currentGroup);
     }
 
     set options(value: Emoji[]) {
@@ -405,10 +589,10 @@ export default class EmojiSelector {
     }
 
     set mode(value: "static" | "absolute" | "relative" | "fixed" | "sticky") {
-/*        if(value === "static")
-            this.popupBackground?.classList.remove("popupBackground")
-        else
-            this.popupBackground?.classList.add("popupBackground")*/
+        /*        if(value === "static")
+                    this.popupBackground?.classList.remove("popupBackground")
+                else
+                    this.popupBackground?.classList.add("popupBackground")*/
         this.elt.setAttribute("mode", value);
     }
     get mode() {
@@ -470,34 +654,46 @@ export default class EmojiSelector {
             this.renderReact()
     }
     toggleFavorite(emoji: string) {
-        for(const child of this.elt.children) {
-            if(child.className.includes("emoji-option")) {
-                const opt = new EmojiSelectorOption(child as HTMLElement);
-                if(opt.emoji && emoji === opt.emoji) {
-                    opt.favorite = !opt.favorite;
-                    const index = this.favoriteEmojis.indexOf(emoji);
-                    if(index !== -1) {
-                        if(!opt.favorite)
-                            this.favoriteEmojis.splice(index, 1);
+        if(this.presentation === "browser") {
+            if (this.getEmojiIndex(emoji) !== -1) {
+                const index = this.favoriteEmojis.indexOf(emoji);
+                if(index !== -1)
+                    this.favoriteEmojis.splice(index, 1);
+                else
+                    this.favoriteEmojis.push(emoji);
+            }
+        }
+        else {
+            for(const child of this.elt.children) {
+                if(child.className.includes("emoji-option")) {
+                    const opt = new EmojiSelectorOption(child as HTMLElement);
+                    if(opt.emoji && emoji === opt.emoji) {
+                        opt.favorite = !opt.favorite;
+                        const index = this.favoriteEmojis.indexOf(emoji);
+                        if(index !== -1) {
+                            if(!opt.favorite)
+                                this.favoriteEmojis.splice(index, 1);
+                        }
+                        else if(opt.favorite)
+                            this.favoriteEmojis.push(emoji);
                     }
-                    else if(opt.favorite)
-                        this.favoriteEmojis.push(emoji);
                 }
             }
         }
+
         if(this._inDocument)
             this.renderReact()
     }
     get favoriteEmojis() {
-/*        const list: string[] = [];
-        for(const elt of this.elt.children) {
-            if(elt.className.includes("emoji-option")) {
-                const opt = new EmojiSelectorOption(elt as HTMLElement);
-                if(opt.favorite && opt.emoji !== undefined)
-                    list.push(opt.emoji);
-            }
-        }
-        return list;*/
+        /*        const list: string[] = [];
+                for(const elt of this.elt.children) {
+                    if(elt.className.includes("emoji-option")) {
+                        const opt = new EmojiSelectorOption(elt as HTMLElement);
+                        if(opt.favorite && opt.emoji !== undefined)
+                            list.push(opt.emoji);
+                    }
+                }
+                return list;*/
         return this._favoriteEmojis
     }
 
@@ -526,6 +722,52 @@ export default class EmojiSelector {
             console.warn("Invalid theme-mode attribute value: ", attrValue, ". Using 'color' instead.")
             this.elt.setAttribute("theme-mode", "color");
             return "color";
+        }
+        return attrValue;
+    }
+
+    set presentation(value: "results" | "browser") {
+        if(value !== this.presentation)
+            this.elt.setAttribute("presentation", value);
+        if(value === "browser") {
+            fetchGroups().then(groups => {
+                this._allGroups = groups
+                if(this._inDocument)
+                    this.renderReact()
+            })
+            getEmojisForGroup(this._currentGroup).then(emojis => {
+                const columns = 10 // Math.ceil(Math.sqrt(emojis.length));
+
+                this.geometry = {
+                    shape: {w: 0, h: 49 * 10},
+                }
+                let row = []
+                for(let i = 0; i < emojis.length; i++) {
+                    for(let j = 0; j < columns; j++) {
+                        row.push(emojis[i]);
+                        i++;
+                    }
+                    this._browserContent.push(row);
+                    row = []
+                }
+                this.elt.addEventListener("keydown", this.boundKeydownListener, {capture: true})
+                if(this._inDocument)
+                    this.renderReact()
+            })
+        }
+        else {
+            this._browserContent = [];
+            this.elt.removeEventListener("keydown", this.boundKeydownListener, {capture: true})
+        }
+        if(this._inDocument)
+            this.renderReact()
+    }
+    get presentation() {
+        const attrValue = this.elt.getAttribute("presentation");
+        if(attrValue !== "results" && attrValue !== "browser") {
+            console.warn("Invalid presentation attribute value: ", attrValue, ". Using 'results' instead.")
+            this.elt.setAttribute("presentation", "results");
+            return "results";
         }
         return attrValue;
     }
