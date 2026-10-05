@@ -12,7 +12,7 @@ export default class AriaDivHandler extends HTMLEditableHandler<HTMLTextAreaElem
     readonly HandlerName: string = AriaDivHandler.HandlerName;
 
     static canHandleTarget(target: HTMLTextAreaElement): boolean {
-        return target.tagName.toLowerCase() == "div" && target.contentEditable == "true" && target.role == "textbox";
+        return target.isContentEditable;
     }
     canHandleTarget = AriaDivHandler.canHandleTarget
 

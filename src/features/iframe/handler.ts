@@ -6,8 +6,7 @@ export default class HTMLIFrameHandler extends AriaDivHandler {
     targets: string[] = ["*"];
     HandlerName: string = "HTMLIFrame";
     static canHandleTarget(target: HTMLElement): boolean {
-        // return target.isContentEditable;
-        return true;
+        return target.tagName === "IFRAME" && (target as HTMLIFrameElement).contentDocument?.body.isContentEditable === true;
     }
     canHandleTarget = HTMLIFrameHandler.canHandleTarget
 
