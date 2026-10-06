@@ -29,15 +29,7 @@
     "page": "assets/settings.html"
   },
   "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "js": [
-        "content-script-bundle.js"
-      ],
-      "run_at": "document_idle"
-    }
+
   ],
   "background": {
     "scripts": [

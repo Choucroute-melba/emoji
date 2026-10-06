@@ -50,22 +50,7 @@ export default class DataManager {
     })
 
     constructor() {
-        let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
-        console.log(`browser's locale: ${defaultLocale}`)
-        // check if the default locale exists
-        if(LOCALES.findIndex(loc => loc.locale === defaultLocale) === -1) {
-            // check if the default language exists
-            const lang = defaultLocale.split("-")[0];
-            const langLocale = LOCALES.find(loc => loc.locale.startsWith(lang + "-"));
-            if(langLocale) {
-                defaultLocale = langLocale.locale;
-                this._settings.value.emojiLocale = defaultLocale;
-                console.log(`Using locale "${defaultLocale}" for default emojiLocale setting.`)
-            } else {
-                this._settings.value.emojiLocale = "en" // use "en" as fallback if the browser's locale is not supported
-                console.warn(`Default locale "${defaultLocale}" is not supported. Using "en" instead.`)
-            }
-        }
+        this.checkDefaultLocale();
         browser.runtime.onConnect.addListener(this.onConnect.bind(this));
     }
 
@@ -328,6 +313,25 @@ export default class DataManager {
         this.storageReady = true;
     }
 
+    private checkDefaultLocale() {
+        let defaultLocale = browser.i18n.getUILanguage().toLowerCase() as Locale;
+        console.log(`browser's locale: ${defaultLocale}`)
+        // check if the default locale exists
+        if(LOCALES.findIndex(loc => loc.locale === defaultLocale) === -1) {
+            // check if the default language exists
+            const lang = defaultLocale.split("-")[0];
+            const langLocale = LOCALES.find(loc => loc.locale.startsWith(lang + "-"));
+            if(langLocale) {
+                defaultLocale = langLocale.locale;
+                this._settings.value.emojiLocale = defaultLocale;
+                console.log(`Using locale "${defaultLocale}" for default emojiLocale setting.`)
+            } else {
+                this._settings.value.emojiLocale = "en" // use "en" as fallback if the browser's locale is not supported
+                console.warn(`Default locale "${defaultLocale}" is not supported. Using "en" instead.`)
+            }
+        }
+    }
+
     private onConnect(p: Port) {
         if(this.getPort(p.name)) {
             console.info(`Port ${p.name} already exists`)
@@ -357,12 +361,37 @@ export default class DataManager {
     }
     private boundOnDisconnect = this.onDisconnect.bind(this);
 
-    private getPort(name: string) {
-        return this.connections.find((p) => p.name == name);
+    /**
+     * @param id - refers to the port name
+     * @private
+     */
+    private getPort(id: string) {
+        return this.connections.find((p) => p.name == id);
     }
 
-    private getPortIndex(name: string) {
-        return this.connections.findIndex((p) => p.name == name);
+    /**
+     * @param id - refers to the port name
+     * @private
+     */
+    private getPortIndex(id: string) {
+        return this.connections.findIndex((p) => p.name == id);
+    }
+
+    /**
+     * Checks if a connection with the given id exists.
+     * Tab connection IDs look like this: 'emoji-tab-<tabId>'
+     * @param id
+     */
+    hasConnection(id: string) {
+        return this.getPort(id) !== undefined;
+    }
+
+    removeConnection(id: string) {
+        const port = this.getPort(id);
+        if(port) {
+            port.disconnect();
+            this.onDisconnect(port);
+        }
     }
 
     private onMessage(message: any, sender: Port) {
