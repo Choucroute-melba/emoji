@@ -1,3 +1,9 @@
+# Version 5.1.0
+*06/10/2026*
+
+- Improved extension loading, performance and stability
+- Fixed selector not appearing in bsky
+
 # Version 5.0.5
 *25/06/2026*
 
